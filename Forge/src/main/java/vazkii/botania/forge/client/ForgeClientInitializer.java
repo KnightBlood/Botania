@@ -10,8 +10,11 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.SingleVariant;
 import net.minecraft.client.resources.model.ModelDebugName;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -266,8 +269,17 @@ public class ForgeClientInitializer {
 
 	public static void registerStandaloneModels(ModelEvent.RegisterStandalone evt) {
 		var resourceManager = Minecraft.getInstance().getResourceManager();
-		MiscellaneousModels.INSTANCE.onModelRegister(resourceManager,
-				id -> registerStandalone(evt, id, SimpleUnbakedStandaloneModel.blockStateModel(id)));
+		// Bake without vanilla's atlas check - the icon/* models sample the item atlas,
+		// and the render type matching each model's atlas is picked in RenderHelper.
+		// (Inlined copy of AtlasUncheckedModels.bakeUnchecked; this file compiles
+		// against the published Xplat jar, which does not carry new client helpers.)
+		MiscellaneousModels.INSTANCE.onModelRegister(resourceManager, id -> registerStandalone(evt, id,
+				new SimpleUnbakedStandaloneModel<>(id, (model, baker) -> {
+					var slots = model.getTopTextureSlots();
+					var particle = model.resolveParticleMaterial(slots, baker);
+					var geometry = model.bakeTopGeometry(slots, baker, BlockModelRotation.IDENTITY);
+					return new SingleVariant(new SimpleModelWrapper(geometry, model.getTopAmbientOcclusion(), particle));
+				})));
 		ForgeFloatingFlowerModel.forEachStandaloneModel((id, model) -> registerStandalone(evt, id, model));
 	}
 

@@ -99,9 +99,20 @@ public class FabricClientInitializer implements ClientModInitializer {
 						vazkii.botania.client.model.ManaBlasterBakedModel.Unbaked.MAP_CODEC);
 		ModelLoadingPlugin.register(pluginContext -> {
 			// 26.1: addModel now takes ExtraModelKey + UnbakedExtraModel instead of raw ids.
+			// Bake without vanilla's atlas check - the icon/* models sample the item atlas,
+			// and the render type matching each model's atlas is picked in RenderHelper.
+			// (Inlined copy of AtlasUncheckedModels.bakeUnchecked.)
 			MiscellaneousModels.INSTANCE.onModelRegister(Minecraft.getInstance().getResourceManager(), id -> {
 				var key = ExtraModelKey.<net.minecraft.client.renderer.block.dispatch.BlockStateModel>create(() -> id.toString());
-				pluginContext.addModel(key, SimpleUnbakedExtraModel.blockStateModel(id));
+				pluginContext.addModel(key, new SimpleUnbakedExtraModel<>(id, (model, baker) -> {
+					var slots = model.getTopTextureSlots();
+					var particle = model.resolveParticleMaterial(slots, baker);
+					var geometry = model.bakeTopGeometry(slots, baker,
+							net.minecraft.client.renderer.block.dispatch.BlockModelRotation.IDENTITY);
+					return new net.minecraft.client.renderer.block.dispatch.SingleVariant(
+							new net.minecraft.client.resources.model.SimpleModelWrapper(geometry,
+									model.getTopAmbientOcclusion(), particle));
+				}));
 				EXTRA_MODEL_KEYS.put(id, key);
 			});
 			// Islands only feed the island-type registry inside onModelRegister and never reach the

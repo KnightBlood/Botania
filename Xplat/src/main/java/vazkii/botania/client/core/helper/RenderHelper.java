@@ -582,9 +582,12 @@ public final class RenderHelper {
 	 */
 	public static void renderBlockModel(PoseStack ms, MultiBufferSource buffers, BlockState state,
 			BlockStateModel model, float red, float green, float blue, int light, int overlay) {
-		RenderType renderType = model.hasMaterialFlag(1)
+		// Models whose sprites live in the item atlas (e.g. the icon/* models) must draw
+		// with an item-atlas bound sheet; quads there carry the correct type in their
+		// material info.
+		RenderType renderType = AtlasUncheckedModels.renderTypeFor(model, model.hasMaterialFlag(1)
 				? RenderTypes.translucentMovingBlock()
-				: RenderTypes.cutoutMovingBlock();
+				: RenderTypes.cutoutMovingBlock());
 		VertexConsumer buffer = buffers.getBuffer(renderType);
 		renderBlockModel(ms, buffer, state, model, red, green, blue, light, overlay);
 	}
@@ -597,9 +600,9 @@ public final class RenderHelper {
 			BlockStateModel model, int light, int overlay) {
 		List<BlockStateModelPart> parts = new ArrayList<>();
 		model.collectParts(RandomSource.create(), parts);
-		RenderType renderType = model.hasMaterialFlag(1)
+		RenderType renderType = AtlasUncheckedModels.renderTypeFor(model, model.hasMaterialFlag(1)
 				? RenderTypes.translucentMovingBlock()
-				: RenderTypes.cutoutMovingBlock();
+				: RenderTypes.cutoutMovingBlock());
 		collector.submitBlockModel(ms, renderType, parts, new int[0], light, overlay, 0);
 	}
 
