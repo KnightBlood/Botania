@@ -1,0 +1,701 @@
+package vazkii.botania.neoforge.xplat;
+
+import com.mojang.datafixers.util.Pair;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.*;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FlowerBlock;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.AABB;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+// LazyOptional removed in NeoForge 26.1 - using java.util.Optional
+import java.util.Optional;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.network.IContainerFactory;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+
+import org.apache.commons.lang3.function.TriFunction;
+import org.jetbrains.annotations.Nullable;
+
+import vazkii.botania.api.BotaniaNeoForgeCapabilities;
+import vazkii.botania.api.block.*;
+import vazkii.botania.api.block_entity.SpecialFlowerBlockEntity;
+import vazkii.botania.api.corporea.CorporeaIndexRequestEvent;
+import vazkii.botania.api.corporea.CorporeaRequestEvent;
+import vazkii.botania.api.corporea.CorporeaRequestMatcher;
+import vazkii.botania.api.corporea.CorporeaSpark;
+import vazkii.botania.api.item.AvatarWieldable;
+import vazkii.botania.api.item.BlockProvider;
+import vazkii.botania.api.item.CoordBoundItem;
+import vazkii.botania.api.item.Relic;
+import vazkii.botania.api.mana.*;
+import vazkii.botania.api.mana.spark.SparkAttachable;
+import vazkii.botania.api.recipe.ElvenPortalUpdateEvent;
+import vazkii.botania.common.block.block_entity.red_string.RedStringContainerBlockEntity;
+import vazkii.botania.common.handler.EquipmentHandler;
+import vazkii.botania.common.internal_caps.*;
+import vazkii.botania.common.lib.BotaniaTags;
+import vazkii.botania.common.lib.LibMisc;
+import vazkii.botania.neoforge.block.NeoForgeSpecialFlowerBlock;
+import vazkii.botania.neoforge.integration.curios.CurioIntegration;
+import vazkii.botania.neoforge.internal_caps.NeoForgeInternalEntityCapabilities;
+import vazkii.botania.neoforge.mixin.AbstractFurnaceBlockEntityNeoForgeAccessor;
+import vazkii.botania.neoforge.network.NeoForgePacketHandler;
+import vazkii.botania.network.BotaniaPacket;
+import vazkii.botania.xplat.XplatAbstractions;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static vazkii.botania.integration.speedrunigt.BotaniaSpeedrunCategories.BotaniaSpeedrunCategory;
+
+public class NeoForgeXplatImpl implements XplatAbstractions {
+	@Override
+	public boolean isForge() {
+		return true;
+	}
+
+	@Override
+	public boolean isModLoaded(String modId) {
+		return ModList.get().isLoaded(modId);
+	}
+
+	@Override
+	public boolean isDevEnvironment() {
+		return !FMLEnvironment.isProduction();
+	}
+
+	@Override
+	public boolean isPhysicalClient() {
+		return FMLEnvironment.getDist() == Dist.CLIENT;
+	}
+
+	@Override
+	public String getBotaniaVersion() {
+		return ModList.get().getModContainerById(LibMisc.MOD_ID).get()
+				.getModInfo().getVersion().toString();
+	}
+
+	@Nullable
+	@Override
+	public AvatarWieldable findAvatarWieldable(ItemStack stack) {
+		return BotaniaNeoForgeCapabilities.AVATAR_WIELDABLE.getCapability(stack, null);
+	}
+
+	@Nullable
+	@Override
+	public BlockProvider findBlockProvider(ItemStack stack) {
+		return BotaniaNeoForgeCapabilities.BLOCK_PROVIDER.getCapability(stack, null);
+	}
+
+	@Nullable
+	@Override
+	public CoordBoundItem findCoordBoundItem(ItemStack stack) {
+		return BotaniaNeoForgeCapabilities.COORD_BOUND_ITEM.getCapability(stack, null);
+	}
+
+	@Nullable
+	@Override
+	public ManaItem findManaItem(ItemStack stack) {
+		return BotaniaNeoForgeCapabilities.MANA_ITEM.getCapability(stack, null);
+	}
+
+	@Nullable
+	@Override
+	public Relic findRelic(ItemStack stack) {
+		return BotaniaNeoForgeCapabilities.RELIC.getCapability(stack, null);
+	}
+
+	@Nullable
+	@Override
+	public ExoflameHeatable findExoflameHeatable(Level level, BlockPos pos, BlockState state, @Nullable BlockEntity be) {
+		return BotaniaNeoForgeCapabilities.EXOFLAME_HEATABLE.getCapability(level, pos, state, be, null);
+	}
+
+	@Nullable
+	@Override
+	public HornHarvestable findHornHarvestable(Level level, BlockPos pos, BlockState state, @Nullable BlockEntity be) {
+		return BotaniaNeoForgeCapabilities.HORN_HARVEST.getCapability(level, pos, state, be, null);
+	}
+
+	@Nullable
+	@Override
+	public HourglassTrigger findHourglassTrigger(Level level, BlockPos pos, BlockState state, @Nullable BlockEntity be) {
+		return BotaniaNeoForgeCapabilities.HOURGLASS_TRIGGER.getCapability(level, pos, state, be, null);
+	}
+
+	@Nullable
+	@Override
+	public ManaCollisionGhost findManaGhost(Level level, BlockPos pos, BlockState state, @org.jetbrains.annotations.Nullable BlockEntity be) {
+		return BotaniaNeoForgeCapabilities.MANA_GHOST.getCapability(level, pos, state, be, null);
+	}
+
+	@Nullable
+	@Override
+	public ManaReceiver findManaReceiver(Level level, BlockPos pos, BlockState state, @Nullable BlockEntity be, @Nullable Direction direction) {
+		return BotaniaNeoForgeCapabilities.MANA_RECEIVER.getCapability(level, pos, state, be, direction);
+	}
+
+	@Nullable
+	@Override
+	public SparkAttachable findSparkAttachable(Level level, BlockPos pos, BlockState blockState, @Nullable BlockEntity be, Direction direction) {
+		return BotaniaNeoForgeCapabilities.SPARK_ATTACHABLE.getCapability(level, pos, blockState, be, direction);
+	}
+
+	@Nullable
+	@Override
+	public ManaTrigger findManaTrigger(Level level, BlockPos pos, BlockState state, @org.jetbrains.annotations.Nullable BlockEntity be) {
+		return BotaniaNeoForgeCapabilities.MANA_TRIGGER.getCapability(level, pos, state, be, null);
+	}
+
+	@Nullable
+	@Override
+	public Wandable findWandable(Level level, BlockPos pos, BlockState state, @Nullable BlockEntity be) {
+		return BotaniaNeoForgeCapabilities.WANDABLE.getCapability(level, pos, state, be, null);
+	}
+
+	@Nullable
+	@Override
+	public PhantomInkableBlock findPhantomInkable(Level level, BlockPos pos, BlockState state, @Nullable BlockEntity be) {
+		return BotaniaNeoForgeCapabilities.PHANTOM_INKABLE.getCapability(level, pos, state, be, null);
+	}
+
+	// 26.1: FluidUtil/IFluidHandler are deprecated in favor of the new transfer API, but
+	// still fully functional; suppressed until a dedicated migration pass.
+	@SuppressWarnings("removal")
+	@Override
+	public boolean isFluidContainer(ItemEntity item) {
+		return FluidUtil.getFluidHandler(item.getItem()).isPresent();
+	}
+
+	@SuppressWarnings("removal")
+	@Override
+	public boolean extractFluidFromItemEntity(ItemEntity item, Fluid fluid) {
+		return FluidUtil.getFluidHandler(item.getItem())
+				.map(h -> {
+					var extracted = h.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.SIMULATE);
+					var success = extracted.getFluid() == fluid && extracted.getAmount() == FluidType.BUCKET_VOLUME;
+					if (success) {
+						h.drain(extracted, IFluidHandler.FluidAction.EXECUTE);
+						item.setItem(h.getContainer());
+					}
+					return success;
+				})
+				.orElse(false);
+	}
+
+	@SuppressWarnings("removal")
+	@Override
+	public boolean extractFluidFromPlayerItem(Player player, InteractionHand hand, Fluid fluid) {
+		var stack = player.getItemInHand(hand);
+		return FluidUtil.getFluidHandler(stack)
+				.map(h -> {
+					var extracted = h.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.SIMULATE);
+					var success = extracted.getFluid() == fluid && extracted.getAmount() == FluidType.BUCKET_VOLUME;
+					if (success && !player.getAbilities().instabuild) {
+						h.drain(extracted, IFluidHandler.FluidAction.EXECUTE);
+						player.setItemInHand(hand, h.getContainer());
+					}
+					return success;
+				})
+				.orElse(false);
+	}
+
+	@SuppressWarnings("removal")
+	@Override
+	public boolean insertFluidIntoPlayerItem(Player player, InteractionHand hand, Fluid fluid) {
+		var stack = player.getItemInHand(hand);
+		if (stack.isEmpty()) {
+			return false;
+		}
+
+		// Have to copy and simulate on a stack of size 1, because buckets don't accept
+		// fluid input if they're stacked (why NeoForge??)
+		ItemStack toFill = stack.copy();
+		toFill.setCount(1);
+
+		var maybeFluidHandler = FluidUtil.getFluidHandler(toFill);
+		if (maybeFluidHandler.isPresent()) {
+			var fluidHandler = maybeFluidHandler.orElseThrow(IllegalStateException::new);
+			var fluidToFill = new FluidStack(fluid, FluidType.BUCKET_VOLUME);
+			int filled = fluidHandler.fill(fluidToFill, IFluidHandler.FluidAction.SIMULATE);
+
+			if (filled == FluidType.BUCKET_VOLUME) {
+				if (!player.getAbilities().instabuild) {
+					fluidHandler.fill(fluidToFill, IFluidHandler.FluidAction.EXECUTE);
+					stack.shrink(1);
+					ItemStack result = fluidHandler.getContainer();
+					if (stack.isEmpty()) {
+						player.setItemInHand(hand, result);
+					} else {
+						player.getInventory().placeItemBackInInventory(result);
+					}
+				}
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@SuppressWarnings("removal")
+	@Override
+	public ItemStack fillItemWithWater(ItemStack stackToFill, Player player) {
+		ItemStack split = stackToFill.copyWithCount(1);
+		Optional<IFluidHandlerItem> optionalHandler = FluidUtil.getFluidHandler(split);
+		if (optionalHandler.isPresent()) {
+			var handler = optionalHandler.get();
+			if (handler.fill(new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME),
+					IFluidHandler.FluidAction.EXECUTE) > 0) {
+				return handler.getContainer();
+			}
+		} else if (split.is(Items.GLASS_BOTTLE)) {
+			// 26.1: ItemStack.set returns the component, not the stack - no chaining
+			ItemStack potion = new ItemStack(Items.POTION);
+			potion.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
+			return potion;
+		}
+		return ItemStack.EMPTY;
+	}
+
+	@Override
+	public boolean hasInventory(Level level, BlockPos pos, Direction sideOfPos) {
+		var state = level.getBlockState(pos);
+		var be = level.getBlockEntity(pos);
+		return be != null && Capabilities.Item.BLOCK.getCapability(level, pos, state, be, sideOfPos) != null
+				|| state.getBlock() instanceof WorldlyContainerHolder wch
+						&& wch.getContainer(state, level, pos).getSlotsForFace(sideOfPos).length > 0;
+	}
+
+	@Override
+	public ItemStack insertToInventory(Level level, BlockPos pos, Direction sideOfPos, ItemStack toInsert, boolean simulate) {
+		var be = level.getBlockEntity(pos);
+		var state = level.getBlockState(pos);
+		ResourceHandler<ItemResource> handler = null;
+		if (be != null) {
+			handler = Capabilities.Item.BLOCK.getCapability(level, pos, state, be, sideOfPos);
+		} else {
+			// check vanilla interface for blocks not covered by forge capabilities, e.g. composter
+			if (state.getBlock() instanceof WorldlyContainerHolder wch) {
+				handler = new WorldlyContainerWrapper(wch.getContainer(state, level, pos), sideOfPos);
+			}
+		}
+		if (handler == null) {
+			return toInsert;
+		}
+
+		// can't do incremental simulations
+		if (simulate || !state.is(BotaniaTags.Blocks.SINGLE_ITEM_INSERT)) {
+			try (var tx = Transaction.openRoot()) {
+				int inserted = handler.insert(ItemResource.of(toInsert), toInsert.getCount(), tx);
+				if (inserted > 0) {
+					tx.commit();
+				}
+				return toInsert.copyWithCount(toInsert.getCount() - inserted);
+			}
+		}
+
+		int maxInserts = toInsert.getCount();
+		for (int i = 0; i < maxInserts; i++) {
+			ItemStack single = toInsert.copyWithCount(1);
+			try (var tx = Transaction.openRoot()) {
+				if (handler.insert(ItemResource.of(single), 1, tx) == 0) {
+					break;
+				}
+				tx.commit();
+			}
+			toInsert.setCount(toInsert.getCount() - 1);
+		}
+		return toInsert;
+	}
+
+	@Override
+	public EthicalComponent ethicalComponent(PrimedTnt tnt) {
+		return tnt.getData(NeoForgeInternalEntityCapabilities.TNT_ETHICAL.value());
+	}
+
+	@Override
+	public SpectralRailComponent ghostRailComponent(AbstractMinecart cart) {
+		return cart.getData(NeoForgeInternalEntityCapabilities.GHOST_RAIL.value());
+	}
+
+	@Override
+	public ItemFlagsComponent itemFlagsComponent(ItemEntity item) {
+		// If missing, just give a fresh instance - works around Create's Ponder fake world
+		var ret = item.getExistingDataOrNull(NeoForgeInternalEntityCapabilities.INTERNAL_ITEM.value());
+		return ret != null ? ret : new ItemFlagsComponent();
+	}
+
+	@Override
+	public KeptItemsComponent keptItemsComponent(Player player, boolean reviveCaps) {
+		// Data attachments don't need capability revival; parameter kept for API compat
+		return player.getData(NeoForgeInternalEntityCapabilities.KEPT_ITEMS.value());
+	}
+
+	@Nullable
+	@Override
+	public LooniumComponent looniumComponent(LivingEntity entity) {
+		return entity.getExistingDataOrNull(NeoForgeInternalEntityCapabilities.LOONIUM_DROP.value());
+	}
+
+	@Override
+	public NarslimmusComponent narslimmusComponent(Slime slime) {
+		return slime.getData(NeoForgeInternalEntityCapabilities.NARSLIMMUS.value());
+	}
+
+	@Override
+	public TigerseyeComponent tigersEyeComponent(Creeper creeper) {
+		return creeper.getData(NeoForgeInternalEntityCapabilities.TIGERSEYE.value());
+	}
+
+	@Override
+	public boolean fireCorporeaRequestEvent(CorporeaRequestMatcher matcher, int itemCount, CorporeaSpark spark, boolean dryRun) {
+		// 26.1: EVENT_BUS.post returns the event, not a boolean
+		var evt = new CorporeaRequestEvent(matcher, itemCount, spark, dryRun);
+		NeoForge.EVENT_BUS.post(evt);
+		return !evt.isCanceled();
+	}
+
+	@Override
+	public boolean fireCorporeaIndexRequestEvent(ServerPlayer player, CorporeaRequestMatcher request, int count, CorporeaSpark spark) {
+		var evt = new CorporeaIndexRequestEvent(player, request, count, spark);
+		NeoForge.EVENT_BUS.post(evt);
+		return !evt.isCanceled();
+	}
+
+	@Override
+	public void fireManaItemEvent(Player player, List<ItemStack> toReturn) {
+		NeoForge.EVENT_BUS.post(new ManaItemsEvent(player, toReturn));
+	}
+
+	@Override
+	public float fireManaDiscountEvent(Player player, float discount, ItemStack tool) {
+		var evt = new ManaDiscountEvent(player, discount, tool);
+		NeoForge.EVENT_BUS.post(evt);
+		return evt.getDiscount();
+	}
+
+	@Override
+	public boolean fireManaProficiencyEvent(Player player, ItemStack tool, boolean proficient) {
+		var evt = new ManaProficiencyEvent(player, tool, proficient);
+		NeoForge.EVENT_BUS.post(evt);
+		return evt.isProficient();
+	}
+
+	@Override
+	public void fireElvenPortalUpdateEvent(BlockEntity portal, AABB bounds, boolean open, List<ItemStack> stacksInside) {
+		NeoForge.EVENT_BUS.post(new ElvenPortalUpdateEvent(portal, bounds, open, stacksInside));
+	}
+
+	@Override
+	public void fireManaNetworkEvent(ManaReceiver thing, ManaBlockType type, ManaNetworkAction action) {
+		NeoForge.EVENT_BUS.post(new ManaNetworkEvent(thing, type, action));
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public Packet<ClientGamePacketListener> toVanillaClientboundPacket(BotaniaPacket packet) {
+		return (Packet<ClientGamePacketListener>) (Packet<?>) new ClientboundCustomPayloadPacket(
+				NeoForgePacketHandler.wrap(packet));
+	}
+
+	@Override
+	public void sendToPlayer(Player player, BotaniaPacket packet) {
+		if (!player.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
+			PacketDistributor.sendToPlayer(serverPlayer, NeoForgePacketHandler.wrap(packet));
+		}
+	}
+
+	@Override
+	public void sendToNear(Level level, BlockPos pos, BotaniaPacket packet) {
+		if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
+			PacketDistributor.sendToPlayersNear(serverLevel, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 64,
+					NeoForgePacketHandler.wrap(packet));
+		}
+	}
+
+	@Override
+	public void sendToTracking(Entity e, BotaniaPacket packet) {
+		if (!e.level().isClientSide()) {
+			PacketDistributor.sendToPlayersTrackingEntityAndSelf(e, NeoForgePacketHandler.wrap(packet));
+		}
+	}
+
+	@Override
+	public boolean isSpecialFlowerBlock(Block b) {
+		return b instanceof NeoForgeSpecialFlowerBlock;
+	}
+
+	@Override
+	public FlowerBlock createSpecialFlowerBlock(Holder<MobEffect> effect, int effectDuration,
+			BlockBehaviour.Properties props,
+			Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> beType,
+			boolean hasComparatorOutput) {
+		return new NeoForgeSpecialFlowerBlock(effect, effectDuration, props, beType, hasComparatorOutput);
+	}
+
+	@Override
+	public <T extends BlockEntity> BlockEntityType<T> createBlockEntityType(BiFunction<BlockPos, BlockState, T> func, Block... blocks) {
+		return new BlockEntityType<>(func::apply, blocks);
+	}
+
+	@Override
+	public void registerReloadListener(PackType type, Identifier id, PreparableReloadListener listener) {
+		switch (type) {
+			case CLIENT_RESOURCES -> NeoForge.EVENT_BUS.addListener(
+					(AddClientReloadListenersEvent e) -> e.addListener(id, listener));
+			case SERVER_DATA -> NeoForge.EVENT_BUS.addListener(
+					(AddServerReloadListenersEvent e) -> e.addListener(id, listener));
+		}
+	}
+
+	@Override
+	public Item.Properties defaultItemBuilder() {
+		return new Item.Properties();
+	}
+
+	@Override
+	public Item.Properties noRepairOnForge(Item.Properties builder) {
+		return builder.setNoCombineRepair();
+	}
+
+	@Override
+	public <T extends AbstractContainerMenu> MenuType<T> createMenuType(TriFunction<Integer, Inventory, FriendlyByteBuf, T> constructor) {
+		return IMenuTypeExtension.create((id, inv, buf) -> constructor.apply(id, inv, buf));
+	}
+
+	@Nullable
+	@Override
+	public EquipmentHandler tryCreateEquipmentHandler() {
+		if (XplatAbstractions.INSTANCE.isModLoaded("curios")) {
+			CurioIntegration.init();
+			return new CurioIntegration();
+		}
+		return null;
+	}
+
+	@Override
+	public void openMenu(ServerPlayer player, MenuProvider menu, Consumer<FriendlyByteBuf> writeInitialData) {
+		player.openMenu(menu, buf -> writeInitialData.accept(buf));
+	}
+
+	@Override
+	public Holder<Attribute> getReachDistanceAttribute() {
+		return net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE;
+	}
+
+	@Override
+	public Holder<Attribute> getStepHeightAttribute() {
+		return net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT;
+	}
+
+	@Override
+	public TagKey<Block> getOreTag() {
+		return Tags.Blocks.ORES;
+	}
+
+	@Override
+	public boolean isInGlassTag(BlockState state) {
+		return state.is(Tags.Blocks.GLASS_BLOCKS) || state.is(Tags.Blocks.GLASS_PANES);
+	}
+
+	@Override
+	public boolean canFurnaceBurn(AbstractFurnaceBlockEntity furnace, @Nullable Recipe<?> recipe, NonNullList<ItemStack> items, int maxStackSize) {
+		// 26.1: vanilla's canBurn is a static output-capacity check; the recipe assembly moved to the caller
+		if (recipe == null || furnace.getLevel() == null) {
+			return false;
+		}
+		@SuppressWarnings({"unchecked", "rawtypes"})
+			ItemStack result = ((Recipe) recipe).assemble(new SingleRecipeInput(furnace.getItem(0)));
+		return !result.isEmpty()
+				&& AbstractFurnaceBlockEntityNeoForgeAccessor.callCanBurn(items, maxStackSize, result);
+	}
+
+	@Override
+	public Fluid getBucketFluid(BucketItem item) {
+		return item.getContent();
+	}
+
+	@Override
+	public int getSmeltingBurnTime(ItemStack stack) {
+		// 26.1: MinecraftServer has no static accessor anymore
+		var server = ServerLifecycleHooks.getCurrentServer();
+		return server == null ? 0 : server.fuelValues().burnDuration(stack);
+	}
+
+	@Override
+	public boolean preventsRemoteMovement(ItemEntity entity) {
+		return entity.getPersistentData().getBooleanOr("PreventRemoteMovement", false);
+	}
+
+	public static final Map<Block, Block> CUSTOM_STRIPPABLES = new HashMap<>();
+
+	@Override
+	public void addAxeStripping(Block input, Block output) {
+		CUSTOM_STRIPPABLES.put(input, output);
+	}
+
+	@SuppressWarnings("removal")
+	@Override
+	public int transferEnergyToNeighbors(Level level, BlockPos pos, int energy) {
+		for (Direction e : Direction.values()) {
+			BlockPos neighbor = pos.relative(e);
+			if (!level.hasChunkAt(neighbor)) {
+				continue;
+			}
+
+			BlockEntity be = level.getBlockEntity(neighbor);
+			if (be == null) {
+				continue;
+			}
+
+			var handler = Capabilities.Energy.BLOCK.getCapability(level, neighbor, be.getBlockState(), be, e.getOpposite());
+			if (handler == null) {
+				handler = Capabilities.Energy.BLOCK.getCapability(level, neighbor, be.getBlockState(), be, null);
+			}
+
+			if (handler != null) {
+				energy -= IEnergyStorage.of(handler).receiveEnergy(energy, false);
+
+				if (energy <= 0) {
+					return 0;
+				}
+			}
+		}
+		return energy;
+	}
+
+	@Nullable
+	@Override
+	public FoodProperties getFoodProperties(ItemStack stack) {
+		return stack.get(DataComponents.FOOD);
+	}
+
+	@Override
+	public boolean canToolLightFire(ItemStack stack) {
+		return stack.is(Items.FLINT_AND_STEEL) || stack.getItem().canPerformAction(stack, ItemAbilities.FIRESTARTER_LIGHT);
+	}
+
+	@Override
+	public boolean isRedStringContainerTarget(BlockEntity be) {
+		var level = be.getLevel();
+		if (level == null) {
+			return false;
+		}
+		for (Direction dir : Direction.values()) {
+			if (Capabilities.Item.BLOCK.getCapability(level, be.getBlockPos(), be.getBlockState(), be, dir) != null) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public RedStringContainerBlockEntity newRedStringContainer(BlockPos pos, BlockState state) {
+		return new RedStringContainerBlockEntity(pos, state);
+	}
+
+	@Override
+	public BlockSetType registerBlockSetType(String name, boolean canOpenByHand, SoundType soundType, SoundEvent doorClose, SoundEvent doorOpen, SoundEvent trapdoorClose, SoundEvent trapdoorOpen, SoundEvent pressurePlateClickOff, SoundEvent pressurePlateClickOn, SoundEvent buttonClickOff, SoundEvent buttonClickOn) {
+		// 26.1: BlockSetType is a record with extra wind-charge/button-arrow/sensitivity params;
+		// Botania's wood-like sets use vanilla wooden defaults (true, true, EVERYTHING)
+		return BlockSetType.register(new BlockSetType("botania:" + name, canOpenByHand, true, true,
+				BlockSetType.PressurePlateSensitivity.EVERYTHING, soundType, doorClose, doorOpen, trapdoorClose,
+				trapdoorOpen, pressurePlateClickOff, pressurePlateClickOn, buttonClickOff, buttonClickOn));
+	}
+
+	@Override
+	public WoodType registerWoodType(String name, BlockSetType setType, SoundType soundType, SoundType hangingSignSoundType, SoundEvent fenceGateClose, SoundEvent fenceGateOpen) {
+		return WoodType.register(new WoodType("botania:" + name, setType, soundType, hangingSignSoundType, fenceGateClose, fenceGateOpen));
+	}
+
+	@Override
+	public boolean isRunningCategory(BotaniaSpeedrunCategory category) {
+		return false;
+	}
+
+	@Override
+	public void completeSpeedrunTimer() {
+		throw new IllegalStateException("Attempted to complete a speedruntimer when speedrunIGT is not installed.");
+	}
+}

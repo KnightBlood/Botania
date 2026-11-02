@@ -1,0 +1,196 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'net.neoforged.moddev' version "${neo_moddev_version}"
+}
+
+version = "${minecraft_version}-${build_number}-NEOFORGE"
+if (System.getenv().RELEASE_MODE != "1") {
+    version += '-SNAPSHOT'
+}
+
+// Mixin configs are registered via neoforge.mods.toml [[mixins]] section
+
+// Resolve outside the neoForge DSL: `project(...)` is intercepted inside it.
+def xplatGeneratedDir = project(':Xplat').file('src/generated/resources')
+def xplatMainDir = project(':Xplat').file('src/main/resources')
+
+repositories {
+    maven {
+        name = "Jared"
+        url = "https://maven.blamejared.com/"
+    }
+    maven {
+        name = "C4"
+        url = "https://maven.theillusivec4.top/"
+    }
+    maven {
+        name = "Sleeping Town"
+        url = "https://repo.sleeping.town/" // for emi and ears
+        content {
+            includeGroup("com.unascribed")
+            includeGroup("dev.emi")
+        }
+    }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven" // for Sodium ports
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+neoForge {
+    version = neo_version
+    accessTransformers = [project(":Xplat").file('src/main/resources/META-INF/accesstransformer.cfg')]
+
+    if (parchment_version != 'none') {
+        parchment {
+            minecraftVersion = parchment_minecraft_version
+            mappingsVersion = parchment_version
+        }
+    }
+
+    runs {
+        client {
+            client()
+            systemProperty('forge.logging.console.level', 'debug')
+        }
+
+        server {
+            server()
+            systemProperty('forge.logging.console.level', 'debug')
+        }
+
+        // MDG 26.1: the old `data()` run type is gone; server-side datagen is now serverData()
+        serverData {
+            serverData()
+            programArguments.addAll "-mixin.config=botania_xplat.mixins.json", "-mixin.config=botania_neoforge.mixins.json"
+            programArguments.addAll '--mod', 'botania', '--all'
+            programArguments.addAll '--flat'
+            programArguments.addAll '--output', file('src/generated/resources/').getAbsolutePath()
+            programArguments.addAll '--existing', file('src/main/resources/').getAbsolutePath()
+            programArguments.addAll '--existing', xplatGeneratedDir.getAbsolutePath()
+            programArguments.addAll '--existing', xplatMainDir.getAbsolutePath()
+        }
+
+        configureEach {
+            gameDirectory = file('../run/')
+            systemProperty('fml.earlyprogresswindow', 'false')
+        }
+    }
+
+    mods {
+        botania {
+            sourceSet sourceSets.main
+            sourceSet project(":Xplat").sourceSets.main
+        }
+    }
+}
+
+dependencies {
+    compileOnly project(":Xplat")
+    // NeoForge 26.1 is unobfuscated - no mixin refmap / annotation processor needed
+
+    implementation("vazkii.patchouli:patchouli-neoforge:${patchouli_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    // Explicit downgrade: JEI 29.2.0.21 (latest of the 26.1 line) hard-requires neoforge >= 26.1.0.8-beta,
+    // but this port is pinned to 26.1.0.1-beta. Keep JEI out of the runtime until we upgrade NeoForge.
+    // runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+
+    // EMI unofficial port (curseforge 1544558, no maven) - local jar, mojmap neoforge build
+    compileOnlyApi(rootProject.files("libs/emi-1.1.24+26.1.2+neoforge.jar"))
+    //runtimeOnly("dev.emi:emi-neoforge:${emi_version}")
+
+    compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
+    runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")
+
+    // compileOnly('com.blamejared.crafttweaker:CraftTweaker-forge-1.18.2:9.1.123')
+
+    compileOnly('com.unascribed:ears-api:1.4.5')
+
+    compileOnly('maven.modrinth:rubidium:0.7.0') { transitive = false }
+
+    compileOnly "org.jetbrains:annotations:24.0.1"
+}
+
+compileJava {
+    source(project(":Xplat").sourceSets.main.allSource)
+    // -this-escape: standard modding pattern (registering callbacks / default states
+    // from constructors) triggers this lint everywhere; suppressed project-wide.
+    options.compilerArgs << "-Xlint:all,-classfile,-processing,-deprecation,-serial,-this-escape" << "-Werror"
+}
+
+sourcesJar {
+    from project(":Xplat").sourceSets.main.allJava
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    exclude 'assets/botania/patchouli_books/lexicon/en_us/README'
+}
+
+processResources {
+    // The Forge-specific datagen outputs include the botania:* tags (inherited Xplat providers
+    // share one builders map), which Xplat's own generated resources also contain with the same
+    // content; take either copy instead of failing the build.
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from project(":Xplat").sourceSets.main.resources
+    inputs.property "version", project.version
+
+    filesMatching("neoforge.mods.toml") {
+        expand "version": project.version
+    }
+
+    from '../contributors.properties'
+    // Exclude datagenerator .cache directory
+    exclude '.cache'
+}
+jar {
+    manifest {
+        attributes([
+                "Specification-Title": "${mod_name}",
+                "Specification-Vendor": "vazkii",
+                "Specification-Version": "1", // We are version 1 of ourselves
+                "Implementation-Title": "${mod_name}",
+                "Implementation-Version": "${archiveVersion.get()}",
+                "Implementation-Vendor" :"vazkii",
+                "MixinConfigs": "botania_xplat.mixins.json,botania_neoforge.mixins.json"
+        ])
+    }
+}
+
+task apiJar(type: Jar, dependsOn: classes) {
+    // Sources included because of ForgeGradle#369
+    from project(":Xplat").sourceSets.main.allJava
+    from(sourceSets.main.allJava)
+    from(sourceSets.main.output)
+
+    include 'vazkii/botania/api/**'
+
+    archiveClassifier = 'api'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId project.group
+            artifactId project.base.archivesName.get()
+            version project.version
+            artifact jar
+            artifact sourcesJar
+            artifact apiJar
+            pom.withXml {
+                def node = asNode()
+                if(node.dependencies.size() > 0)
+                    node.remove(node.dependencies) // Remove deps, as they are all mappings-dependent and/or forge
+            }
+        }
+    }
+    repositories {
+        maven {
+            url "file://" + System.getenv("local_maven")
+        }
+    }
+}

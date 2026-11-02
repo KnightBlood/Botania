@@ -21,7 +21,7 @@ jobs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           ./.gradle/loom-cache/remapped-mods
-          ./Forge/build/moddev
+          ./NeoForge/build/moddev
           ./Xplat/build/moddev
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/build.gradle', './gradle.properties', './settings.gradle', '**/gradle-wrapper.properties') }}
     - name: Check lang files
@@ -33,7 +33,7 @@ jobs:
         SNAPSHOT_SUFFIX=${{ !startsWith(github.ref, 'refs/tags/release-') && '-SNAPSHOT' || '' }}
         MC=$(awk -F '=' '/minecraft_version/ { print $2; }' gradle.properties)
         BUILD=$(awk -F '=' '/build_number/ { print $2; }' gradle.properties)
-        echo "forge=Forge/build/libs/Botania-${MC}-${BUILD}-FORGE${SNAPSHOT_SUFFIX}.jar" >> "$GITHUB_OUTPUT"
+        echo "neoforge=NeoForge/build/libs/Botania-${MC}-${BUILD}-NEOFORGE${SNAPSHOT_SUFFIX}.jar" >> "$GITHUB_OUTPUT"
         echo "fabric=Fabric/build/libs/Botania-${MC}-${BUILD}-FABRIC${SNAPSHOT_SUFFIX}.jar" >> "$GITHUB_OUTPUT"
         
         GOG_VER=$(awk -F '=' '/VERSION/ { print $2; }' garden_of_glass/Makefile)
@@ -69,7 +69,7 @@ jobs:
       run: |
         echo "${SIGNING_KEY}" | gpg --import -
         gpg --local-user "Violet Moon Signing Key" --armor \
-          --detach-sign ${{ steps.calculate_artifact_names.outputs.forge }}
+          --detach-sign ${{ steps.calculate_artifact_names.outputs.neoforge }}
         gpg --local-user "Violet Moon Signing Key" --armor \
           --detach-sign ${{ steps.calculate_artifact_names.outputs.fabric }}
         gpg --local-user "Violet Moon Signing Key" --armor \
@@ -86,8 +86,8 @@ jobs:
       with:
         name: Forge
         path: |
-          ${{ steps.calculate_artifact_names.outputs.forge }}
-          ${{ steps.calculate_artifact_names.outputs.forge }}.asc
+          ${{ steps.calculate_artifact_names.outputs.neoforge }}
+          ${{ steps.calculate_artifact_names.outputs.neoforge }}.asc
     - name: Archive GoG Artifacts
       uses: actions/upload-artifact@v7
       with:
@@ -101,7 +101,7 @@ jobs:
         GH_TOKEN: ${{ github.token }}
         GIT_REF: ${{ github.ref }}
         FABRIC_JAR: ${{ steps.calculate_artifact_names.outputs.fabric }}
-        FORGE_JAR: ${{ steps.calculate_artifact_names.outputs.forge }}
+        NEOFORGE_JAR: ${{ steps.calculate_artifact_names.outputs.neoforge }}
         GOG_JAR: ${{ steps.calculate_artifact_names.outputs.gog }}
         CURSEFORGE_TOKEN: ${{ secrets.VAZKII_CURSEFORGE_TOKEN }}
         MODRINTH_TOKEN: ${{ secrets.VAZKII_MODRINTH_TOKEN }}

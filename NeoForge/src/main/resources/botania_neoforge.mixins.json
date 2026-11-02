@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_25",
+  "package": "vazkii.botania.neoforge.mixin",
+  "mixins": [
+    "AbstractFurnaceBlockEntityNeoForgeAccessor",
+    "HoeItemNeoForgeAccessor",
+    "ShovelItemNeoForgeAccessor",
+    "BuiltInRegistriesNeoForgeAccessor"
+  ],
+  "client": [
+    "client.ModelBakeryNeoForgeAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

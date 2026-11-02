@@ -29,7 +29,7 @@ import vazkii.botania.common.item.equipment.bauble.BenevolentGoddessCharmItem;
 /**
  * 26.1: {@code Explosion} became an interface and the old {@code toBlow}/{@code clearToBlow}
  * machinery is gone; the concrete implementation is {@link ServerExplosion}. Mirrors the
- * NeoForge-side {@code ExplosionEvent.Detonate} handling in ForgeCommonInitializer: right after
+ * NeoForge-side {@code ExplosionEvent.Detonate} handling in NeoForgeCommonInitializer: right after
  * entity damage is dealt, clear the affected-blocks list so neither block destruction nor fire
  * is applied (matches the 1.20.1 {@code clearToBlow} semantics, and keeps the mana cost at one
  * check per explosion).

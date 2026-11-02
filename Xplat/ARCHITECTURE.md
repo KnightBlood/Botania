@@ -15,9 +15,9 @@ The build system for the Xplat submodule works in a somewhat special manner.
 There's two scenarios:
 
 ### Part of loader-specific build
-When the Forge or Fabric specific artifacts are being built, the `Xplat`
+When the NeoForge or Fabric specific artifacts are being built, the `Xplat`
 module's sources are substituted into the project, as if the contents of
-`Xplat/src` are pasted into `Forge/src` or `Fabric/src`. From the perspective of
+`Xplat/src` are pasted into `NeoForge/src` or `Fabric/src`. From the perspective of
 players or modders consuming a specific loader's artifacts, it should be
 indistinguishable from having two separate branches. Xplat code that ends up in
 the loader-specific artifact JARs are remapped to Intermediary/SRG like any

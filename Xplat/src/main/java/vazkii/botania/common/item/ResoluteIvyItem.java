@@ -55,7 +55,7 @@ public class ResoluteIvyItem extends Item {
 	public static void onPlayerRespawn(Player oldPlayer, Player newPlayer, boolean alive) {
 		if (!alive) {
 			// At this point, the Forge capabilities have been invalidated and are no longer
-			// accessible unless we do a hacky reviveCaps() call, see ForgeXplatImpl for details.
+			// accessible unless we do a hacky reviveCaps() call, see NeoForgeXplatImpl for details.
 			KeptItemsComponent keeps = XplatAbstractions.INSTANCE.keptItemsComponent(oldPlayer, true);
 
 			for (ItemStack stack : keeps.getStacks()) {

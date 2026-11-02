@@ -304,7 +304,7 @@ def do_format(root_data, obj, *names):
 resource_dir_bases = {
     "botania": [
         "../../generated/resources",
-        "../../../../Forge/src/generated/resources",
+        "../../../../NeoForge/src/generated/resources",
     ],
     "gardenofglass": ["../../../../garden_of_glass"],
 }

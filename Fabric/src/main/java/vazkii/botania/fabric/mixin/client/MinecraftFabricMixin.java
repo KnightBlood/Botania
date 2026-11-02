@@ -32,7 +32,7 @@ public abstract class MinecraftFabricMixin {
 	 * 26.1: {@code runTick} no longer calls {@code GameRenderer.render}; rendering moved to
 	 * {@code renderFrame}, and {@code getFrameTime}/{@code pausePartialTick} are gone — the
 	 * per-frame partial tick now comes from the {@code DeltaTracker}. Matches the NeoForge-side
-	 * {@code RenderFrameEvent.Post} handling in ForgeClientInitializer.
+	 * {@code RenderFrameEvent.Post} handling in NeoForgeClientInitializer.
 	 */
 	@Inject(method = "renderFrame", at = @At("HEAD"))
 	private void onFrameStart(boolean renderLevel, CallbackInfo ci) {
