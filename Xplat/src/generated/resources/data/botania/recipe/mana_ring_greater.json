@@ -1,0 +1,11 @@
+{
+  "type": "botania:mana_upgrade_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#botania:terrasteel_ingots",
+    "botania:mana_ring"
+  ],
+  "result": {
+    "id": "botania:mana_ring_greater"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "group": "botania:117_stone_cycle",
+  "input": "minecraft:calcite",
+  "mana": 200,
+  "output": {
+    "count": 1,
+    "id": "minecraft:deepslate"
+  }
+}

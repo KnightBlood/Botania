@@ -15,11 +15,10 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,8 +31,8 @@ import vazkii.botania.client.model.BotaniaModelLayers;
 import vazkii.botania.common.block.block_entity.corporea.CorporeaIndexBlockEntity;
 import vazkii.botania.common.helper.VecHelper;
 
-public class CorporeaIndexBlockEntityRenderer implements BlockEntityRenderer<CorporeaIndexBlockEntity> {
-	private static final RenderType LAYER = RenderType.entityCutoutNoCull(new ResourceLocation(ResourcesLib.MODEL_CORPOREA_INDEX));
+public class CorporeaIndexBlockEntityRenderer extends BotaniaBlockEntityRenderer<CorporeaIndexBlockEntity> {
+	private static final RenderType LAYER = RenderTypes.entityCutout(Identifier.parse(ResourcesLib.MODEL_CORPOREA_INDEX));
 	private static final float ANGLE = (float) Math.sin(Math.toRadians(45));
 	private final ModelPart ring;
 	private final ModelPart cube;
@@ -57,12 +56,12 @@ public class CorporeaIndexBlockEntityRenderer implements BlockEntityRenderer<Cor
 	}
 
 	@Override
-	public boolean shouldRenderOffScreen(@NotNull CorporeaIndexBlockEntity blockEntity) {
+	public boolean shouldRenderOffScreen() {
 		return true;
 	}
 
 	@Override
-	public void render(@Nullable CorporeaIndexBlockEntity index, float partialTicks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@Nullable CorporeaIndexBlockEntity index, float partialTicks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		ms.pushPose();
 		ms.translate(0.5, 0, 0.5);
 
@@ -122,3 +121,4 @@ public class CorporeaIndexBlockEntityRenderer implements BlockEntityRenderer<Cor
 	}
 
 }
+

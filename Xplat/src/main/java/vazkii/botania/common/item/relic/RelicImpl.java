@@ -2,7 +2,7 @@ package vazkii.botania.common.item.relic;
 
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
@@ -17,17 +17,17 @@ import vazkii.botania.common.advancements.RelicBindTrigger;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.xplat.XplatAbstractions;
 
-import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class RelicImpl implements Relic {
 	private static final String TAG_SOULBIND_UUID = "soulbindUUID";
 
 	private final ItemStack stack;
 	@Nullable
-	private final ResourceLocation advancementId;
+	private final Identifier advancementId;
 
-	public RelicImpl(ItemStack stack, @Nullable ResourceLocation advancementId) {
+	public RelicImpl(ItemStack stack, @Nullable Identifier advancementId) {
 		this.stack = stack;
 		this.advancementId = advancementId;
 	}
@@ -53,7 +53,7 @@ public class RelicImpl implements Relic {
 
 	@Nullable
 	@Override
-	public ResourceLocation getAdvancement() {
+	public Identifier getAdvancement() {
 		return advancementId;
 	}
 
@@ -82,19 +82,19 @@ public class RelicImpl implements Relic {
 		return BotaniaDamageTypes.Sources.relicDamage(registryAccess);
 	}
 
-	public static void addDefaultTooltip(ItemStack stack, List<Component> tooltip) {
+	public static void addDefaultTooltip(ItemStack stack, Consumer<Component> tooltip) {
 		var relic = XplatAbstractions.INSTANCE.findRelic(stack);
 		if (relic == null) {
 			return;
 		}
 		if (relic.getSoulbindUUID() == null) {
-			tooltip.add(Component.translatable("botaniamisc.relicUnbound"));
+			tooltip.accept(Component.translatable("botaniamisc.relicUnbound"));
 		} else {
 			var player = ClientProxy.INSTANCE.getClientPlayer();
 			if (player == null || !relic.isRightPlayer(player)) {
-				tooltip.add(Component.translatable("botaniamisc.notYourSagittarius"));
+				tooltip.accept(Component.translatable("botaniamisc.notYourSagittarius"));
 			} else {
-				tooltip.add(Component.translatable("botaniamisc.relicSoulbound", player.getName()));
+				tooltip.accept(Component.translatable("botaniamisc.relicSoulbound", player.getName()));
 			}
 		}
 	}

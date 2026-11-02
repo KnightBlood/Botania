@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "E": "botania:ender_air_bottle",
+    "F": "minecraft:feather",
+    "I": "#botania:elementium_ingots",
+    "L": "botania:life_essence"
+  },
+  "pattern": [
+    "LLL",
+    "ILI",
+    "FEF"
+  ],
+  "result": {
+    "id": "botania:flight_tiara"
+  }
+}

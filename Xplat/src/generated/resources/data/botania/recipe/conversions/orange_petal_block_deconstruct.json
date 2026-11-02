@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:petal_block_deconstruct",
+  "ingredients": [
+    "botania:orange_petal_block"
+  ],
+  "result": {
+    "count": 9,
+    "id": "botania:orange_petal"
+  }
+}

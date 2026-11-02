@@ -52,6 +52,7 @@ public interface FloatingFlower {
 		 * 
 		 * @param name The name of this floating flower island type
 		 */
+		@SuppressWarnings("this-escape")
 		public IslandType(String name) {
 			typeName = name;
 			synchronized (registry) {

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "botania:spark",
+    "botania:pixie_dust",
+    "botania:ender_air_bottle"
+  ],
+  "result": {
+    "count": 4,
+    "id": "botania:corporea_spark"
+  }
+}

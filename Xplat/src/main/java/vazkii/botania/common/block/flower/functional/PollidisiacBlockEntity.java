@@ -9,7 +9,7 @@
 package vazkii.botania.common.block.flower.functional;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,16 +17,19 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityEvent;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.MushroomCow;
+import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.SuspiciousEffectHolder;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,7 +62,7 @@ public class PollidisiacBlockEntity extends FunctionalFlowerBlockEntity implemen
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (!getLevel().isClientSide && getMana() >= MANA_COST) {
+		if (!getLevel().isClientSide() && getMana() >= MANA_COST) {
 			List<ItemEntity> items = getItems();
 			if (!items.isEmpty()) {
 				List<Animal> animals = getAnimals();
@@ -111,7 +114,7 @@ public class PollidisiacBlockEntity extends FunctionalFlowerBlockEntity implemen
 						animal.ageUp(AgeableMob.getSpeedUpSecondsWhenFeeding(-animal.getAge()), true);
 					} else {
 						animal.setInLoveTime(1200);
-						((AnimalAccessor) animal).botania_setLoveCause(null);
+						((AnimalAccessor) animal).botania_setLoveCause((EntityReference<ServerPlayer>) null);
 					}
 					getLevel().broadcastEntityEvent(animal, EntityEvent.IN_LOVE_HEARTS);
 					break;
@@ -136,8 +139,7 @@ public class PollidisiacBlockEntity extends FunctionalFlowerBlockEntity implemen
 					did = true;
 
 					MushroomCowAccessor cowAccessor = (MushroomCowAccessor) animal;
-					cowAccessor.setEffect(effect.getSuspiciousEffect());
-					cowAccessor.setEffectDuration(effect.getEffectDuration());
+					cowAccessor.setStewEffects(effect.getSuspiciousEffects());
 					animal.playSound(SoundEvents.MOOSHROOM_EAT, 2.0F, 1.0F);
 					break;
 				}
@@ -158,9 +160,9 @@ public class PollidisiacBlockEntity extends FunctionalFlowerBlockEntity implemen
 	}
 
 	private static boolean isBrownMooshroomWithoutEffect(Animal animal) {
-		if (animal instanceof MushroomCow mushroomCow && mushroomCow.getVariant() == MushroomCow.MushroomType.BROWN) {
+		if (animal instanceof MushroomCow mushroomCow && mushroomCow.getVariant() == MushroomCow.Variant.BROWN) {
 			MushroomCowAccessor cowAccessor = (MushroomCowAccessor) animal;
-			return cowAccessor.getEffect() == null;
+			return cowAccessor.getStewEffects() == null || cowAccessor.getStewEffects().effects().isEmpty();
 		}
 		return false;
 	}
@@ -205,7 +207,7 @@ public class PollidisiacBlockEntity extends FunctionalFlowerBlockEntity implemen
 	@Override
 	public void readFromPacketNBT(CompoundTag cmp) {
 		super.readFromPacketNBT(cmp);
-		this.mode = Mode.forName(cmp.getString(TAG_FEEDING_MODE));
+		this.mode = Mode.forName(cmp.getStringOr(TAG_FEEDING_MODE, ""));
 	}
 
 	@Override
@@ -261,7 +263,7 @@ public class PollidisiacBlockEntity extends FunctionalFlowerBlockEntity implemen
 		}
 
 		@Override
-		public void renderHUD(GuiGraphics gui, Minecraft mc) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc) {
 			String filter = I18n.get("botaniamisc.pollidisiac." + flower.getMode().getSerializedName());
 			int filterWidth = mc.font.width(filter);
 			int filterTextStart = (mc.getWindow().getGuiScaledWidth() - filterWidth) / 2;
@@ -269,7 +271,7 @@ public class PollidisiacBlockEntity extends FunctionalFlowerBlockEntity implemen
 			int centerY = mc.getWindow().getGuiScaledHeight() / 2;
 
 			super.renderHUD(gui, mc, halfMinWidth, halfMinWidth, 40);
-			gui.drawString(mc.font, filter, filterTextStart, centerY + 30, flower.getColor());
+			gui.text(mc.font, filter, filterTextStart, centerY + 30, flower.getColor());
 		}
 	}
 }

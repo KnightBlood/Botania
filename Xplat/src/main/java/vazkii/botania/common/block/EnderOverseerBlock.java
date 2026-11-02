@@ -31,6 +31,7 @@ import vazkii.botania.common.block.block_entity.EnderOverseerBlockEntity;
 
 public class EnderOverseerBlock extends BotaniaBlock implements EntityBlock {
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	protected EnderOverseerBlock(Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.POWERED, false));
@@ -60,7 +61,7 @@ public class EnderOverseerBlock extends BotaniaBlock implements EntityBlock {
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			return createTickerHelper(type, BotaniaBlockEntities.ENDER_EYE, EnderOverseerBlockEntity::serverTick);
 		}
 		return null;

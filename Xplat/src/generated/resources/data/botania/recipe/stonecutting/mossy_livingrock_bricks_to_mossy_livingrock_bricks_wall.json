@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:mossy_livingrock_bricks",
+  "result": {
+    "id": "botania:mossy_livingrock_bricks_wall"
+  }
+}

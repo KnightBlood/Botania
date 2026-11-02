@@ -11,10 +11,8 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
@@ -28,9 +26,9 @@ import vazkii.botania.common.helper.VecHelper;
 
 import java.util.Random;
 
-public class HoveringHourglassBlockEntityRenderer implements BlockEntityRenderer<HoveringHourglassBlockEntity> {
+public class HoveringHourglassBlockEntityRenderer extends BotaniaBlockEntityRenderer<HoveringHourglassBlockEntity> {
 
-	final ResourceLocation texture = new ResourceLocation(ResourcesLib.MODEL_HOURGLASS);
+	final Identifier texture = Identifier.parse(ResourcesLib.MODEL_HOURGLASS);
 	private final HourglassModel model;
 
 	public HoveringHourglassBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
@@ -38,7 +36,7 @@ public class HoveringHourglassBlockEntityRenderer implements BlockEntityRenderer
 	}
 
 	@Override
-	public void render(@Nullable HoveringHourglassBlockEntity hourglass, float ticks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@Nullable HoveringHourglassBlockEntity hourglass, float ticks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		ms.pushPose();
 		boolean hasWorld = hourglass != null && hourglass.getLevel() != null;
 		int wtime = !hasWorld ? 0 : ClientTickHandler.ticksInGame;

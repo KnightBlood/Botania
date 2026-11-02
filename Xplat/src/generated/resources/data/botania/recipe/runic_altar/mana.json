@@ -1,0 +1,16 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    "#botania:manasteel_ingots",
+    "#botania:manasteel_ingots",
+    "#botania:manasteel_ingots",
+    "#botania:manasteel_ingots",
+    "#botania:manasteel_ingots",
+    "botania:mana_pearl"
+  ],
+  "mana": 8000,
+  "output": {
+    "count": 1,
+    "id": "botania:rune_mana"
+  }
+}

@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.NotNull;
@@ -41,11 +42,11 @@ public class CraftingPatternItem extends Item {
 		if (state.is(BotaniaBlocks.craftCrate)) {
 			if (pattern != state.getValue(BotaniaStateProperties.CRATE_PATTERN)) {
 				world.setBlockAndUpdate(pos, state.setValue(BotaniaStateProperties.CRATE_PATTERN, this.pattern));
-				if (!world.isClientSide) {
+				if (!world.isClientSide()) {
 					world.getBlockEntity(pos, BotaniaBlockEntities.CRAFT_CRATE)
 							.ifPresent(CraftyCrateBlockEntity::ejectLocked);
 				}
-				return InteractionResult.sidedSuccess(world.isClientSide());
+				return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 			}
 		}
 

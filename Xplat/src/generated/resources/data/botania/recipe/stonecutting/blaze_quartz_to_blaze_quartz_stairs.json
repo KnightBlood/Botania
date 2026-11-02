@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:blaze_quartz",
+  "result": {
+    "id": "botania:blaze_quartz_stairs"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "D": "#botania:mana_diamond_gems",
+    "W": "#botania:livingwood_logs"
+  },
+  "pattern": [
+    " W ",
+    "WDW",
+    "W W"
+  ],
+  "result": {
+    "id": "botania:avatar"
+  }
+}

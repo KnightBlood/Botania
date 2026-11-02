@@ -14,11 +14,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +38,7 @@ import vazkii.botania.common.item.equipment.tool.ToolCommons;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-public class ManasteelPickaxeItem extends PickaxeItem implements CustomDamageItem, SortableTool {
+public class ManasteelPickaxeItem extends Item implements CustomDamageItem, SortableTool {
 
 	private static final Pattern TORCH_PATTERN = Pattern.compile("(?:(?:(?:[A-Z-_.:]|^)torch)|(?:(?:[a-z-_.:]|^)Torch))(?:[A-Z-_.:]|$)");
 
@@ -46,12 +50,12 @@ public class ManasteelPickaxeItem extends PickaxeItem implements CustomDamageIte
 		this(BotaniaAPI.instance().getManasteelItemTier(), props, -2.8F);
 	}
 
-	public ManasteelPickaxeItem(Tier mat, Properties props, float attackSpeed) {
-		super(mat, 1, attackSpeed, props);
+	public ManasteelPickaxeItem(ToolMaterial mat, Properties props, float attackSpeed) {
+		super(props.pickaxe(mat, 1.0F, attackSpeed));
 	}
 
 	@Override
-	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken) {
+	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<Item> onBroken) {
 		int manaPerDamage = ((ManasteelPickaxeItem) stack.getItem()).getManaPerDamage();
 		return ToolCommons.damageItemIfPossible(stack, amount, entity, manaPerDamage);
 	}
@@ -72,10 +76,10 @@ public class ManasteelPickaxeItem extends PickaxeItem implements CustomDamageIte
 					ItemStack displayStack = stackAt.copy();
 					InteractionResult did = PlayerHelper.substituteUse(ctx, stackAt);
 					if (did.consumesAction()) {
-						if (!ctx.getLevel().isClientSide) {
+						if (!ctx.getLevel().isClientSide()) {
 							ItemsRemainingRenderHandler.send(player, displayStack, TORCH_PATTERN);
 						}
-						player.getCooldowns().addCooldown(this, TIME);
+						player.getCooldowns().addCooldown(displayStack, TIME);
 						return did;
 					}
 				}
@@ -89,8 +93,8 @@ public class ManasteelPickaxeItem extends PickaxeItem implements CustomDamageIte
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
-		if (!world.isClientSide && entity instanceof Player player && stack.getDamageValue() > 0 && ManaItemHandler.instance().requestManaExactForTool(stack, player, MANA_PER_DAMAGE * 2, true)) {
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
+		if (!world.isClientSide() && entity instanceof Player player && stack.getDamageValue() > 0 && ManaItemHandler.instance().requestManaExactForTool(stack, player, MANA_PER_DAMAGE * 2, true)) {
 			stack.setDamageValue(stack.getDamageValue() - 1);
 		}
 	}

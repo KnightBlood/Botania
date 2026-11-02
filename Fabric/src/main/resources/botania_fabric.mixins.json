@@ -12,7 +12,6 @@
     "EnchantmentFabricMixin",
     "EnchantmentMenuFabricMixin",
     "EnderManFabricMixin",
-    "ExplosionFabricMixin",
     "HashCacheFabricMixin",
     "ItemEntityFabricMixin",
     "ItemPredicateFabricMixin",
@@ -23,19 +22,19 @@
     "PowderSnowBlockMixin",
     "RepairItemRecipeFabricMixin",
     "ResultSlotFabricMixin",
+    "ServerExplosionFabricMixin",
     "ServerPlayerContainerListenerFabricMixin",
-    "ServerPlayerGameModeFabricMixin"
+    "ServerPlayerGameModeFabricMixin",
+    "TagsProviderFabricAccessor"
   ],
   "client": [
-    "client.AbstractTextureFabricMixin",
-    "client.BlockModelDeserializerFabricMixin",
     "client.BossHealthOverlayFabricMixin",
     "client.ClientPacketListenerMixin",
-    "client.DebugScreenOverlayFabricMixin",
     "client.GuiGraphicsFabricMixin",
+    "client.ItemModelsAccessor",
     "client.KeyboardHandlerFabricMixin",
     "client.MinecraftFabricMixin",
-    "client.ParticleEngineFabricMixin"
+    "client.ModelManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

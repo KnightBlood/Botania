@@ -39,6 +39,7 @@ public class ManaPumpBlock extends BotaniaWaterloggedBlock implements EntityBloc
 	private static final VoxelShape X_SHAPE = box(0, 0, 4, 16, 8, 12);
 	private static final VoxelShape Z_SHAPE = box(4, 0, 0, 12, 8, 16);
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public ManaPumpBlock(Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
@@ -84,7 +85,7 @@ public class ManaPumpBlock extends BotaniaWaterloggedBlock implements EntityBloc
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos) {
+	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
 		return world.getBlockEntity(pos) instanceof ManaPumpBlockEntity pump ? pump.comparator : 0;
 	}
 

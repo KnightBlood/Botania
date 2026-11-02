@@ -25,6 +25,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import org.jetbrains.annotations.NotNull;
@@ -73,8 +75,8 @@ public class ManaMirrorItem extends Item {
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
-		if (world.isClientSide) {
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
+		if (world.isClientSide()) {
 			return;
 		}
 
@@ -100,11 +102,11 @@ public class ManaMirrorItem extends Item {
 		if (player != null && player.isSecondaryUseActive()) {
 			var receiver = XplatAbstractions.INSTANCE.findManaReceiver(world, ctx.getClickedPos(), null);
 			if (receiver instanceof ManaPool pool) {
-				if (!world.isClientSide) {
+				if (!world.isClientSide()) {
 					bindPool(ctx.getItemInHand(), pool);
 					world.playSound(null, player.getX(), player.getY(), player.getZ(), BotaniaSounds.ding, SoundSource.PLAYERS, 1F, 1F);
 				}
-				return InteractionResult.sidedSuccess(world.isClientSide());
+				return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 			}
 		}
 
@@ -133,13 +135,13 @@ public class ManaMirrorItem extends Item {
 
 	public void bindPool(ItemStack stack, ManaPool pool) {
 		GlobalPos pos = GlobalPos.of(pool.getManaReceiverLevel().dimension(), pool.getManaReceiverPos());
-		Tag ser = GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, pos).get().orThrow();
+		Tag ser = GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, pos).getOrThrow();
 		ItemNBTHelper.set(stack, TAG_POS, ser);
 	}
 
 	@Nullable
 	private static GlobalPos getBoundPos(ItemStack stack) {
-		if (!stack.getOrCreateTag().contains(TAG_POS)) {
+		if (!ItemNBTHelper.verifyExistance(stack, TAG_POS)) {
 			return null;
 		}
 
@@ -300,3 +302,4 @@ public class ManaMirrorItem extends Item {
 	}
 
 }
+

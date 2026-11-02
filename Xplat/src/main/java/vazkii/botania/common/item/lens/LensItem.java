@@ -13,11 +13,16 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.HitResult;
 
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +32,7 @@ import vazkii.botania.api.mana.*;
 import vazkii.botania.common.helper.ColorHelper;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.proxy.Proxy;
 
 import java.util.List;
 
@@ -52,16 +58,19 @@ public class LensItem extends Item implements ControlLensItem, CompositableLensI
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> stacks, TooltipFlag flags) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
 		int storedColor = getStoredColor(stack);
 		if (storedColor != -1) {
 			var colorName = Component.translatable(storedColor == 16 ? "botania.color.rainbow" : "color.minecraft." + DyeColor.byId(storedColor));
-			TextColor realColor = TextColor.fromRgb(getLensColor(stack, world));
-			stacks.add(Component.translatable("botaniamisc.color", colorName).withStyle(s -> s.withColor(realColor)));
+			// 26.1: Item.TooltipContext no longer carries a Level; use the client player's world so rainbow
+			// lenses keep their animated tooltip color (getLensColor handles the null-server-side case).
+			Player player = Proxy.INSTANCE.getClientPlayer();
+			TextColor realColor = TextColor.fromRgb(getLensColor(stack, player != null ? player.level() : null));
+			builder.accept(Component.translatable("botaniamisc.color", colorName).withStyle(s -> s.withColor(realColor)));
 		}
 
 		if (lens instanceof StormLens) {
-			stacks.add(Component.translatable("botaniamisc.creative").withStyle(ChatFormatting.GRAY));
+			builder.accept(Component.translatable("botaniamisc.creative").withStyle(ChatFormatting.GRAY));
 		}
 	}
 
@@ -72,8 +81,8 @@ public class LensItem extends Item implements ControlLensItem, CompositableLensI
 		if (compositeLens.isEmpty()) {
 			return super.getName(stack);
 		}
-		String shortKeyA = stack.getDescriptionId() + ".short";
-		String shortKeyB = compositeLens.getDescriptionId() + ".short";
+		String shortKeyA = stack.getItem().getDescriptionId() + ".short";
+		String shortKeyB = compositeLens.getItem().getDescriptionId() + ".short";
 		return Component.translatable("item.botania.composite_lens", Component.translatable(shortKeyA), Component.translatable(shortKeyB));
 	}
 
@@ -108,7 +117,7 @@ public class LensItem extends Item implements ControlLensItem, CompositableLensI
 	public void updateBurst(ManaBurst burst, ItemStack stack) {
 		int storedColor = getStoredColor(stack);
 
-		if (storedColor == 16 && burst.entity().level().isClientSide) {
+		if (storedColor == 16 && burst.entity().level().isClientSide()) {
 			burst.setColor(getLensColor(stack, burst.entity().level()));
 		}
 
@@ -190,7 +199,7 @@ public class LensItem extends Item implements ControlLensItem, CompositableLensI
 		if (cmp == null) {
 			return ItemStack.EMPTY;
 		} else {
-			return ItemStack.of(cmp);
+			return ItemNBTHelper.deserializeStackNbt(cmp);
 		}
 	}
 
@@ -199,7 +208,7 @@ public class LensItem extends Item implements ControlLensItem, CompositableLensI
 		if (compositeLens.isEmpty()) {
 			ItemNBTHelper.removeEntry(sourceLens, TAG_COMPOSITE_LENS);
 		} else {
-			CompoundTag cmp = compositeLens.save(new CompoundTag());
+			CompoundTag cmp = ItemNBTHelper.serializeStackNbt(compositeLens);
 			ItemNBTHelper.setCompound(sourceLens, TAG_COMPOSITE_LENS, cmp);
 		}
 		return sourceLens;
@@ -246,3 +255,4 @@ public class LensItem extends Item implements ControlLensItem, CompositableLensI
 	}
 
 }
+

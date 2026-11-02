@@ -14,11 +14,15 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.Item.Properties;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.client.lib.ResourcesLib;
+import vazkii.botania.common.handler.PixieHandler;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.equipment.armor.manasteel.ManasteelArmorItem;
 
@@ -27,8 +31,12 @@ import java.util.function.Supplier;
 
 public abstract class ElementiumArmorItem extends ManasteelArmorItem {
 
-	public ElementiumArmorItem(Type type, Properties props) {
-		super(type, BotaniaAPI.instance().getElementiumArmorMaterial(), props);
+	public ElementiumArmorItem(ArmorType type, double pixieSpawnChance, Properties props) {
+		super(type, BotaniaAPI.instance().getElementiumArmorMaterial(),
+				attrs -> attrs.withModifierAdded(PixieHandler.PIXIE_SPAWN_CHANCE,
+						PixieHandler.makeModifier(type.getSlot(), "Armor modifier", pixieSpawnChance),
+						EquipmentSlotGroup.bySlot(type.getSlot())),
+				props);
 	}
 
 	@Override

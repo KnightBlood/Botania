@@ -8,10 +8,11 @@
  */
 package vazkii.botania.common.item.rod;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -19,9 +20,12 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -29,6 +33,7 @@ import net.minecraft.world.phys.HitResult;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.api.mana.ManaItemHandler;
 import vazkii.botania.client.fx.WispParticleData;
 import vazkii.botania.common.handler.BotaniaSounds;
@@ -51,24 +56,29 @@ public class MoltenCoreRodItem extends Item {
 
 	@NotNull
 	@Override
-	public UseAnim getUseAnimation(ItemStack stack) {
-		return UseAnim.BOW;
+	public ItemUseAnimation getUseAnimation(ItemStack stack) {
+		return ItemUseAnimation.BOW;
 	}
 
 	@Override
-	public int getUseDuration(ItemStack stack) {
+	public int getUseDuration(ItemStack stack, LivingEntity user) {
 		return 72000;
 	}
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
 		return ItemUtils.startUsingInstantly(world, player, hand);
 	}
 
 	@Override
 	public void onUseTick(Level world, LivingEntity living, ItemStack stack, int time) {
-		if (!(living instanceof Player p)) {
+		// MC 26.1: the client has no recipe manager, so the whole smelting lookup has to run
+		// server-side. Particles are broadcast with ServerLevel#sendParticles instead.
+		if (world.isClientSide() || !(living instanceof Player p)) {
+			return;
+		}
+		if (!(world instanceof ServerLevel serverLevel)) {
 			return;
 		}
 		Container dummyInv = new SimpleContainer(1);
@@ -83,8 +93,13 @@ public class MoltenCoreRodItem extends Item {
 			BlockState state = world.getBlockState(pos.getBlockPos());
 
 			dummyInv.setItem(0, new ItemStack(state.getBlock()));
-			world.getRecipeManager().getRecipeFor(RecipeType.SMELTING, dummyInv, p.level())
-					.map(r -> r.assemble(dummyInv, world.registryAccess()))
+			SingleRecipeInput smeltingInput = new SingleRecipeInput(dummyInv.getItem(0));
+			RecipeManager recipeManager = RecipeHelper.getRecipeManager(world);
+			if (recipeManager == null) {
+				return;
+			}
+			recipeManager.getRecipeFor(RecipeType.SMELTING, smeltingInput, p.level())
+					.map(holder -> holder.value().assemble(smeltingInput))
 					.filter(r -> !r.isEmpty() && r.getItem() instanceof BlockItem)
 					.ifPresent(result -> {
 						boolean decremented = false;
@@ -96,23 +111,21 @@ public class MoltenCoreRodItem extends Item {
 								data.progress--;
 								decremented = true;
 								if (data.progress <= 0) {
-									if (!world.isClientSide) {
-										world.setBlockAndUpdate(pos.getBlockPos(), Block.byItem(result.getItem()).defaultBlockState());
-										world.playSound(null, p.getX(), p.getY(), p.getZ(), BotaniaSounds.smeltRod, SoundSource.PLAYERS, 1F, 1F);
-										world.playSound(null, p.getX(), p.getY(), p.getZ(), BotaniaSounds.smeltRod2, SoundSource.PLAYERS, 1F, 1F);
+									world.setBlockAndUpdate(pos.getBlockPos(), Block.byItem(result.getItem()).defaultBlockState());
+									world.playSound(null, p.getX(), p.getY(), p.getZ(), BotaniaSounds.smeltRod, SoundSource.PLAYERS, 1F, 1F);
+									world.playSound(null, p.getX(), p.getY(), p.getZ(), BotaniaSounds.smeltRod2, SoundSource.PLAYERS, 1F, 1F);
 
-										ManaItemHandler.instance().requestManaExactForTool(stack, p, COST_PER_TICK, true);
-										playerData.remove(p);
-										decremented = false;
-									}
+									ManaItemHandler.instance().requestManaExactForTool(stack, p, COST_PER_TICK, true);
+									playerData.remove(p);
+									decremented = false;
+								}
 
-									WispParticleData data1 = WispParticleData.wisp(0.5F, 1F, 0.2F, 0.2F, 1);
-									for (int i = 0; i < 25; i++) {
-										double x = pos.getBlockPos().getX() + Math.random();
-										double y = pos.getBlockPos().getY() + Math.random();
-										double z = pos.getBlockPos().getZ() + Math.random();
-										world.addParticle(data1, x, y, z, 0, (float) -Math.random() / 10F, 0);
-									}
+								WispParticleData data1 = WispParticleData.wisp(0.5F, 1F, 0.2F, 0.2F, 1);
+								for (int i = 0; i < 25; i++) {
+									double x = pos.getBlockPos().getX() + Math.random();
+									double y = pos.getBlockPos().getY() + Math.random();
+									double z = pos.getBlockPos().getZ() + Math.random();
+									serverLevel.sendParticles(data1, x, y, z, 0, 0, (float) -Math.random() / 10F, 0, 1);
 								}
 							}
 						}
@@ -125,7 +138,7 @@ public class MoltenCoreRodItem extends Item {
 								double y = pos.getBlockPos().getY() + Math.random();
 								double z = pos.getBlockPos().getZ() + Math.random();
 								WispParticleData data = WispParticleData.wisp(0.5F, 1F, 0.2F, 0.2F, 1);
-								world.addParticle(data, x, y, z, 0, (float) Math.random() / 10F, 0);
+								serverLevel.sendParticles(data, x, y, z, 0, 0, (float) Math.random() / 10F, 0, 1);
 							}
 							if (time % 10 == 0) {
 								world.playSound(null, p.getX(), p.getY(), p.getZ(), BotaniaSounds.smeltRodSimmer, SoundSource.PLAYERS, (float) Math.random() / 2F + 0.5F, 1F);

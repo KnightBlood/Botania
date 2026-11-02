@@ -1,12 +1,15 @@
 package vazkii.botania.forge.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -34,14 +37,12 @@ public class ForgeSpecialFlowerBlock extends FlowerBlock implements EntityBlock 
 	private final Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType;
 	private final boolean hasComparatorOutput;
 
-	public ForgeSpecialFlowerBlock(MobEffect stewEffect, int stewDuration, Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType) {
+	public ForgeSpecialFlowerBlock(Holder<MobEffect> stewEffect, int stewDuration, Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType) {
 		this(stewEffect, stewDuration, props, blockEntityType, false);
 	}
 
-	public ForgeSpecialFlowerBlock(MobEffect stewEffect, int stewDuration, Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType, boolean hasComparatorOutput) {
-		super(/* the only godforsaken reason why this class needs to be duplicated for each loader
-				is so that we can add a "() ->" here. Amazing. */
-				() -> stewEffect, stewDuration, props);
+	public ForgeSpecialFlowerBlock(Holder<MobEffect> stewEffect, int stewDuration, Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType, boolean hasComparatorOutput) {
+		super(stewEffect, stewDuration, props);
 		this.blockEntityType = blockEntityType;
 		this.hasComparatorOutput = hasComparatorOutput;
 	}
@@ -49,7 +50,7 @@ public class ForgeSpecialFlowerBlock extends FlowerBlock implements EntityBlock 
 	@NotNull
 	@Override
 	public VoxelShape getShape(BlockState state, @NotNull BlockGetter world, @NotNull BlockPos pos, CollisionContext ctx) {
-		Vec3 shift = state.getOffset(world, pos);
+		Vec3 shift = state.getOffset(pos);
 		return SHAPE.move(shift.x, shift.y, shift.z);
 	}
 
@@ -86,11 +87,11 @@ public class ForgeSpecialFlowerBlock extends FlowerBlock implements EntityBlock 
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-		if (hasComparatorOutput && !newState.hasAnalogOutputSignal()) {
-			level.updateNeighbourForOutputSignal(pos, newState.getBlock());
+	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+		super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+		if (hasComparatorOutput) {
+			level.updateNeighbourForOutputSignal(pos, state.getBlock());
 		}
-		super.onRemove(state, level, pos, newState, movedByPiston);
 	}
 
 	@Override
@@ -104,7 +105,7 @@ public class ForgeSpecialFlowerBlock extends FlowerBlock implements EntityBlock 
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState bs, Level level, BlockPos pos) {
+	protected int getAnalogOutputSignal(BlockState bs, Level level, BlockPos pos, Direction side) {
 		return level.getBlockEntity(pos) instanceof SpecialFlowerBlockEntity flower ? flower.getComparatorSignal() : 0;
 	}
 

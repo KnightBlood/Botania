@@ -9,16 +9,12 @@
 package vazkii.botania.common.loot;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.MapCodec;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -28,35 +24,25 @@ import java.util.Set;
 
 public class RealPlayerCondition implements LootItemCondition {
 	public static final RealPlayerCondition INSTANCE = new RealPlayerCondition();
+	public static final MapCodec<RealPlayerCondition> CODEC = MapCodec.unit(() -> INSTANCE);
 
-	private RealPlayerCondition() {}
+	private RealPlayerCondition() {
+	}
 
 	@Override
 	public boolean test(LootContext lootContext) {
-		Player player = lootContext.getParamOrNull(LootContextParams.LAST_DAMAGE_PLAYER);
+		Player player = lootContext.getOptionalParameter(LootContextParams.LAST_DAMAGE_PLAYER);
 		return PlayerHelper.isTruePlayer(player);
 	}
 
 	@NotNull
 	@Override
-	public Set<LootContextParam<?>> getReferencedContextParams() {
+	public Set<net.minecraft.util.context.ContextKey<?>> getReferencedContextParams() {
 		return ImmutableSet.of(LootContextParams.LAST_DAMAGE_PLAYER);
 	}
 
-	@NotNull
 	@Override
-	public LootItemConditionType getType() {
-		return BotaniaLootModifiers.KILLED_BY_REAL_PLAYER;
-	}
-
-	public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<RealPlayerCondition> {
-		@Override
-		public void serialize(@NotNull JsonObject json, @NotNull RealPlayerCondition value, @NotNull JsonSerializationContext context) {}
-
-		@NotNull
-		@Override
-		public RealPlayerCondition deserialize(@NotNull JsonObject json, @NotNull JsonDeserializationContext context) {
-			return INSTANCE;
-		}
+	public MapCodec<? extends LootItemCondition> codec() {
+		return CODEC;
 	}
 }

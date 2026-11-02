@@ -11,14 +11,17 @@ package vazkii.botania.common.block;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -31,11 +34,15 @@ import org.jetbrains.annotations.NotNull;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.mixin.MobAccessor;
 
+import java.util.Optional;
+
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class FelPumpkinBlock extends BotaniaBlock {
-	private static final ResourceLocation LOOT_TABLE = prefix("fel_blaze");
+	// 26.1: Mob loot tables are ResourceKeys now
+	private static final ResourceKey<LootTable> LOOT_TABLE = ResourceKey.create(Registries.LOOT_TABLE, prefix("fel_blaze"));
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public FelPumpkinBlock(Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH));
@@ -50,16 +57,16 @@ public class FelPumpkinBlock extends BotaniaBlock {
 	public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean isMoving) {
 		super.onPlace(state, world, pos, oldState, isMoving);
 
-		if (!world.isClientSide && world.getBlockState(pos.below()).is(BotaniaTags.Blocks.FEL_BLAZE_BASE)
+		if (!world.isClientSide() && world.getBlockState(pos.below()).is(BotaniaTags.Blocks.FEL_BLAZE_BASE)
 				&& world.getBlockState(pos.below(2)).is(BotaniaTags.Blocks.FEL_BLAZE_BASE)) {
 			world.removeBlock(pos, false);
 			world.removeBlock(pos.below(), false);
 			world.removeBlock(pos.below(2), false);
-			Blaze blaze = EntityType.BLAZE.create(world);
-			blaze.moveTo(pos.getX() + 0.5D, pos.getY() - 1.95D, pos.getZ() + 0.5D, 0.0F, 0.0F);
+			Blaze blaze = EntityType.BLAZE.create(world, EntitySpawnReason.TRIGGERED);
+			blaze.snapTo(pos.getX() + 0.5D, pos.getY() - 1.95D, pos.getZ() + 0.5D, 0.0F, 0.0F);
 			blaze.setPersistenceRequired();
-			((MobAccessor) blaze).setLootTable(LOOT_TABLE);
-			blaze.finalizeSpawn((ServerLevelAccessor) world, world.getCurrentDifficultyAt(pos), MobSpawnType.EVENT, null, null);
+			((MobAccessor) blaze).setLootTable(Optional.of(LOOT_TABLE));
+			blaze.finalizeSpawn((ServerLevelAccessor) world, ((ServerLevelAccessor) world).getCurrentDifficultyAt(pos), EntitySpawnReason.EVENT, null);
 			world.addFreshEntity(blaze);
 
 			for (ServerPlayer player : world.getEntitiesOfClass(ServerPlayer.class, blaze.getBoundingBox().inflate(5.0))) {

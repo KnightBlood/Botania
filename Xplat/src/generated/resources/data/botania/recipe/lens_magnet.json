@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "botania:lens_normal",
+    "minecraft:iron_ingot",
+    "minecraft:gold_ingot"
+  ],
+  "result": {
+    "id": "botania:lens_magnet"
+  }
+}

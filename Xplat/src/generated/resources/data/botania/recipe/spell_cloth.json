@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "botania:manaweave_cloth",
+    "P": "botania:mana_pearl"
+  },
+  "pattern": [
+    " C ",
+    "CPC",
+    " C "
+  ],
+  "result": {
+    "id": "botania:spell_cloth"
+  }
+}

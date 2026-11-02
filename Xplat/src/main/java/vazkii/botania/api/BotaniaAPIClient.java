@@ -8,8 +8,8 @@
  */
 package vazkii.botania.api;
 
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import vazkii.botania.api.block.FloatingFlower;
@@ -32,25 +32,25 @@ public interface BotaniaAPIClient {
 	 * Call this during {@link net.minecraftforge.client.event.ModelRegistryEvent}.
 	 *
 	 * @param islandType The islandtype to register
-	 * @param model      The model, only {@link ResourceLocation} allowed, no {@link ModelResourceLocation} allowed.
+	 * @param model      The model, only {@link Identifier} allowed, no {@link ModelResourceLocation} allowed.
 	 */
-	default void registerIslandTypeModel(FloatingFlower.IslandType islandType, ResourceLocation model) {}
+	default void registerIslandTypeModel(FloatingFlower.IslandType islandType, Identifier model) {}
 
 	/**
 	 * @return An immutable and live view of the registered island type model map
 	 */
-	default Map<FloatingFlower.IslandType, ResourceLocation> getRegisteredIslandTypeModels() {
+	default Map<FloatingFlower.IslandType, Identifier> getRegisteredIslandTypeModels() {
 		return Collections.emptyMap();
 	}
 
 	/**
 	 * Draw a mana bar on the screen
 	 */
-	default void drawSimpleManaHUD(GuiGraphics gui, int color, int mana, int maxMana, String name) {}
+	default void drawSimpleManaHUD(GuiGraphicsExtractor gui, int color, int mana, int maxMana, String name) {}
 
 	/**
 	 * Performs the effects of {@link #drawSimpleManaHUD}, then renders {@code bindDisplay}, and a checkmark or x-mark
 	 * dependong on the value of {@code properlyBound}.
 	 */
-	default void drawComplexManaHUD(GuiGraphics gui, int color, int mana, int maxMana, String name, ItemStack bindDisplay, boolean properlyBound) {}
+	default void drawComplexManaHUD(GuiGraphicsExtractor gui, int color, int mana, int maxMana, String name, ItemStack bindDisplay, boolean properlyBound) {}
 }

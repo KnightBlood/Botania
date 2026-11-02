@@ -9,8 +9,10 @@
 package vazkii.botania.api.recipe;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +21,7 @@ import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.common.block.BotaniaBlocks;
 
 public interface RunicAltarRecipe extends RecipeWithReagent {
-	ResourceLocation TYPE_ID = new ResourceLocation(BotaniaAPI.MODID, "runic_altar");
+	Identifier TYPE_ID = Identifier.fromNamespaceAndPath(BotaniaAPI.MODID, "runic_altar");
 
 	// TODO: read from recipe definition
 	@Override
@@ -29,9 +31,10 @@ public interface RunicAltarRecipe extends RecipeWithReagent {
 
 	int getManaUsage();
 
+@SuppressWarnings("unchecked")
 	@NotNull
 	@Override
-	default RecipeType<?> getType() {
-		return BuiltInRegistries.RECIPE_TYPE.get(TYPE_ID);
+	default RecipeType<? extends Recipe<RecipeInput>> getType() {
+		return (RecipeType<? extends Recipe<RecipeInput>>) BuiltInRegistries.RECIPE_TYPE.getValue(TYPE_ID);
 	}
 }

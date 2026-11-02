@@ -3,6 +3,7 @@ package vazkii.botania.client.integration.emi;
 import dev.emi.emi.api.stack.EmiIngredient;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -13,9 +14,9 @@ import java.util.stream.Stream;
 
 public class MarimorphosisEmiRecipe extends OrechidEmiRecipe {
 	public MarimorphosisEmiRecipe(
-			MarimorphosisRecipe recipe,
+			RecipeHolder<MarimorphosisRecipe> holder,
 			EmiIngredient orechid) {
-		super(BotaniaEmiPlugin.MARIMORPHOSIS, recipe, orechid);
+		super(BotaniaEmiPlugin.MARIMORPHOSIS, holder, orechid);
 	}
 
 	@NotNull

@@ -8,6 +8,7 @@
  */
 package vazkii.botania.fabric.mixin;
 
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 
@@ -19,20 +20,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import vazkii.botania.common.item.FlowerPouchItem;
 
-import java.util.UUID;
-
 @Mixin(ItemEntity.class)
 public class ItemEntityFabricMixin {
 	@Shadow
 	private int pickupDelay;
 
-	@Shadow
-	private UUID thrower;
-
 	@Inject(at = @At("HEAD"), method = "playerTouch", cancellable = true)
 	private void onPickup(Player player, CallbackInfo ci) {
 		ItemEntity self = (ItemEntity) (Object) this;
-		if (!player.level().isClientSide && pickupDelay == 0 && (thrower == null || thrower.equals(player.getUUID()))
+		// 26.1: the thrower field is now an EntityReference; use the public getOwner() accessor instead
+		Entity owner = self.getOwner();
+		if (!player.level().isClientSide() && pickupDelay == 0 && (owner == null || owner.getUUID().equals(player.getUUID()))
 				&& FlowerPouchItem.onPickupItem(self, player)) {
 			ci.cancel();
 		}

@@ -9,26 +9,25 @@
 package vazkii.botania.common.item.equipment.bauble;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.FrostWalkerEnchantment;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import vazkii.botania.client.core.handler.MiscellaneousModels;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.render.AccessoryRenderRegistry;
 import vazkii.botania.client.render.AccessoryRenderer;
 import vazkii.botania.common.annotations.SoftImplement;
@@ -37,6 +36,7 @@ import vazkii.botania.mixin.BiomeAccessor;
 
 public class SnowflakePendantItem extends BaubleItem {
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public SnowflakePendantItem(Properties props) {
 		super(props);
 		Proxy.INSTANCE.runOnClient(() -> () -> AccessoryRenderRegistry.register(this, new Renderer()));
@@ -44,11 +44,10 @@ public class SnowflakePendantItem extends BaubleItem {
 
 	@Override
 	public void onWornTick(ItemStack stack, LivingEntity entity) {
-		if (!entity.level().isClientSide && !entity.isShiftKeyDown()) {
-			boolean lastOnGround = entity.onGround();
-			entity.setOnGround(true);
-			FrostWalkerEnchantment.onEntityMoved(entity, entity.level(), entity.blockPosition(), 8);
-			entity.setOnGround(lastOnGround);
+		if (!entity.level().isClientSide() && !entity.isShiftKeyDown()) {
+			// 26.1: FrostWalkerEnchantment was removed (data-driven enchantments);
+			// freeze logic inlined below.
+			freezeWater(entity, entity.level(), entity.blockPosition(), 8);
 
 			int x;
 			int y = Mth.floor(entity.getY());
@@ -62,14 +61,31 @@ public class SnowflakePendantItem extends BaubleItem {
 
 				if (entity.level().isEmptyBlock(blockpos) && blockstate.canSurvive(entity.level(), blockpos)) {
 					var biome = entity.level().getBiome(blockpos);
-					if (((BiomeAccessor) (Object) biome.value()).callGetTemperature(blockpos) < 0.9F) {
+					if (((BiomeAccessor) (Object) biome.value()).callGetTemperature(blockpos, entity.level().getSeaLevel()) < 0.9F) {
 						entity.level().setBlockAndUpdate(blockpos, blockstate);
 					}
 				}
 			}
-		} else if (entity.level().isClientSide && !entity.isShiftKeyDown()) {
-			if (entity.level().random.nextFloat() >= 0.25F) {
-				entity.level().addParticle(new BlockParticleOption(ParticleTypes.FALLING_DUST, Blocks.SNOW_BLOCK.defaultBlockState()), entity.getX() + entity.level().random.nextFloat() * 0.6 - 0.3, entity.getY() + 1.1, entity.getZ() + entity.level().random.nextFloat() * 0.6 - 0.3, 0, -0.15, 0);
+		} else if (entity.level().isClientSide() && !entity.isShiftKeyDown()) {
+			if (entity.level().getRandom().nextFloat() >= 0.25F) {
+				entity.level().addParticle(new BlockParticleOption(ParticleTypes.FALLING_DUST, Blocks.SNOW_BLOCK.defaultBlockState()), entity.getX() + entity.level().getRandom().nextFloat() * 0.6 - 0.3, entity.getY() + 1.1, entity.getZ() + entity.level().getRandom().nextFloat() * 0.6 - 0.3, 0, -0.15, 0);
+			}
+		}
+	}
+
+	// [VanillaCopy] was FrostWalkerEnchantment.onEntityMoved, removed in 26.1
+	private static void freezeWater(Entity living, Level level, BlockPos pos, int radius) {
+		BlockState frostedIce = Blocks.FROSTED_ICE.defaultBlockState();
+		float f = (float) Math.min(16, 2 + radius);
+		BlockPos.MutableBlockPos above = new BlockPos.MutableBlockPos();
+
+		for (BlockPos p : BlockPos.betweenClosed(pos.offset((int) -f, -1, (int) -f), pos.offset((int) f, -1, (int) f))) {
+			if (p.distToCenterSqr(living.position()) <= (double) (f * f)) {
+				above.set(p.getX(), p.getY() + 1, p.getZ());
+				BlockState aboveState = level.getBlockState(above);
+				if (aboveState.isAir() && frostedIce.canSurvive(level, p)) {
+					level.setBlockAndUpdate(p, frostedIce);
+				}
 			}
 		}
 	}
@@ -88,10 +104,8 @@ public class SnowflakePendantItem extends BaubleItem {
 			ms.translate(-0.25, 0.5, armor ? 0.05 : 0.12);
 			ms.scale(0.5F, -0.5F, -0.5F);
 
-			BakedModel model = MiscellaneousModels.INSTANCE.snowflakePendantGem;
-			VertexConsumer buffer = buffers.getBuffer(Sheets.cutoutBlockSheet());
-			Minecraft.getInstance().getBlockRenderer().getModelRenderer()
-					.renderModel(ms.last(), buffer, null, model, 1, 1, 1, light, OverlayTexture.NO_OVERLAY);
+			BlockStateModel model = MiscellaneousModels.INSTANCE.snowflakePendantGem;
+			RenderHelper.renderBlockModel(ms, buffers, null, model, 1, 1, 1, light, OverlayTexture.NO_OVERLAY);
 		}
 	}
 

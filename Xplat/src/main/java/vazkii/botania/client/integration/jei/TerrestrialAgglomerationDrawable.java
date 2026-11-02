@@ -12,7 +12,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import mezz.jei.api.gui.drawable.IDrawable;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class TerrestrialAgglomerationDrawable implements IDrawable {
 	private final IDrawable cornerBlock;
@@ -39,7 +39,7 @@ public class TerrestrialAgglomerationDrawable implements IDrawable {
 	 * Offsets copied from {@link vazkii.botania.client.patchouli.component.TerraPlateComponent}
 	 */
 	@Override
-	public void draw(GuiGraphics gui, int xOffset, int yOffset) {
+	public void draw(GuiGraphicsExtractor gui, int xOffset, int yOffset) {
 		PoseStack ms = gui.pose();
 		ms.pushPose();
 		ms.translate(0, 0, -50);

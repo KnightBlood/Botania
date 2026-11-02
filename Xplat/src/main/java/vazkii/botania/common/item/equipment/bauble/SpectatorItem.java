@@ -9,17 +9,14 @@
 package vazkii.botania.common.item.equipment.bauble;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.LongArrayTag;
 import net.minecraft.world.Container;
@@ -27,27 +24,29 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.allay.Allay;
-import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
+import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractMinecartContainer;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecartContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.client.core.handler.MiscellaneousModels;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.fx.WispParticleData;
 import vazkii.botania.client.render.AccessoryRenderRegistry;
 import vazkii.botania.client.render.AccessoryRenderer;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.proxy.Proxy;
 import vazkii.botania.mixin.AbstractHorseAccessor;
-import vazkii.botania.mixin.RandomizableContainerBlockEntityAccessor;
 
 import java.util.List;
 
@@ -60,6 +59,7 @@ public class SpectatorItem extends BaubleItem {
 	public static final int RANGE_BLOCKS = 12;
 	public static final int SCAN_INTERVAL_TICKS = 4;
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public SpectatorItem(Properties props) {
 		super(props);
 		Proxy.INSTANCE.runOnClient(() -> () -> AccessoryRenderRegistry.register(this, new Renderer()));
@@ -71,7 +71,7 @@ public class SpectatorItem extends BaubleItem {
 			return;
 		}
 
-		if (living.level().isClientSide) {
+		if (living.level().isClientSide()) {
 			this.showScanResults(stack, player);
 		} else if (living.tickCount % SCAN_INTERVAL_TICKS == 0) {
 			this.scanForItems(stack, player);
@@ -92,10 +92,8 @@ public class SpectatorItem extends BaubleItem {
 			ms.translate(-0.35, -0.2, armor ? 0.05 : 0.1);
 			ms.scale(0.75F, -0.75F, -0.75F);
 
-			BakedModel model = MiscellaneousModels.INSTANCE.itemFinderGem;
-			VertexConsumer buffer = buffers.getBuffer(Sheets.cutoutBlockSheet());
-			Minecraft.getInstance().getBlockRenderer().getModelRenderer()
-					.renderModel(ms.last(), buffer, null, model, 1, 1, 1, light, OverlayTexture.NO_OVERLAY);
+			BlockStateModel model = MiscellaneousModels.INSTANCE.itemFinderGem;
+			RenderHelper.renderBlockModel(ms, buffers, null, model, 1, 1, 1, light, OverlayTexture.NO_OVERLAY);
 		}
 	}
 
@@ -211,13 +209,13 @@ public class SpectatorItem extends BaubleItem {
 		}
 		BlockEntity blockEntity = level.getBlockEntity(pos);
 		return blockEntity instanceof Container inv && (!(blockEntity instanceof RandomizableContainerBlockEntity lootInv)
-				|| ((RandomizableContainerBlockEntityAccessor) lootInv).getLootTable() == null)
+				|| lootInv.getLootTable() == null)
 				&& scanInventory(inv, mainHandStack, offHandStack);
 	}
 
 	private boolean equalStacks(ItemStack testStack, ItemStack referenceStack1, ItemStack referenceStack2) {
-		return !testStack.isEmpty() && (ItemStack.isSameItemSameTags(testStack, referenceStack1)
-				|| ItemStack.isSameItemSameTags(testStack, referenceStack2));
+		return !testStack.isEmpty() && (ItemStack.isSameItemSameComponents(testStack, referenceStack1)
+				|| ItemStack.isSameItemSameComponents(testStack, referenceStack2));
 	}
 
 	private boolean scanInventory(Container inv, ItemStack mainHandStack, ItemStack offHandStack) {

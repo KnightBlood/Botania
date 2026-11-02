@@ -1,0 +1,9 @@
+{
+  "type": "botania:mana_infusion",
+  "input": "minecraft:cookie",
+  "mana": 20000,
+  "output": {
+    "count": 1,
+    "id": "botania:mana_cookie"
+  }
+}

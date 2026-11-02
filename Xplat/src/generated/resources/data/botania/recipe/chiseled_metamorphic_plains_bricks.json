@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": "botania:metamorphic_plains_bricks_slab"
+  },
+  "pattern": [
+    "Q",
+    "Q"
+  ],
+  "result": {
+    "id": "botania:chiseled_metamorphic_plains_bricks"
+  }
+}

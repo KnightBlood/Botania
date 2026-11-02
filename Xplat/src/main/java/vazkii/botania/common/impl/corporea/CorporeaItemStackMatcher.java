@@ -33,12 +33,12 @@ public class CorporeaItemStackMatcher implements CorporeaRequestMatcher {
 	}
 
 	public static CorporeaItemStackMatcher createFromNBT(CompoundTag tag) {
-		return new CorporeaItemStackMatcher(ItemStack.of(tag.getCompound(TAG_REQUEST_STACK)), tag.getBoolean(TAG_REQUEST_CHECK_NBT));
+		return new CorporeaItemStackMatcher(ItemNBTHelper.deserializeStackNbt(tag.getCompoundOrEmpty(TAG_REQUEST_STACK)), tag.getBooleanOr(TAG_REQUEST_CHECK_NBT, false));
 	}
 
 	@Override
 	public void writeToNBT(CompoundTag tag) {
-		CompoundTag cmp = match.save(new CompoundTag());
+		CompoundTag cmp = ItemNBTHelper.serializeStackNbt(match);
 		tag.put(TAG_REQUEST_STACK, cmp);
 		tag.putBoolean(TAG_REQUEST_CHECK_NBT, checkNBT);
 	}

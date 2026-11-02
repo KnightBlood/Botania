@@ -1,0 +1,13 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "input": "#minecraft:wool",
+  "mana": 100,
+  "output": {
+    "count": 3,
+    "id": "minecraft:string"
+  }
+}

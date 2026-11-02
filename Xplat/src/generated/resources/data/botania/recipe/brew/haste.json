@@ -1,0 +1,9 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:haste",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:sugar",
+    "minecraft:gold_nugget"
+  ]
+}

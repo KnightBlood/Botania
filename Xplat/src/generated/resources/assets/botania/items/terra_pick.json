@@ -1,0 +1,45 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "entries": [
+      {
+        "model": {
+          "type": "minecraft:range_dispatch",
+          "entries": [
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "botania:item/terra_pick_tipped_active"
+              },
+              "threshold": 1.0
+            }
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "botania:item/terra_pick_active"
+          },
+          "property": "botania:tipped"
+        },
+        "threshold": 1.0
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:range_dispatch",
+      "entries": [
+        {
+          "model": {
+            "type": "minecraft:model",
+            "model": "botania:item/terra_pick_tipped"
+          },
+          "threshold": 1.0
+        }
+      ],
+      "fallback": {
+        "type": "minecraft:model",
+        "model": "botania:item/terra_pick"
+      },
+      "property": "botania:tipped"
+    },
+    "property": "botania:terra_pick_active"
+  }
+}

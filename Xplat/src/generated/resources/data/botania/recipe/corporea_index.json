@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "botania:ender_air_bottle",
+    "D": "#botania:dragonstone_gems",
+    "O": "minecraft:obsidian",
+    "S": "botania:corporea_spark"
+  },
+  "pattern": [
+    "AOA",
+    "OSO",
+    "DOD"
+  ],
+  "result": {
+    "id": "botania:corporea_index"
+  }
+}

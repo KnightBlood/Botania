@@ -10,32 +10,36 @@ package vazkii.botania.common.crafting.recipe;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.LaputaShardItem;
+import vazkii.botania.common.helper.IngredientHelper;
 
 public class LaputaShardUpgradeRecipe extends CustomRecipe {
-	public static final NoOpRecipeSerializer<LaputaShardUpgradeRecipe> SERIALIZER = new NoOpRecipeSerializer<>(LaputaShardUpgradeRecipe::new);
+	public static final RecipeSerializer<LaputaShardUpgradeRecipe> SERIALIZER = NoOpRecipeSerializer.create(LaputaShardUpgradeRecipe::new);
 
-	public LaputaShardUpgradeRecipe(ResourceLocation id) {
-		super(id, CraftingBookCategory.MISC);
+	public LaputaShardUpgradeRecipe(Identifier id) {
+		// MC 26.1: CustomRecipe no-arg constructor
 	}
 
 	@Override
-	public boolean matches(@NotNull CraftingContainer inv, @NotNull Level worldIn) {
+	public boolean matches(@NotNull CraftingInput inv, @NotNull Level worldIn) {
 		boolean foundShard = false;
 		boolean foundSpirit = false;
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (stack.isEmpty()) {
 				continue;
@@ -53,41 +57,35 @@ public class LaputaShardUpgradeRecipe extends CustomRecipe {
 	}
 
 	@NotNull
-	@Override
-	public ItemStack getResultItem(@NotNull RegistryAccess registries) {
+		public ItemStack getResultItem() {
 		return new ItemStack(BotaniaItems.laputaShard);
 	}
 
 	@NotNull
-	@Override
-	public NonNullList<Ingredient> getIngredients() {
-		return NonNullList.of(Ingredient.EMPTY,
+		public NonNullList<Ingredient> getIngredients() {
+		return NonNullList.of(IngredientHelper.EMPTY,
 				Ingredient.of(BotaniaItems.laputaShard),
 				Ingredient.of(BotaniaItems.lifeEssence));
 	}
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registries) {
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+	public ItemStack assemble(@NotNull CraftingInput inv) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (stack.is(BotaniaItems.laputaShard)) {
 				ItemStack result = stack.copy();
-				result.getOrCreateTag().putInt(LaputaShardItem.TAG_LEVEL, LaputaShardItem.getShardLevel(stack) + 1);
+				ItemNBTHelper.setInt(result, LaputaShardItem.TAG_LEVEL, LaputaShardItem.getShardLevel(stack) + 1);
 				return result;
 			}
 		}
 		return ItemStack.EMPTY;
 	}
 
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height >= 2;
-	}
 
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends CustomRecipe> getSerializer() {
 		return SERIALIZER;
 	}
 }

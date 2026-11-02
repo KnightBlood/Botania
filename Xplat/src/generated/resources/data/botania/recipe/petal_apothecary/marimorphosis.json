@@ -1,0 +1,17 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/gray",
+    "#botania:petals/yellow",
+    "#botania:petals/green",
+    "#botania:petals/red",
+    "botania:rune_earth",
+    "botania:rune_fire",
+    "botania:redstone_root"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:marimorphosis"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

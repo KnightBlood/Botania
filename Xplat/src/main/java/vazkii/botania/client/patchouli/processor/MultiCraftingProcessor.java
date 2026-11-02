@@ -9,7 +9,7 @@
 package vazkii.botania.client.patchouli.processor;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -18,6 +18,8 @@ import net.minecraft.world.level.Level;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.client.patchouli.PatchouliUtils;
+import vazkii.botania.common.helper.IngredientHelper;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.patchouli.api.IComponentProcessor;
 import vazkii.patchouli.api.IVariable;
 import vazkii.patchouli.api.IVariableProvider;
@@ -34,17 +36,17 @@ public class MultiCraftingProcessor implements IComponentProcessor {
 
 	@Override
 	public void setup(Level level, IVariableProvider variables) {
-		List<String> names = variables.get("recipes").asStream().map(IVariable::asString).collect(Collectors.toList());
+		List<String> names = variables.get("recipes", level.registryAccess()).asStream(level.registryAccess()).map(IVariable::asString).collect(Collectors.toList());
 		this.recipes = new ArrayList<>();
 		for (String name : names) {
-			CraftingRecipe recipe = PatchouliUtils.getRecipe(level, RecipeType.CRAFTING, new ResourceLocation(name));
+			CraftingRecipe recipe = PatchouliUtils.getRecipe(level, RecipeType.CRAFTING, Identifier.parse(name));
 			if (recipe != null) {
 				recipes.add(recipe);
 				if (shapeless) {
 					shapeless = !(recipe instanceof ShapedRecipe);
 				}
-				for (Ingredient ingredient : recipe.getIngredients()) {
-					int size = ingredient.getItems().length;
+				for (Ingredient ingredient : RecipeHelper.getCraftingIngredients(recipe)) {
+					int size = PatchouliUtils.getStacks(ingredient).size();
 					if (longestIngredientSize < size) {
 						longestIngredientSize = size;
 					}
@@ -63,7 +65,7 @@ public class MultiCraftingProcessor implements IComponentProcessor {
 		}
 		if (key.equals("heading")) {
 			if (!hasCustomHeading) {
-				return IVariable.from(recipes.get(0).getResultItem(level.registryAccess()).getHoverName());
+				return IVariable.from(RecipeHelper.getResultItem(recipes.get(0), level).getHoverName(), level.registryAccess());
 			}
 			return null;
 		}
@@ -75,27 +77,27 @@ public class MultiCraftingProcessor implements IComponentProcessor {
 			for (CraftingRecipe recipe : recipes) {
 				if (recipe instanceof ShapedRecipe shaped) {
 					if (shaped.getWidth() < shapedX + 1) {
-						ingredients.add(Ingredient.EMPTY);
+						ingredients.add(IngredientHelper.EMPTY);
 					} else {
 						int realIndex = index - (shapedY * (3 - shaped.getWidth()));
-						NonNullList<Ingredient> list = recipe.getIngredients();
-						ingredients.add(list.size() > realIndex ? list.get(realIndex) : Ingredient.EMPTY);
+						NonNullList<Ingredient> list = RecipeHelper.getCraftingIngredients(recipe);
+						ingredients.add(list.size() > realIndex ? list.get(realIndex) : IngredientHelper.EMPTY);
 					}
 
 				} else {
-					NonNullList<Ingredient> list = recipe.getIngredients();
-					ingredients.add(list.size() > index ? list.get(index) : Ingredient.EMPTY);
+					NonNullList<Ingredient> list = RecipeHelper.getCraftingIngredients(recipe);
+					ingredients.add(list.size() > index ? list.get(index) : IngredientHelper.EMPTY);
 				}
 			}
-			return PatchouliUtils.interweaveIngredients(ingredients, longestIngredientSize);
+			return PatchouliUtils.interweaveIngredients(ingredients, longestIngredientSize, level.registryAccess());
 		}
 		if (key.equals("output")) {
 			return IVariable.wrapList(recipes.stream()
-					.map(r -> IVariable.from(r.getResultItem(level.registryAccess())))
-					.collect(Collectors.toList()));
+					.map(recipe -> IVariable.from(RecipeHelper.getResultItem(recipe, level), level.registryAccess()))
+					.collect(Collectors.toList()), level.registryAccess());
 		}
 		if (key.equals("shapeless")) {
-			return IVariable.wrap(shapeless);
+			return IVariable.wrap(shapeless, level.registryAccess());
 		}
 		return null;
 	}

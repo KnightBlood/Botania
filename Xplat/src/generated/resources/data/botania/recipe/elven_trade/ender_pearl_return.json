@@ -1,0 +1,12 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    "minecraft:ender_pearl"
+  ],
+  "output": [
+    {
+      "count": 1,
+      "id": "minecraft:ender_pearl"
+    }
+  ]
+}

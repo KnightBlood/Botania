@@ -8,8 +8,6 @@
  */
 package vazkii.botania.client.fx;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -67,13 +65,18 @@ public class SparkleParticleData implements ParticleOptions {
 		this.corrupt = corrupt;
 	}
 
+	public static SparkleParticleData fromNetwork(FriendlyByteBuf buf) {
+		return new SparkleParticleData(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readInt(),
+				buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
+	}
+
 	@NotNull
 	@Override
 	public ParticleType<SparkleParticleData> getType() {
 		return BotaniaParticles.SPARKLE;
 	}
 
-	@Override
+	// MC 26.1: no longer part of ParticleOptions, kept as helper for the stream codec
 	public void writeToNetwork(FriendlyByteBuf buf) {
 		buf.writeFloat(size);
 		buf.writeFloat(r);
@@ -85,40 +88,10 @@ public class SparkleParticleData implements ParticleOptions {
 		buf.writeBoolean(corrupt);
 	}
 
-	@NotNull
-	@Override
+	// MC 26.1: no longer part of ParticleOptions, kept as helper
 	public String writeToString() {
 		return String.format(Locale.ROOT, "%s %.2f %.2f %.2f %.2f %d %s %s %s",
 				BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()), this.size, this.r, this.g, this.b, this.m, this.noClip, this.fake, this.corrupt);
 	}
 
-	public static final Deserializer<SparkleParticleData> DESERIALIZER = new Deserializer<>() {
-		@NotNull
-		@Override
-		public SparkleParticleData fromCommand(@NotNull ParticleType<SparkleParticleData> type, @NotNull StringReader reader) throws CommandSyntaxException {
-			reader.expect(' ');
-			float size = reader.readFloat();
-			reader.expect(' ');
-			float r = reader.readFloat();
-			reader.expect(' ');
-			float g = reader.readFloat();
-			reader.expect(' ');
-			float b = reader.readFloat();
-			reader.expect(' ');
-			int m = reader.readInt();
-			reader.expect(' ');
-			boolean noClip = reader.readBoolean();
-			reader.expect(' ');
-			boolean fake = reader.readBoolean();
-			reader.expect(' ');
-			boolean corrupt = reader.readBoolean();
-
-			return new SparkleParticleData(size, r, g, b, m, noClip, fake, corrupt);
-		}
-
-		@Override
-		public SparkleParticleData fromNetwork(@NotNull ParticleType<SparkleParticleData> type, FriendlyByteBuf buf) {
-			return new SparkleParticleData(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readInt(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
-		}
-	};
 }

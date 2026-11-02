@@ -8,84 +8,58 @@
  */
 package vazkii.botania.common.advancements;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.advancements.critereon.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-import org.jetbrains.annotations.NotNull;
+import java.util.Optional;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class LokiPlaceTrigger extends SimpleCriterionTrigger<LokiPlaceTrigger.Instance> {
-	public static final ResourceLocation ID = prefix("loki_placed_blocks");
+	public static final Identifier ID = prefix("loki_placed_blocks");
 	public static final LokiPlaceTrigger INSTANCE = new LokiPlaceTrigger();
 
 	private LokiPlaceTrigger() {}
 
-	@NotNull
 	@Override
-	public ResourceLocation getId() {
-		return ID;
-	}
-
-	@NotNull
-	@Override
-	public LokiPlaceTrigger.Instance createInstance(@NotNull JsonObject json, ContextAwarePredicate playerPred, DeserializationContext conditions) {
-		return new LokiPlaceTrigger.Instance(playerPred, EntityPredicate.fromJson(json.get("player")),
-				ItemPredicate.fromJson(json.get("ring")), MinMaxBounds.Ints.fromJson(json.get("blocks_placed")));
+	public Codec<LokiPlaceTrigger.Instance> codec() {
+		return LokiPlaceTrigger.Instance.CODEC;
 	}
 
 	public void trigger(ServerPlayer player, ItemStack ring, int blocksPlaced) {
 		trigger(player, instance -> instance.test(player, ring, blocksPlaced));
 	}
 
-	public static class Instance extends AbstractCriterionTriggerInstance {
-		private final EntityPredicate player;
-		private final ItemPredicate ring;
-		private final MinMaxBounds.Ints blocksPlaced;
+	public static Criterion<LokiPlaceTrigger.Instance> placeBlocks(EntityPredicate playerEntity, ItemPredicate ring, MinMaxBounds.Ints blocksPlaced) {
+		return INSTANCE.createCriterion(new Instance(Optional.empty(), Optional.ofNullable(playerEntity),
+				Optional.ofNullable(ring), Optional.ofNullable(blocksPlaced)));
+	}
 
-		public Instance(ContextAwarePredicate playerPred, EntityPredicate player, ItemPredicate ring, MinMaxBounds.Ints blocksPlaced) {
-			super(ID, playerPred);
-			this.player = player;
-			this.ring = ring;
-			this.blocksPlaced = blocksPlaced;
-		}
+	public record Instance(Optional<ContextAwarePredicate> player, Optional<EntityPredicate> playerEntity,
+			Optional<ItemPredicate> ring, Optional<MinMaxBounds.Ints> blocksPlaced) implements SimpleCriterionTrigger.SimpleInstance {
+		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
+				i -> i.group(
+						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),
+						EntityPredicate.CODEC.optionalFieldOf("player_entity").forGetter(Instance::playerEntity),
+						ItemPredicate.CODEC.optionalFieldOf("ring").forGetter(Instance::ring),
+						MinMaxBounds.Ints.CODEC.optionalFieldOf("blocks_placed").forGetter(Instance::blocksPlaced)
+				).apply(i, Instance::new)
+		);
 
-		@NotNull
-		@Override
-		public ResourceLocation getCriterion() {
-			return ID;
-		}
-
-		boolean test(ServerPlayer player, ItemStack ring, int blocksPlaced) {
-			return this.player.matches(player, null) && this.ring.matches(ring) && this.blocksPlaced.matches(blocksPlaced);
-		}
-
-		@Override
-		public JsonObject serializeToJson(SerializationContext context) {
-			JsonObject json = super.serializeToJson(context);
-			if (ring != ItemPredicate.ANY) {
-				json.add("ring", ring.serializeToJson());
-			}
-			if (blocksPlaced != MinMaxBounds.Ints.ANY) {
-				json.add("blocks_placed", blocksPlaced.serializeToJson());
-			}
-			return json;
-		}
-
-		public EntityPredicate getPlayer() {
-			return this.player;
-		}
-
-		public ItemPredicate getRing() {
-			return this.ring;
-		}
-
-		public MinMaxBounds.Ints getBlocksPlaced() {
-			return this.blocksPlaced;
+		public boolean test(ServerPlayer player, ItemStack ring, int blocksPlaced) {
+			return (this.playerEntity.isEmpty() || this.playerEntity.get().matches(player, null))
+					&& (this.ring.isEmpty() || this.ring.get().test(ring))
+					&& (this.blocksPlaced.isEmpty() || this.blocksPlaced.get().matches(blocksPlaced));
 		}
 	}
 }

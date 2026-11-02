@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:dye",
+  "ingredients": [
+    "#botania:petals/cyan"
+  ],
+  "result": {
+    "id": "minecraft:cyan_dye"
+  }
+}

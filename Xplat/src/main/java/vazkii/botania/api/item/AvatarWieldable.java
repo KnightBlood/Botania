@@ -8,7 +8,7 @@
  */
 package vazkii.botania.api.item;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import vazkii.botania.api.block.Avatar;
 
@@ -25,6 +25,6 @@ public interface AvatarWieldable {
 	/**
 	 * Gets the overlay resource to render on top of the avatar tile.
 	 */
-	ResourceLocation getOverlayResource(Avatar tile);
+	Identifier getOverlayResource(Avatar tile);
 
 }

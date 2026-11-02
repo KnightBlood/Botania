@@ -1,0 +1,16 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/cyan",
+    "#botania:petals/cyan",
+    "#botania:petals/gray",
+    "#botania:petals/light_gray",
+    "botania:rune_air",
+    "botania:rune_earth"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:tangleberrie"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

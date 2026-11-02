@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "#c:wooden_chests",
+    "botania:corporea_spark"
+  ],
+  "result": {
+    "id": "botania:corporea_retainer"
+  }
+}

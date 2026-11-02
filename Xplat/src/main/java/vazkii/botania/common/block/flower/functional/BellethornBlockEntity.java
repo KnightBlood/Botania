@@ -16,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.api.block_entity.FunctionalFlowerBlockEntity;
 import vazkii.botania.api.block_entity.RadiusDescriptor;
@@ -50,7 +51,7 @@ public class BellethornBlockEntity extends FunctionalFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide || redstoneSignal > 0) {
+		if (getLevel().isClientSide() || redstoneSignal > 0) {
 			return;
 		}
 
@@ -62,7 +63,7 @@ public class BellethornBlockEntity extends FunctionalFlowerBlockEntity {
 
 		if (ticksExisted % 5 == 0) {
 			int range = getRange();
-			List<LivingEntity> entities = getLevel().getEntitiesOfClass(LivingEntity.class, new AABB(getEffectivePos().offset(-range, -range, -range), getEffectivePos().offset(range + 1, range + 1, range + 1)), getSelector());
+			List<LivingEntity> entities = getLevel().getEntitiesOfClass(LivingEntity.class, new AABB(Vec3.atLowerCornerOf(getEffectivePos().offset(-range, -range, -range)), Vec3.atLowerCornerOf(getEffectivePos().offset(range + 1, range + 1, range + 1))), getSelector());
 
 			for (LivingEntity entity : entities) {
 				if (getMana() < manaToUse) {

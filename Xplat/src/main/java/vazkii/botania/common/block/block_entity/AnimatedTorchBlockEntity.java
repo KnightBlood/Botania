@@ -9,7 +9,7 @@
 package vazkii.botania.common.block.block_entity;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -69,7 +69,7 @@ public class AnimatedTorchBlockEntity extends BotaniaBlockEntity implements Mana
 	}
 
 	public void handRotate() {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			level.blockEvent(getBlockPos(), BotaniaBlocks.animatedTorch, 0, (side + 1) % 4);
 		}
 	}
@@ -89,9 +89,9 @@ public class AnimatedTorchBlockEntity extends BotaniaBlockEntity implements Mana
 	}
 
 	public void toggle() {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			level.blockEvent(getBlockPos(), BotaniaBlocks.animatedTorch, 0, torchMode.modeSwitcher.rotate(this, side));
-			nextRandomRotation = level.random.nextInt(4);
+			nextRandomRotation = level.getRandom().nextInt(4);
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 		}
 	}
@@ -153,14 +153,14 @@ public class AnimatedTorchBlockEntity extends BotaniaBlockEntity implements Mana
 		}
 
 		@Override
-		public void renderHUD(GuiGraphics gui, Minecraft mc) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc) {
 			int x = mc.getWindow().getGuiScaledWidth() / 2 + 8;
 			int y = mc.getWindow().getGuiScaledHeight() / 2 - 10;
 
 			String str = I18n.get("botania.animatedTorch." + torch.torchMode.name().toLowerCase(Locale.ROOT));
 			RenderHelper.renderHUDBox(gui, x, y, x + 18 + mc.font.width(str), y + 20);
-			gui.renderFakeItem(new ItemStack(Blocks.REDSTONE_TORCH), x, y + 2);
-			gui.drawString(mc.font, str, x + 16, y + 6, 0xFF4444);
+			gui.fakeItem(new ItemStack(Blocks.REDSTONE_TORCH), x, y + 2);
+			gui.text(mc.font, str, x + 16, y + 6, 0xFF4444);
 		}
 	}
 
@@ -183,7 +183,7 @@ public class AnimatedTorchBlockEntity extends BotaniaBlockEntity implements Mana
 			self.rotation = self.side * 90;
 		}
 
-		if (level.isClientSide) {
+		if (level.isClientSide()) {
 			int amt = self.rotating ? 3 : Math.random() < 0.1 ? 1 : 0;
 			double x = worldPosition.getX() + 0.5 + Math.cos((self.rotation + 90) / 180.0 * Math.PI) * 0.35;
 			double y = worldPosition.getY() + 0.2;
@@ -198,7 +198,7 @@ public class AnimatedTorchBlockEntity extends BotaniaBlockEntity implements Mana
 	private static void updateNeighbors(Level level, BlockPos worldPosition, BlockState state, int self) {
 		level.updateNeighborsAt(worldPosition, state.getBlock());
 		BlockPos targetPos = worldPosition.relative(SIDES[self].getOpposite());
-		level.updateNeighborsAtExceptFromFacing(targetPos, level.getBlockState(targetPos).getBlock(), SIDES[self]);
+		level.updateNeighborsAtExceptFromFacing(targetPos, level.getBlockState(targetPos).getBlock(), SIDES[self], null);
 	}
 
 	@Override
@@ -213,15 +213,15 @@ public class AnimatedTorchBlockEntity extends BotaniaBlockEntity implements Mana
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
-		side = cmp.getInt(TAG_SIDE);
-		rotating = cmp.getBoolean(TAG_ROTATING);
-		if (level != null && !level.isClientSide) {
-			rotationTicks = cmp.getInt(TAG_ROTATION_TICKS);
+		side = cmp.getIntOr(TAG_SIDE, 0);
+		rotating = cmp.getBooleanOr(TAG_ROTATING, false);
+		if (level != null && !level.isClientSide()) {
+			rotationTicks = cmp.getIntOr(TAG_ROTATION_TICKS, 0);
 		}
-		anglePerTick = cmp.getDouble(TAG_ANGLE_PER_TICK);
-		nextRandomRotation = cmp.getInt(TAG_NEXT_RANDOM_ROTATION);
+		anglePerTick = cmp.getDoubleOr(TAG_ANGLE_PER_TICK, 0.0);
+		nextRandomRotation = cmp.getIntOr(TAG_NEXT_RANDOM_ROTATION, 0);
 
-		int modeOrdinal = cmp.getInt(TAG_TORCH_MODE);
+		int modeOrdinal = cmp.getIntOr(TAG_TORCH_MODE, 0);
 		TorchMode[] modes = TorchMode.values();
 		torchMode = modes[modeOrdinal % modes.length];
 	}

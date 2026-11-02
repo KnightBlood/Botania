@@ -17,6 +17,8 @@ import net.minecraft.world.item.TooltipFlag;
 import vazkii.botania.common.item.ResoluteIvyItem;
 
 import java.util.List;
+import java.util.function.Consumer;
+import net.minecraft.client.Minecraft;
 
 public final class TooltipHandler {
 
@@ -31,12 +33,16 @@ public final class TooltipHandler {
 		return Component.translatable("botaniamisc.shiftinfo", shift).withStyle(ChatFormatting.GRAY);
 	}
 
-	public static void addOnShift(List<Component> tooltip, Runnable lambda) {
-		if (Screen.hasShiftDown()) {
+	public static void addOnShift(Consumer<Component> tooltip, Runnable lambda) {
+		if (Minecraft.getInstance().hasShiftDown()) {
 			lambda.run();
 		} else {
-			tooltip.add(getShiftInfoTooltip());
+			tooltip.accept(getShiftInfoTooltip());
 		}
+	}
+
+	public static void addOnShift(List<Component> tooltip, Runnable lambda) {
+		addOnShift(tooltip::add, lambda);
 	}
 
 }

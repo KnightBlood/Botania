@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": "#botania:manasteel_ingots",
+    "F": "botania:rune_fire",
+    "M": "botania:rune_summer",
+    "S": "botania:mana_string"
+  },
+  "pattern": [
+    "MS ",
+    "S S",
+    "DSF"
+  ],
+  "result": {
+    "id": "botania:lava_pendant"
+  }
+}

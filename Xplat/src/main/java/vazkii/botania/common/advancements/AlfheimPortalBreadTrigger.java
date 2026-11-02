@@ -8,69 +8,53 @@
  */
 package vazkii.botania.common.advancements;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.advancements.critereon.*;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.LocationPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
-import org.jetbrains.annotations.NotNull;
+import java.util.Optional;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class AlfheimPortalBreadTrigger extends SimpleCriterionTrigger<AlfheimPortalBreadTrigger.Instance> {
-	public static final ResourceLocation ID = prefix("alf_portal_bread");
+	public static final Identifier ID = prefix("alf_portal_bread");
 	public static final AlfheimPortalBreadTrigger INSTANCE = new AlfheimPortalBreadTrigger();
 
 	private AlfheimPortalBreadTrigger() {}
 
-	@NotNull
 	@Override
-	public ResourceLocation getId() {
-		return ID;
-	}
-
-	@NotNull
-	@Override
-	public AlfheimPortalBreadTrigger.Instance createInstance(@NotNull JsonObject json, ContextAwarePredicate playerPredicate, DeserializationContext conditions) {
-		return new AlfheimPortalBreadTrigger.Instance(playerPredicate, LocationPredicate.fromJson(json.get("portal_location")));
+	public Codec<AlfheimPortalBreadTrigger.Instance> codec() {
+		return AlfheimPortalBreadTrigger.Instance.CODEC;
 	}
 
 	public void trigger(ServerPlayer player, BlockPos portal) {
-		this.trigger(player, instance -> instance.test(player.serverLevel(), portal));
+		this.trigger(player, instance -> instance.test(player.level(), portal));
 	}
 
-	public static class Instance extends AbstractCriterionTriggerInstance {
-		private final LocationPredicate portal;
+	public static Criterion<AlfheimPortalBreadTrigger.Instance> eatBread(LocationPredicate portal) {
+		return INSTANCE.createCriterion(new Instance(Optional.empty(), Optional.ofNullable(portal)));
+	}
 
-		public Instance(ContextAwarePredicate playerPredicate, LocationPredicate portal) {
-			super(ID, playerPredicate);
-			this.portal = portal;
-		}
+	public record Instance(Optional<ContextAwarePredicate> player,
+			Optional<LocationPredicate> portal) implements SimpleCriterionTrigger.SimpleInstance {
+		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
+				i -> i.group(
+						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),
+						LocationPredicate.CODEC.optionalFieldOf("portal_location").forGetter(Instance::portal)
+				).apply(i, Instance::new)
+		);
 
-		@NotNull
-		@Override
-		public ResourceLocation getCriterion() {
-			return ID;
-		}
-
-		boolean test(ServerLevel world, BlockPos portal) {
-			return this.portal.matches(world, portal.getX(), portal.getY(), portal.getZ());
-		}
-
-		public LocationPredicate getPortal() {
-			return this.portal;
-		}
-
-		@Override
-		public JsonObject serializeToJson(SerializationContext context) {
-			JsonObject json = super.serializeToJson(context);
-			if (portal != LocationPredicate.ANY) {
-				json.add("portal_location", portal.serializeToJson());
-			}
-			return json;
+		public boolean test(ServerLevel world, BlockPos portal) {
+			return this.portal.isEmpty() || this.portal.get().matches(world, portal.getX(), portal.getY(), portal.getZ());
 		}
 	}
 }

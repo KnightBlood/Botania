@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -61,9 +62,9 @@ public class FloatingFlowerBlock extends BotaniaWaterloggedBlock implements Enti
 	@Override
 	public RenderShape getRenderShape(BlockState state) {
 		if (!XplatAbstractions.INSTANCE.isPhysicalClient()) {
-			return RenderShape.ENTITYBLOCK_ANIMATED;
+			return RenderShape.MODEL;
 		}
-		return BotaniaConfig.client().staticFloaters() || PatchouliUtils.isInVisualizer() ? RenderShape.MODEL : RenderShape.ENTITYBLOCK_ANIMATED;
+		return BotaniaConfig.client().staticFloaters() || PatchouliUtils.isInVisualizer() ? RenderShape.MODEL : RenderShape.MODEL;
 	}
 
 	@Override
@@ -80,7 +81,13 @@ public class FloatingFlowerBlock extends BotaniaWaterloggedBlock implements Enti
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+	protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level world, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hit) {
+		return useItemOn(itemStack, world, player, hand, hit);
+	}
+
+	private InteractionResult useItemOn(ItemStack itemStack, Level world, Player player, InteractionHand hand, BlockHitResult hit) {
+		BlockPos pos = hit.getBlockPos();
+
 		ItemStack stack = player.getItemInHand(hand);
 		BlockEntity te = world.getBlockEntity(pos);
 		if (!stack.isEmpty() && te instanceof FloatingFlowerProvider provider && provider.getFloatingData() != null) {
@@ -96,7 +103,7 @@ public class FloatingFlowerBlock extends BotaniaWaterloggedBlock implements Enti
 			}
 
 			if (type != null && type != flower.getIslandType()) {
-				if (!world.isClientSide) {
+				if (!world.isClientSide()) {
 					flower.setIslandType(type);
 					VanillaPacketDispatcher.dispatchTEToNearbyPlayers(te);
 				}
@@ -104,7 +111,7 @@ public class FloatingFlowerBlock extends BotaniaWaterloggedBlock implements Enti
 				if (!player.getAbilities().instabuild) {
 					stack.shrink(1);
 				}
-				return InteractionResult.sidedSuccess(world.isClientSide());
+				return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 			}
 		}
 		return InteractionResult.PASS;

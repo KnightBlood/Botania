@@ -9,19 +9,14 @@
 package vazkii.botania.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
 
-import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
 import vazkii.botania.client.core.handler.MiscellaneousModels;
@@ -31,20 +26,41 @@ import vazkii.botania.common.helper.VecHelper;
 
 import java.util.Random;
 
-public class BabylonWeaponRenderer extends EntityRenderer<BabylonWeaponEntity> {
+public class BabylonWeaponRenderer extends EntityRenderer<BabylonWeaponEntity, BabylonWeaponRenderer.BabylonWeaponRenderState> {
 
 	public BabylonWeaponRenderer(EntityRendererProvider.Context ctx) {
 		super(ctx);
 	}
 
 	@Override
-	public void render(@NotNull BabylonWeaponEntity weapon, float yaw, float partialTicks, PoseStack ms, MultiBufferSource buffers, int light) {
-		ms.pushPose();
-		ms.mulPose(VecHelper.rotateY(weapon.getRotation()));
+	public BabylonWeaponRenderState createRenderState() {
+		return new BabylonWeaponRenderState();
+	}
 
-		int live = weapon.getLiveTicks();
-		int delay = weapon.getDelay();
-		float charge = Math.min(10F, Math.max(live, weapon.getChargeTicks()) + partialTicks);
+	@Override
+	public void extractRenderState(BabylonWeaponEntity weapon, BabylonWeaponRenderState state, float partialTicks) {
+		super.extractRenderState(weapon, state, partialTicks);
+		state.rotation = weapon.getRotation();
+		state.liveTicks = weapon.getLiveTicks();
+		state.delay = weapon.getDelay();
+		state.chargeTicks = weapon.getChargeTicks();
+		state.variety = weapon.getVariety();
+		state.randSeed = weapon.getUUID().getMostSignificantBits();
+		state.tickCount = weapon.tickCount;
+		state.partialTick = partialTicks;
+	}
+
+	@Override
+	public void submit(BabylonWeaponRenderState state, PoseStack ms, SubmitNodeCollector collector, CameraRenderState camera) {
+		super.submit(state, ms, collector, camera);
+
+		float partialTicks = state.partialTick;
+		ms.pushPose();
+		ms.mulPose(VecHelper.rotateY(state.rotation));
+
+		int live = state.liveTicks;
+		int delay = state.delay;
+		float charge = Math.min(10F, Math.max(live, state.chargeTicks) + partialTicks);
 		float chargeMul = charge / 10F;
 
 		ms.pushPose();
@@ -54,11 +70,11 @@ public class BabylonWeaponRenderer extends EntityRenderer<BabylonWeaponEntity> {
 		ms.mulPose(VecHelper.rotateY(90F)); // Rotate to make it match facing, instead of perpendicular to the circle
 		ms.mulPose(VecHelper.rotateZ(-45F)); // Perpendicular to the ground, instead of the rising 45 deg of the sprite
 
-		BakedModel model = MiscellaneousModels.INSTANCE.kingKeyWeaponModels[weapon.getVariety()];
-		Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(ms.last(), buffers.getBuffer(Sheets.translucentItemSheet()), null, model, 1, 1, 1, 0xF000F0, OverlayTexture.NO_OVERLAY);
+		var model = MiscellaneousModels.INSTANCE.kingKeyWeaponModels[state.variety];
+		RenderHelper.renderBlockModel(ms, collector, null, model, 0xF000F0, OverlayTexture.NO_OVERLAY);
 		ms.popPose();
 
-		Random rand = new Random(weapon.getUUID().getMostSignificantBits());
+		Random rand = new Random(state.randSeed);
 		ms.mulPose(VecHelper.rotateX(-90F)); // Lay the circle horizontally
 		ms.translate(0F, -0.3F + rand.nextFloat() * 0.1F, 0F); // Randomly offset how deep the item is in the circle
 
@@ -69,22 +85,35 @@ public class BabylonWeaponRenderer extends EntityRenderer<BabylonWeaponEntity> {
 		s *= 2F;
 		ms.scale(s, s, s);
 
-		ms.mulPose(VecHelper.rotateY(charge * 9F + (weapon.tickCount + partialTicks) * 0.5F + rand.nextFloat() * 360F));
+		ms.mulPose(VecHelper.rotateY(charge * 9F + (state.tickCount + partialTicks) * 0.5F + rand.nextFloat() * 360F));
 
-		VertexConsumer buffer = buffers.getBuffer(RenderHelper.BABYLON_ICON);
-		Matrix4f mat = ms.last().pose();
-		buffer.vertex(mat, -1, 0, -1).color(1, 1, 1, chargeMul).uv(0, 0).endVertex();
-		buffer.vertex(mat, -1, 0, 1).color(1, 1, 1, chargeMul).uv(0, 1).endVertex();
-		buffer.vertex(mat, 1, 0, 1).color(1, 1, 1, chargeMul).uv(1, 1).endVertex();
-		buffer.vertex(mat, 1, 0, -1).color(1, 1, 1, chargeMul).uv(1, 0).endVertex();
+		final float cm = chargeMul;
+		collector.submitCustomGeometry(ms, RenderHelper.BABYLON_ICON, (pose, buffer) -> {
+			Matrix4f mat = pose.pose();
+			// 26.1: BABYLON_ICON runs on the ITEM_CUTOUT pipeline whose vertex format is
+			// DefaultVertexFormat.ENTITY, so overlay (UV1), lightmap (UV2) and normal must be set.
+			buffer.addVertex(mat, -1, 0, -1).setColor(1, 1, 1, cm).setUv(0, 0)
+					.setOverlay(OverlayTexture.NO_OVERLAY).setUv2(240, 240).setNormal(pose, 0, 1, 0);
+			buffer.addVertex(mat, -1, 0, 1).setColor(1, 1, 1, cm).setUv(0, 1)
+					.setOverlay(OverlayTexture.NO_OVERLAY).setUv2(240, 240).setNormal(pose, 0, 1, 0);
+			buffer.addVertex(mat, 1, 0, 1).setColor(1, 1, 1, cm).setUv(1, 1)
+					.setOverlay(OverlayTexture.NO_OVERLAY).setUv2(240, 240).setNormal(pose, 0, 1, 0);
+			buffer.addVertex(mat, 1, 0, -1).setColor(1, 1, 1, cm).setUv(1, 0)
+					.setOverlay(OverlayTexture.NO_OVERLAY).setUv2(240, 240).setNormal(pose, 0, 1, 0);
+		});
 
 		ms.popPose();
 	}
 
-	@NotNull
-	@Override
-	public ResourceLocation getTextureLocation(@NotNull BabylonWeaponEntity entity) {
-		return InventoryMenu.BLOCK_ATLAS;
+	public static class BabylonWeaponRenderState extends EntityRenderState {
+		public float rotation;
+		public int liveTicks;
+		public int delay;
+		public int chargeTicks;
+		public int variety;
+		public long randSeed;
+		public int tickCount;
+		public float partialTick;
 	}
 
 }

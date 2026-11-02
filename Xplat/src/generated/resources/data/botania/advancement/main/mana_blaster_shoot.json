@@ -1,0 +1,25 @@
+{
+  "parent": "botania:main/rune_pickup",
+  "criteria": {
+    "shoot": {
+      "trigger": "botania:fire_mana_blaster"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.botania:manaBlasterShoot.desc"
+    },
+    "icon": {
+      "id": "botania:mana_gun"
+    },
+    "title": {
+      "translate": "advancement.botania:manaBlasterShoot"
+    }
+  },
+  "requirements": [
+    [
+      "shoot"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "botania:item/mana_pylon",
+    "model": {
+      "type": "botania:be_item",
+      "block": "botania:mana_pylon"
+    }
+  }
+}

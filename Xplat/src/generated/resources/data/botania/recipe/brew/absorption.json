@@ -1,0 +1,9 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:absorption",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:golden_apple",
+    "minecraft:potato"
+  ]
+}

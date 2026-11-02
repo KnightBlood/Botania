@@ -16,27 +16,37 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.Container;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.api.recipe.TerrestrialAgglomerationRecipe;
 import vazkii.botania.common.crafting.recipe.RecipeUtils;
+import vazkii.botania.common.helper.IngredientHelper;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import com.mojang.serialization.Codec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 
 public class RecipeTerraPlate implements TerrestrialAgglomerationRecipe {
-	private final ResourceLocation id;
+	private Identifier id;
 	private final int mana;
 	private final NonNullList<Ingredient> inputs;
-	private final ItemStack output;
+	private final ItemStackTemplate output;
 
-	public RecipeTerraPlate(ResourceLocation id, int mana, NonNullList<Ingredient> inputs, ItemStack output) {
+	public RecipeTerraPlate(Identifier id, int mana, NonNullList<Ingredient> inputs, ItemStackTemplate output) {
 		this.id = id;
 		this.mana = mana;
 		this.inputs = inputs;
@@ -49,9 +59,9 @@ public class RecipeTerraPlate implements TerrestrialAgglomerationRecipe {
 	}
 
 	@Override
-	public boolean matches(Container inv, @NotNull Level world) {
+	public boolean matches(RecipeInput inv, @NotNull Level world) {
 		int nonEmptySlots = 0;
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			if (!inv.getItem(i).isEmpty()) {
 				if (inv.getItem(i).getCount() > 1) {
 					return false;
@@ -60,20 +70,22 @@ public class RecipeTerraPlate implements TerrestrialAgglomerationRecipe {
 			}
 		}
 
-		IntOpenHashSet usedSlots = new IntOpenHashSet(inv.getContainerSize());
+		IntOpenHashSet usedSlots = new IntOpenHashSet(inv.size());
 		return RecipeUtils.matches(inputs, inv, usedSlots) && usedSlots.size() == nonEmptySlots;
 	}
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull Container inv, @NotNull RegistryAccess registries) {
-		return output.copy();
+	public ItemStack assemble(@NotNull RecipeInput inv) {
+		return output.create();
 	}
 
 	@NotNull
 	@Override
-	public ItemStack getResultItem(@NotNull RegistryAccess registries) {
-		return output;
+	public ItemStack getResultItem() {
+		// 26.1: the output is parsed as a template, so it is only materialized into a real
+		// stack once the item components have been bound.
+		return output.create();
 	}
 
 	@NotNull
@@ -84,7 +96,7 @@ public class RecipeTerraPlate implements TerrestrialAgglomerationRecipe {
 
 	@NotNull
 	@Override
-	public ResourceLocation getId() {
+	public Identifier getId() {
 		return id;
 	}
 
@@ -94,39 +106,21 @@ public class RecipeTerraPlate implements TerrestrialAgglomerationRecipe {
 		return BotaniaRecipeTypes.TERRA_PLATE_SERIALIZER;
 	}
 
-	public static class Serializer implements RecipeSerializer<RecipeTerraPlate> {
-		@NotNull
-		@Override
-		public RecipeTerraPlate fromJson(@NotNull ResourceLocation recipeId, @NotNull JsonObject json) {
-			int mana = GsonHelper.getAsInt(json, "mana");
-			JsonArray ingrs = GsonHelper.getAsJsonArray(json, "ingredients");
-			Ingredient[] ingredients = new Ingredient[ingrs.size()];
-			for (int i = 0; i < ingrs.size(); i++) {
-				ingredients[i] = Ingredient.fromJson(ingrs.get(i));
-			}
-			ItemStack output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
-			return new RecipeTerraPlate(recipeId, mana, NonNullList.of(Ingredient.EMPTY, ingredients), output);
-		}
+	public static final MapCodec<RecipeTerraPlate> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			Codec.INT.fieldOf("mana").forGetter(r -> r.mana),
+			IngredientHelper.CODEC.listOf().fieldOf("ingredients").forGetter(r -> r.inputs),
+			ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.output)
+	).apply(i, (mana, inputs, output) -> new RecipeTerraPlate(RecipeSerializers.UNKNOWN_ID,
+			mana, NonNullList.of(IngredientHelper.EMPTY, inputs.toArray(new Ingredient[0])), output)));
 
-		@Override
-		public RecipeTerraPlate fromNetwork(@NotNull ResourceLocation recipeId, FriendlyByteBuf buffer) {
-			int mana = buffer.readVarInt();
-			Ingredient[] ingredients = new Ingredient[buffer.readVarInt()];
-			for (int i = 0; i < ingredients.length; i++) {
-				ingredients[i] = Ingredient.fromNetwork(buffer);
-			}
-			ItemStack output = buffer.readItem();
-			return new RecipeTerraPlate(recipeId, mana, NonNullList.of(Ingredient.EMPTY, ingredients), output);
-		}
+	public static final StreamCodec<RegistryFriendlyByteBuf, RecipeTerraPlate> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.VAR_INT, r -> r.mana,
+			RecipeSerializers.ingredientList(), r -> r.inputs,
+			ItemStackTemplate.STREAM_CODEC, r -> r.output,
+			(mana, inputs, output) -> new RecipeTerraPlate(RecipeSerializers.UNKNOWN_ID,
+					mana, NonNullList.of(IngredientHelper.EMPTY, inputs.toArray(new Ingredient[0])), output)
+	);
 
-		@Override
-		public void toNetwork(FriendlyByteBuf buffer, RecipeTerraPlate recipe) {
-			buffer.writeVarInt(recipe.mana);
-			buffer.writeVarInt(recipe.getIngredients().size());
-			for (Ingredient ingr : recipe.getIngredients()) {
-				ingr.toNetwork(buffer);
-			}
-			buffer.writeItem(recipe.output);
-		}
-	}
+	public static final RecipeSerializer<RecipeTerraPlate> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
+
 }

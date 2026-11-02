@@ -12,21 +12,27 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -52,12 +58,13 @@ import vazkii.botania.xplat.XplatAbstractions;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Consumer;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class TerraShattererItem extends ManasteelPickaxeItem implements SequentialBreaker, CustomCreativeTabContents {
 
-	private static final String TAG_ENABLED = "enabled";
+	public static final String TAG_ENABLED = "enabled";
 	private static final String TAG_MANA = "mana";
 	private static final String TAG_TIPPED = "tipped";
 
@@ -91,36 +98,36 @@ public class TerraShattererItem extends ManasteelPickaxeItem implements Sequenti
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> stacks, TooltipFlag flags) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
 		Component rank = Component.translatable("botania.rank" + getLevel(stack));
 		Component rankFormat = Component.translatable("botaniamisc.toolRank", rank);
-		stacks.add(rankFormat);
+		builder.accept(rankFormat);
 		var manaItem = XplatAbstractions.INSTANCE.findManaItem(stack);
 		if (manaItem != null && manaItem.getMana() == Integer.MAX_VALUE) {
-			stacks.add(Component.translatable("botaniamisc.getALife").withStyle(ChatFormatting.RED));
+			builder.accept(Component.translatable("botaniamisc.getALife").withStyle(ChatFormatting.RED));
 		}
 	}
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
+	public InteractionResult use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
-		int tier = getLevel(stack);
-		if (!player.isSecondaryUseActive() || tier == 0) {
-			return InteractionResultHolder.pass(stack);
+		int ToolMaterial = getLevel(stack);
+		if (!player.isSecondaryUseActive() || ToolMaterial == 0) {
+			return InteractionResult.PASS;
 		}
 		if (hand == InteractionHand.MAIN_HAND && !player.getOffhandItem().isEmpty()) {
 			BlockHitResult blockhitresult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
 
 			if (blockhitresult.getType() == HitResult.Type.BLOCK) {
-				return InteractionResultHolder.pass(stack);
+				return InteractionResult.PASS;
 			}
 		}
 		setEnabled(stack, !isEnabled(stack));
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			level.playSound(null, player.getX(), player.getY(), player.getZ(), BotaniaSounds.terraPickMode, SoundSource.PLAYERS, 1F, 1F);
 		}
-		return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+		return level.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(stack) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(stack);
 	}
 
 	@NotNull
@@ -138,8 +145,8 @@ public class TerraShattererItem extends ManasteelPickaxeItem implements Sequenti
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
-		super.inventoryTick(stack, world, entity, slot, selected);
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
+		super.inventoryTick(stack, world, entity, slot);
 		if (isEnabled(stack)) {
 			int level = getLevel(stack);
 
@@ -165,7 +172,7 @@ public class TerraShattererItem extends ManasteelPickaxeItem implements Sequenti
 	@SoftImplement("IForgeItem")
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player) {
 		BlockHitResult raycast = ToolCommons.raytraceFromEntity(player, 10, false);
-		if (!player.level().isClientSide && raycast.getType() == HitResult.Type.BLOCK) {
+		if (!player.level().isClientSide() && raycast.getType() == HitResult.Type.BLOCK) {
 			Direction face = raycast.getDirection();
 			breakOtherBlock(player, stack, pos, pos, face);
 			if (player.isSecondaryUseActive()) {
@@ -245,13 +252,14 @@ public class TerraShattererItem extends ManasteelPickaxeItem implements Sequenti
 		return ItemNBTHelper.getBoolean(stack, TAG_ENABLED, false);
 	}
 
-	void setEnabled(ItemStack stack, boolean enabled) {
+	public static void setEnabled(ItemStack stack, boolean enabled) {
 		ItemNBTHelper.setBoolean(stack, TAG_ENABLED, enabled);
 	}
 
 	protected static void setMana(ItemStack stack, int mana) {
 		if (mana > 0) {
 			ItemNBTHelper.setInt(stack, TAG_MANA, mana);
+			stack.set(DataComponents.RARITY, getRarity(stack));
 		} else {
 			ItemNBTHelper.removeEntry(stack, TAG_MANA);
 		}
@@ -334,9 +342,11 @@ public class TerraShattererItem extends ManasteelPickaxeItem implements Sequenti
 		return !after.is(this) || isEnabled(before) != isEnabled(after);
 	}
 
-	@NotNull
-	@Override
-	public Rarity getRarity(@NotNull ItemStack stack) {
+	/**
+	 * 26.1 removed {@code Item#getRarity}; the dynamic rank colour is applied via the
+	 * {@link net.minecraft.core.component.DataComponents#RARITY} component whenever mana is written.
+	 */
+	public static Rarity getRarity(@NotNull ItemStack stack) {
 		int level = getLevel(stack);
 		if (stack.isEnchanted()) {
 			level++;
@@ -350,3 +360,4 @@ public class TerraShattererItem extends ManasteelPickaxeItem implements Sequenti
 		return Rarity.UNCOMMON;
 	}
 }
+

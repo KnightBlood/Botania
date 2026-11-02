@@ -11,12 +11,17 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.inventory.InventoryMenu;
 
 import org.jetbrains.annotations.NotNull;
@@ -31,20 +36,20 @@ import java.util.Objects;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class ManaEnchanterBlockEntityRenderer implements BlockEntityRenderer<ManaEnchanterBlockEntity> {
+public class ManaEnchanterBlockEntityRenderer extends BotaniaBlockEntityRenderer<ManaEnchanterBlockEntity> {
 
 	private final TextureAtlasSprite overlaySprite;
 	private ItemEntity item;
 
 	public ManaEnchanterBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
 		this.overlaySprite = Objects.requireNonNull(
-				Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-						.apply(prefix("block/enchanter_overlay"))
+				Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
+						.getSprite(prefix("block/enchanter_overlay"))
 		);
 	}
 
 	@Override
-	public void render(@NotNull ManaEnchanterBlockEntity enchanter, float partTicks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@NotNull ManaEnchanterBlockEntity enchanter, float partTicks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		float alphaMod = 0F;
 
 		if (enchanter.stage == ManaEnchanterBlockEntity.State.GATHER_MANA) {
@@ -65,7 +70,7 @@ public class ManaEnchanterBlockEntityRenderer implements BlockEntityRenderer<Man
 			item.setItem(enchanter.itemToEnchant);
 
 			ms.translate(0.5F, 1.25F, 0.5F);
-			Minecraft.getInstance().getEntityRenderDispatcher().render(item, 0, 0, 0, 0, partTicks, ms, buffers, light);
+			buffers.renderEntity(item, partTicks, ms, 0, 0, 0);
 			ms.translate(-0.5F, -1.25F, -0.5F);
 		}
 

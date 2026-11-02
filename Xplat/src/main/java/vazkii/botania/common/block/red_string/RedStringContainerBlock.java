@@ -28,6 +28,7 @@ import vazkii.botania.xplat.XplatAbstractions;
 
 public class RedStringContainerBlock extends RedStringBlock {
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public RedStringContainerBlock(BlockBehaviour.Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.FACING, Direction.DOWN));

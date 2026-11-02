@@ -8,10 +8,11 @@
  */
 package vazkii.botania.mixin;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,8 +25,9 @@ public interface MobAccessor {
 	@Invoker("getAmbientSound")
 	SoundEvent botania_getAmbientSound();
 
+	// 26.1: the lootTable field is now Optional<ResourceKey<LootTable>>
 	@Accessor
-	void setLootTable(ResourceLocation id);
+	void setLootTable(java.util.Optional<ResourceKey<LootTable>> id);
 
 	@Accessor
 	GoalSelector getGoalSelector();

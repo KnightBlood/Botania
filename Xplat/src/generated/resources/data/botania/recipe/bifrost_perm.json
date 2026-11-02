@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "botania:rainbow_rod",
+    "botania:elf_glass"
+  ],
+  "result": {
+    "id": "botania:bifrost_perm"
+  }
+}

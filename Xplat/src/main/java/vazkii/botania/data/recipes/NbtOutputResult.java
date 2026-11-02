@@ -10,9 +10,9 @@ package vazkii.botania.data.recipes;
 
 import com.google.gson.JsonObject;
 
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 import org.jetbrains.annotations.Nullable;
@@ -21,20 +21,15 @@ import vazkii.botania.common.crafting.recipe.NbtOutputRecipe;
 
 import java.util.function.Consumer;
 
-public class NbtOutputResult implements FinishedRecipe {
-	private final FinishedRecipe innerRecipe;
+public class NbtOutputResult implements BotaniaFinishedRecipe {
+	private final BotaniaFinishedRecipe innerRecipe;
 	private final CompoundTag tag;
 
-	public NbtOutputResult(FinishedRecipe innerRecipe, CompoundTag tag) {
+	public NbtOutputResult(BotaniaFinishedRecipe innerRecipe, CompoundTag tag) {
 		this.innerRecipe = innerRecipe;
 		this.tag = tag;
 	}
 
-	public static Consumer<FinishedRecipe> with(Consumer<FinishedRecipe> parent, Consumer<CompoundTag> tagSetup) {
-		CompoundTag tag = new CompoundTag();
-		tagSetup.accept(tag);
-		return recipe -> parent.accept(new NbtOutputResult(recipe, tag));
-	}
 
 	@Override
 	public void serializeRecipeData(JsonObject json) {
@@ -42,8 +37,7 @@ public class NbtOutputResult implements FinishedRecipe {
 		json.addProperty("nbt", tag.toString());
 	}
 
-	@Override
-	public ResourceLocation getId() {
+		public Identifier getId() {
 		return innerRecipe.getId();
 	}
 
@@ -60,7 +54,7 @@ public class NbtOutputResult implements FinishedRecipe {
 
 	@Nullable
 	@Override
-	public ResourceLocation getAdvancementId() {
+	public Identifier getAdvancementId() {
 		return innerRecipe.getAdvancementId();
 	}
 }

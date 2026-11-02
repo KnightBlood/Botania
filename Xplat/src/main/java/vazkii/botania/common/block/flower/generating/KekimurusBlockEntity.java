@@ -32,13 +32,13 @@ public class KekimurusBlockEntity extends GeneratingFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide) {
+		if (getLevel().isClientSide()) {
 			return;
 		}
 
 		int mana = 1800;
 
-		if (getMaxMana() - this.getMana() >= mana && !getLevel().isClientSide && ticksExisted % 80 == 0) {
+		if (getMaxMana() - this.getMana() >= mana && !getLevel().isClientSide() && ticksExisted % 80 == 0) {
 			for (int i = 0; i < RANGE * 2 + 1; i++) {
 				for (int j = 0; j < RANGE * 2 + 1; j++) {
 					for (int k = 0; k < RANGE * 2 + 1; k++) {
@@ -56,7 +56,7 @@ public class KekimurusBlockEntity extends GeneratingFlowerBlockEntity {
 							getLevel().levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state));
 							getLevel().gameEvent(null, GameEvent.EAT, getEffectivePos());
 							//Usage of vanilla sound event: Subtitle is "Eating", generic sounds are meant to be reused.
-							getLevel().playSound(null, getEffectivePos(), SoundEvents.GENERIC_EAT, SoundSource.BLOCKS, 1F, 0.5F + (float) Math.random() * 0.5F);
+							getLevel().playSound(null, getEffectivePos(), SoundEvents.GENERIC_EAT.value(), SoundSource.BLOCKS, 1F, 0.5F + (float) Math.random() * 0.5F);
 							addMana(mana);
 							sync();
 							return;

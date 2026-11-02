@@ -9,10 +9,12 @@
 package vazkii.botania.common.item.lens;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -41,7 +43,7 @@ public class ForceLens extends Lens {
 				// warp+force should not move the force relay
 				return false;
 			}
-			if (entity.mayInteract(entity.level(), blockPos)) {
+			if (entity.mayInteract((ServerLevel) entity.level(), blockPos)) {
 				// mana burst could have been warped here, so don't assume that any block is unmovable
 				moveBlocks(entity.level(), blockPos.relative(rtr.getDirection()), rtr.getDirection().getOpposite(),
 						ManaBurst.NO_SOURCE);

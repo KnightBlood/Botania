@@ -9,8 +9,9 @@
 package vazkii.botania.common.block.mana;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.mana.PoolOverlayProvider;
 import vazkii.botania.common.block.BotaniaBlock;
@@ -18,14 +19,14 @@ import vazkii.botania.common.block.BotaniaBlock;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class AlchemyCatalystBlock extends BotaniaBlock implements PoolOverlayProvider {
-	private static final ResourceLocation OVERLAY_ICON = prefix("block/alchemy_catalyst_overlay");
+	private static final Identifier OVERLAY_ICON = prefix("block/alchemy_catalyst_overlay");
 
 	public AlchemyCatalystBlock(Properties builder) {
 		super(builder);
 	}
 
 	@Override
-	public ResourceLocation getIcon(Level world, BlockPos pos) {
+	public Identifier getIcon(Level world, BlockPos pos) {
 		return OVERLAY_ICON;
 	}
 

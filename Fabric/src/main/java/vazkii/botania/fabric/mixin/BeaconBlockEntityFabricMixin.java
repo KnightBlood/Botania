@@ -32,8 +32,8 @@ public class BeaconBlockEntityFabricMixin {
 		return obj;
 	}
 
-	@ModifyVariable(method = "tick", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/item/DyeColor;getTextureDiffuseColors()[F"))
-	private static float[] bifrostColor(float[] obj, Level level) {
+	@ModifyVariable(method = "tick", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/item/DyeColor;getTextureDiffuseColor()I"), ordinal = 0)
+	private static int bifrostColor(int obj, Level level) {
 		if (bifrost) {
 			return ((PermanentBifrostBlock) BotaniaBlocks.bifrostPerm).getBeaconColorMultiplier(
 					BotaniaBlocks.bifrostPerm.defaultBlockState(),

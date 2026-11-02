@@ -2,16 +2,15 @@ package vazkii.botania.forge.data;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.data.tags.TagsProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.data.BlockTagCopyingItemTagProvider;
 
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.helper.ColorHelper;
@@ -22,10 +21,10 @@ import java.util.concurrent.CompletableFuture;
 
 import static vazkii.botania.common.item.BotaniaItems.*;
 
-public class ForgeItemTagProvider extends ItemTagsProvider {
+public class ForgeItemTagProvider extends BlockTagCopyingItemTagProvider {
 	public ForgeItemTagProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider,
-			CompletableFuture<TagsProvider.TagLookup<Block>> blockTagProvider, ExistingFileHelper helper) {
-		super(packOutput, lookupProvider, blockTagProvider, LibMisc.MOD_ID, helper);
+			CompletableFuture<TagsProvider.TagLookup<Block>> blockTagProvider) {
+		super(packOutput, lookupProvider, blockTagProvider, LibMisc.MOD_ID);
 	}
 
 	@Override
@@ -56,7 +55,7 @@ public class ForgeItemTagProvider extends ItemTagsProvider {
 				.addTag(forge("nuggets/manasteel"))
 				.addTag(forge("nuggets/terrasteel"));
 
-		this.tag(Tags.Items.HEADS).add(BotaniaBlocks.gaiaHead.asItem());
+		this.tag(ItemTags.SKULLS).add(BotaniaBlocks.gaiaHead.asItem());
 
 		this.copyToSameName(ForgeBlockTagProvider.ELEMENTIUM);
 		this.copyToSameName(ForgeBlockTagProvider.MANASTEEL);
@@ -66,14 +65,14 @@ public class ForgeItemTagProvider extends ItemTagsProvider {
 		this.copyToSameName(ForgeBlockTagProvider.BLAZE_MESH);
 		ColorHelper.supportedColors().map(ForgeBlockTagProvider.PETAL_BLOCKS::get).forEach(this::copyToSameName);
 		this.copy(ForgeBlockTagProvider.MUSHROOMS, Tags.Items.MUSHROOMS);
-		this.copy(Tags.Blocks.STORAGE_BLOCKS_QUARTZ, Tags.Items.STORAGE_BLOCKS_QUARTZ);
+		this.copy(ForgeBlockTagProvider.STORAGE_QUARTZ, ItemTags.create(Identifier.fromNamespaceAndPath("c", "storage_blocks/quartz")));
 		this.copy(Tags.Blocks.STORAGE_BLOCKS, Tags.Items.STORAGE_BLOCKS);
-		this.copy(Tags.Blocks.GLASS, Tags.Items.GLASS);
+		this.copy(Tags.Blocks.GLASS_BLOCKS, Tags.Items.GLASS_BLOCKS);
 		this.copy(Tags.Blocks.GLASS_PANES, Tags.Items.GLASS_PANES);
 		this.copy(Tags.Blocks.FENCES_WOODEN, Tags.Items.FENCES_WOODEN);
 		this.copy(Tags.Blocks.FENCE_GATES_WOODEN, Tags.Items.FENCE_GATES_WOODEN);
 
-		this.tag(BotaniaTags.Items.LENS_GLUE).addTag(Tags.Items.SLIMEBALLS).add(Items.HONEY_BOTTLE);
+		this.tag(BotaniaTags.Items.LENS_GLUE).addTag(Tags.Items.SLIME_BALLS).add(Items.HONEY_BOTTLE);
 
 		this.generateToolTags();
 		this.generateAccessoryTags();
@@ -81,16 +80,16 @@ public class ForgeItemTagProvider extends ItemTagsProvider {
 	}
 
 	private void generateToolTags() {
-		this.tag(Tags.Items.SHEARS).add(manasteelShears, elementiumShears);
-		this.tag(Tags.Items.TOOLS_BOWS).add(livingwoodBow, crystalBow);
+		this.tag(Tags.Items.TOOLS_SHEAR).add(manasteelShears, elementiumShears);
+		this.tag(Tags.Items.TOOLS_BOW).add(livingwoodBow, crystalBow);
 
-		this.tag(Tags.Items.ARMORS_HELMETS).add(manasteelHelm, manaweaveHelm,
+		this.tag(ItemTags.HEAD_ARMOR).add(manasteelHelm, manaweaveHelm,
 				elementiumHelm, terrasteelHelm);
-		this.tag(Tags.Items.ARMORS_CHESTPLATES).add(manasteelChest, manaweaveChest,
+		this.tag(ItemTags.CHEST_ARMOR).add(manasteelChest, manaweaveChest,
 				elementiumChest, terrasteelChest);
-		this.tag(Tags.Items.ARMORS_LEGGINGS).add(manasteelLegs, manaweaveLegs,
+		this.tag(ItemTags.LEG_ARMOR).add(manasteelLegs, manaweaveLegs,
 				elementiumLegs, terrasteelLegs);
-		this.tag(Tags.Items.ARMORS_BOOTS).add(manasteelBoots, manaweaveBoots,
+		this.tag(ItemTags.FOOT_ARMOR).add(manasteelBoots, manaweaveBoots,
 				elementiumBoots, terrasteelBoots);
 	}
 
@@ -141,15 +140,15 @@ public class ForgeItemTagProvider extends ItemTagsProvider {
 	}
 
 	private static TagKey<Item> accessory(String name) {
-		return ItemTags.create(new ResourceLocation("curios", name));
+		return ItemTags.create(Identifier.fromNamespaceAndPath("curios", name));
 	}
 
 	private static TagKey<Item> forge(String name) {
-		return ItemTags.create(new ResourceLocation("forge", name));
+		return ItemTags.create(Identifier.fromNamespaceAndPath("forge", name));
 	}
 
 	private static TagKey<Item> quark(String name) {
-		return ItemTags.create(new ResourceLocation("quark", name));
+		return ItemTags.create(Identifier.fromNamespaceAndPath("quark", name));
 	}
 
 	private void copyToSameName(TagKey<Block> source) {

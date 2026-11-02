@@ -8,14 +8,12 @@
  */
 package vazkii.botania.client.gui.bag;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -26,47 +24,37 @@ import vazkii.botania.common.item.FlowerPouchItem;
 
 public class FlowerPouchGui extends AbstractContainerScreen<FlowerPouchContainer> {
 
-	private static final ResourceLocation texture = new ResourceLocation(ResourcesLib.GUI_FLOWER_BAG);
+	private static final Identifier texture = Identifier.parse(ResourcesLib.GUI_FLOWER_BAG);
 
 	public FlowerPouchGui(FlowerPouchContainer container, Inventory playerInv, Component title) {
-		super(container, playerInv, title);
-		imageHeight += 36;
-
-		// recompute, same as super
-		inventoryLabelY = imageHeight - 94;
+		// 176x166 default, plus 36 pixels of extra rows
+		super(container, playerInv, title, 176, 202);
 	}
 
 	@Override
-	public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTicks) {
-		this.renderBackground(gui);
-		super.render(gui, mouseX, mouseY, partialTicks);
-		this.renderTooltip(gui, mouseX, mouseY);
-	}
-
-	@Override
-	protected void renderBg(GuiGraphics gui, float partialTicks, int mouseX, int mouseY) {
-		PoseStack ms = gui.pose();
-		Minecraft mc = Minecraft.getInstance();
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+	protected void extractMenuBackground(GuiGraphicsExtractor gui) {
 		int k = (width - imageWidth) / 2;
 		int l = (height - imageHeight) / 2;
-		gui.blit(texture, k, l, 0, 0, imageWidth, imageHeight);
+		gui.blit(RenderPipelines.GUI_TEXTURED, texture, k, l, 0, 0, imageWidth, imageHeight, 256, 256);
+	}
+
+	@Override
+	protected void extractSlots(GuiGraphicsExtractor gui, int mouseX, int mouseY) {
+		super.extractSlots(gui, mouseX, mouseY);
 
 		for (Slot slot : menu.slots) {
-			if (slot.container == menu.flowerBagInv) {
-				int x = this.leftPos + slot.x;
-				int y = this.topPos + slot.y;
-				if (!slot.hasItem()) {
-					ItemStack missingFlower = new ItemStack(FlowerPouchItem.getFlowerForSlot(slot.index));
-					RenderHelper.renderGuiItemAlpha(missingFlower, x, y, 0x5F, mc.getItemRenderer());
-				} else if (slot.getItem().getCount() == 1) {
-					// Always draw the count even at 1
-					ms.pushPose();
-					// Same as how much vanilla offsets when drawing items in guis
-					ms.translate(0, 0, 200);
-					gui.drawString(mc.font, "1", x + 11, y + 9, 0xFFFFFF);
-					ms.popPose();
-				}
+			if (slot.container == menu.flowerBagInv && !slot.hasItem()) {
+				ItemStack missingFlower = new ItemStack(FlowerPouchItem.getFlowerForSlot(slot.index));
+				RenderHelper.renderGuiItemAlpha(gui, missingFlower, slot.x, slot.y, 0x5F, null);
+			}
+		}
+
+		gui.nextStratum();
+		Minecraft mc = Minecraft.getInstance();
+		for (Slot slot : menu.slots) {
+			if (slot.container == menu.flowerBagInv && slot.getItem().getCount() == 1) {
+				// Always draw the count even at 1
+				gui.text(mc.font, "1", slot.x + 11, slot.y + 9, 0xFFFFFF);
 			}
 		}
 	}

@@ -72,7 +72,8 @@ public class BlockStateStateIngredient implements StateIngredient {
 	@Nullable
 	@Override
 	public List<Component> descriptionTooltip() {
-		ImmutableMap<Property<?>, Comparable<?>> map = state.getValues();
+		ImmutableMap<Property<?>, Comparable<?>> map = state.getProperties().stream()
+				.collect(ImmutableMap.toImmutableMap(p -> p, p -> state.getValue(p)));
 		if (map.isEmpty()) {
 			return StateIngredient.super.descriptionTooltip();
 		}

@@ -1,23 +1,22 @@
 package vazkii.botania.fabric.xplat;
 
-import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
 import com.redlimerl.speedrunigt.timer.InGameTimer;
 
-import dev.emi.stepheightentityattribute.StepHeightEntityAttributeMain;
+import io.netty.buffer.Unpooled;
 
 import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.item.v1.FabricItem;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.fabricmc.fabric.api.object.builder.v1.block.type.BlockSetTypeRegistry;
-import net.fabricmc.fabric.api.object.builder.v1.block.type.WoodTypeRegistry;
-import net.fabricmc.fabric.api.registry.FuelRegistry;
+import net.fabricmc.fabric.api.object.builder.v1.block.type.BlockSetTypeBuilder;
+import net.fabricmc.fabric.api.object.builder.v1.block.type.WoodTypeBuilder;
 import net.fabricmc.fabric.api.registry.StrippableBlockRegistry;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -31,13 +30,20 @@ import net.fabricmc.fabric.mixin.transfer.BucketItemAccessor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
@@ -59,7 +65,7 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -68,6 +74,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FlowerBlock;
@@ -116,6 +123,7 @@ import vazkii.botania.fabric.internal_caps.CCAInternalEntityComponents;
 import vazkii.botania.fabric.mixin.AbstractFurnaceBlockEntityFabricAccessor;
 import vazkii.botania.network.BotaniaPacket;
 import vazkii.botania.xplat.XplatAbstractions;
+import vazkii.botania.fabric.network.FabricPacketHandler;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -130,6 +138,13 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 import static vazkii.botania.integration.speedrunigt.BotaniaSpeedrunCategories.BotaniaSpeedrunCategory;
 
 public class FabricXplatImpl implements XplatAbstractions {
+	/** 26.1: no static server accessor; kept in sync via ServerLifecycleEvents. */
+	private static volatile MinecraftServer currentServer;
+
+	public static void setCurrentServer(MinecraftServer server) {
+		currentServer = server;
+	}
+
 	@Override
 	public boolean isFabric() {
 		return true;
@@ -467,33 +482,34 @@ public class FabricXplatImpl implements XplatAbstractions {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Packet<ClientGamePacketListener> toVanillaClientboundPacket(BotaniaPacket packet) {
-		return ServerPlayNetworking.createS2CPacket(packet.getFabricId(), packet.toBuf());
+		return (Packet<ClientGamePacketListener>) (Packet<?>) new ClientboundCustomPayloadPacket(FabricPacketHandler.wrap(packet));
 	}
 
 	@Override
 	public void sendToPlayer(Player player, BotaniaPacket packet) {
 		if (player instanceof ServerPlayer serverPlayer) {
-			ServerPlayNetworking.send(serverPlayer, packet.getFabricId(), packet.toBuf());
+			ServerPlayNetworking.send(serverPlayer, FabricPacketHandler.wrap(packet));
 		}
 	}
 
 	@Override
 	public void sendToNear(Level level, BlockPos pos, BotaniaPacket packet) {
-		var pkt = ServerPlayNetworking.createS2CPacket(packet.getFabricId(), packet.toBuf());
+		var payload = FabricPacketHandler.wrap(packet);
 		for (var player : PlayerLookup.tracking((ServerLevel) level, pos)) {
 			if (player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 64 * 64) {
-				player.connection.send(pkt);
+				ServerPlayNetworking.send(player, payload);
 			}
 		}
 	}
 
 	@Override
 	public void sendToTracking(Entity e, BotaniaPacket packet) {
-		var pkt = ServerPlayNetworking.createS2CPacket(packet.getFabricId(), packet.toBuf());
-		PlayerLookup.tracking(e).forEach(p -> p.connection.send(pkt));
+		var payload = FabricPacketHandler.wrap(packet);
+		PlayerLookup.tracking(e).forEach(p -> ServerPlayNetworking.send(p, payload));
 		if (e instanceof ServerPlayer) {
-			((ServerPlayer) e).connection.send(pkt);
+			ServerPlayNetworking.send((ServerPlayer) e, payload);
 		}
 	}
 
@@ -503,7 +519,7 @@ public class FabricXplatImpl implements XplatAbstractions {
 	}
 
 	@Override
-	public FlowerBlock createSpecialFlowerBlock(MobEffect effect, int effectDuration, BlockBehaviour.Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> beType, boolean hasComparatorOutput) {
+	public FlowerBlock createSpecialFlowerBlock(Holder<MobEffect> effect, int effectDuration, BlockBehaviour.Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> beType, boolean hasComparatorOutput) {
 		return new FabricSpecialFlowerBlock(effect, effectDuration, props, beType, hasComparatorOutput);
 	}
 
@@ -513,40 +529,49 @@ public class FabricXplatImpl implements XplatAbstractions {
 	}
 
 	@Override
-	public void registerReloadListener(PackType type, ResourceLocation id, PreparableReloadListener listener) {
+	public void registerReloadListener(PackType type, Identifier id, PreparableReloadListener listener) {
 		ResourceManagerHelper.get(type).registerReloadListener(new IdentifiableResourceReloadListener() {
 			@Override
-			public CompletableFuture<Void> reload(PreparationBarrier barrier, ResourceManager manager, ProfilerFiller prepProfiler,
-					ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor) {
-				return listener.reload(barrier, manager, prepProfiler, reloadProfiler, backgroundExecutor, gameExecutor);
+			public CompletableFuture<Void> reload(PreparableReloadListener.SharedState state, Executor backgroundExecutor,
+					PreparationBarrier barrier, Executor gameExecutor) {
+				return listener.reload(state, backgroundExecutor, barrier, gameExecutor);
 			}
 
 			@Override
-			public ResourceLocation getFabricId() {
+			public Identifier getFabricId() {
 				return id;
 			}
 		});
 	}
 
 	@Override
-	public FabricItemSettings defaultItemBuilder() {
-		return new FabricItemSettings();
+	public Item.Properties defaultItemBuilder() {
+		return new Item.Properties();
 	}
 
 	@Override
 	public Item.Properties defaultItemBuilderWithCustomDamageOnFabric() {
-		return defaultItemBuilder().customDamage((stack, amount, entity, breakCallback) -> {
+		return ((FabricItem.Properties) defaultItemBuilder()).customDamage((stack, amount, entity, slot, breakCallback) -> {
 			var item = stack.getItem();
 			if (item instanceof CustomDamageItem cd) {
-				return cd.damageItem(stack, amount, entity, breakCallback);
+				return cd.damageItem(stack, amount, entity, onBroken -> breakCallback.run());
 			}
 			return amount;
 		});
 	}
 
+	private static final StreamCodec<RegistryFriendlyByteBuf, byte[]> BYTE_ARRAY_CODEC = StreamCodec.of(
+			(buf, data) -> buf.writeByteArray(data),
+			// 26.1: readByteArray is overloaded (ByteBuf) and (), a method reference is ambiguous here.
+			buf -> buf.readByteArray());
+
 	@Override
 	public <T extends AbstractContainerMenu> MenuType<T> createMenuType(TriFunction<Integer, Inventory, FriendlyByteBuf, T> constructor) {
-		return new ExtendedScreenHandlerType<>(constructor::apply);
+		// 26.1: ExtendedMenuType carries extra data through a StreamCodec; bridge the old
+		// FriendlyByteBuf-based factory with a byte[] payload.
+		return new ExtendedMenuType<>(
+				(syncId, inventory, data) -> constructor.apply(syncId, inventory, new FriendlyByteBuf(Unpooled.wrappedBuffer(data))),
+				BYTE_ARRAY_CODEC);
 	}
 
 	@Nullable
@@ -561,7 +586,12 @@ public class FabricXplatImpl implements XplatAbstractions {
 
 	@Override
 	public void openMenu(ServerPlayer player, MenuProvider menu, Consumer<FriendlyByteBuf> writeInitialData) {
-		var menuProvider = new ExtendedScreenHandlerFactory() {
+		var buf = new FriendlyByteBuf(Unpooled.buffer());
+		writeInitialData.accept(buf);
+		byte[] initialData = new byte[buf.readableBytes()];
+		buf.readBytes(initialData);
+
+		var menuProvider = new ExtendedMenuProvider<byte[]>() {
 			@Nullable
 			@Override
 			public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
@@ -574,24 +604,24 @@ public class FabricXplatImpl implements XplatAbstractions {
 			}
 
 			@Override
-			public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buf) {
-				writeInitialData.accept(buf);
+			public byte[] getScreenOpeningData(ServerPlayer player) {
+				return initialData;
 			}
 		};
 		player.openMenu(menuProvider);
 	}
 
 	@Override
-	public Attribute getReachDistanceAttribute() {
-		return ReachEntityAttributes.REACH;
+	public Holder<Attribute> getReachDistanceAttribute() {
+		return net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE;
 	}
 
 	@Override
-	public Attribute getStepHeightAttribute() {
-		return StepHeightEntityAttributeMain.STEP_HEIGHT;
+	public Holder<Attribute> getStepHeightAttribute() {
+		return net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT;
 	}
 
-	private final TagKey<Block> oreTag = TagKey.create(Registries.BLOCK, new ResourceLocation("c", "ores"));
+	private final TagKey<Block> oreTag = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("c", "ores"));
 
 	@Override
 	public TagKey<Block> getOreTag() {
@@ -599,9 +629,9 @@ public class FabricXplatImpl implements XplatAbstractions {
 	}
 
 	// No standard so we have to check both :wacko:
-	private final TagKey<Block> cGlass = TagKey.create(Registries.BLOCK, new ResourceLocation("c", "glass"));
-	private final TagKey<Block> cGlassBlocks = TagKey.create(Registries.BLOCK, new ResourceLocation("c", "glass_blocks"));
-	private final TagKey<Block> cGlassPanes = TagKey.create(Registries.BLOCK, new ResourceLocation("c", "glass_panes"));
+	private final TagKey<Block> cGlass = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("c", "glass"));
+	private final TagKey<Block> cGlassBlocks = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("c", "glass_blocks"));
+	private final TagKey<Block> cGlassPanes = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("c", "glass_panes"));
 
 	@Override
 	public boolean isInGlassTag(BlockState state) {
@@ -610,18 +640,26 @@ public class FabricXplatImpl implements XplatAbstractions {
 
 	@Override
 	public boolean canFurnaceBurn(AbstractFurnaceBlockEntity furnace, @Nullable Recipe<?> recipe, NonNullList<ItemStack> items, int maxStackSize) {
-		return AbstractFurnaceBlockEntityFabricAccessor.callCanBurn(furnace.getLevel().registryAccess(), recipe, items, maxStackSize);
+		// 26.1: vanilla's canBurn is a static output-capacity check; the recipe assembly moved to the caller
+		if (recipe == null || furnace.getLevel() == null) {
+			return false;
+		}
+		@SuppressWarnings({"unchecked", "rawtypes"})
+			ItemStack result = ((Recipe) recipe).assemble(new SingleRecipeInput(furnace.getItem(0)));
+		return !result.isEmpty()
+				&& AbstractFurnaceBlockEntityFabricAccessor.callCanBurn(items, maxStackSize, result);
 	}
 
 	@Override
 	public Fluid getBucketFluid(BucketItem item) {
-		return ((BucketItemAccessor) item).fabric_getFluid();
+		return ((BucketItemAccessor) item).fabric_getContent();
 	}
 
 	@Override
 	public int getSmeltingBurnTime(ItemStack stack) {
-		Integer v = FuelRegistry.INSTANCE.get(stack.getItem());
-		return v == null ? 0 : v;
+		// 26.1: FuelRegistry was removed; FuelValues are queried from the running server.
+		var server = currentServer;
+		return server == null ? 0 : server.fuelValues().burnDuration(stack);
 	}
 
 	@Override
@@ -652,7 +690,8 @@ public class FabricXplatImpl implements XplatAbstractions {
 	@Nullable
 	@Override
 	public FoodProperties getFoodProperties(ItemStack stack) {
-		return stack.getItem().getFoodProperties();
+		// 26.1: food data moved into DataComponents.FOOD.
+		return stack.get(DataComponents.FOOD);
 	}
 
 	@Override
@@ -662,7 +701,7 @@ public class FabricXplatImpl implements XplatAbstractions {
 
 	@Override
 	public boolean isRedStringContainerTarget(BlockEntity be) {
-		if (be.getLevel().isClientSide) {
+		if (be.getLevel().isClientSide()) {
 			return false;
 		}
 		for (Direction value : Direction.values()) {
@@ -680,15 +719,32 @@ public class FabricXplatImpl implements XplatAbstractions {
 
 	@Override
 	public BlockSetType registerBlockSetType(String name, boolean canOpenByHand, SoundType soundType, SoundEvent doorClose, SoundEvent doorOpen, SoundEvent trapdoorClose, SoundEvent trapdoorOpen, SoundEvent pressurePlateClickOff, SoundEvent pressurePlateClickOn, SoundEvent buttonClickOff, SoundEvent buttonClickOn) {
-		return BlockSetTypeRegistry.register(prefix(name), canOpenByHand, soundType, doorClose, doorOpen, trapdoorClose, trapdoorOpen, pressurePlateClickOff, pressurePlateClickOn, buttonClickOff, buttonClickOn);
+		return new BlockSetTypeBuilder()
+				.openableByHand(canOpenByHand)
+				.soundType(soundType)
+				.doorCloseSound(doorClose)
+				.doorOpenSound(doorOpen)
+				.trapdoorCloseSound(trapdoorClose)
+				.trapdoorOpenSound(trapdoorOpen)
+				.pressurePlateClickOffSound(pressurePlateClickOff)
+				.pressurePlateClickOnSound(pressurePlateClickOn)
+				.buttonClickOffSound(buttonClickOff)
+				.buttonClickOnSound(buttonClickOn)
+				.register(prefix(name));
 	}
 
 	@Override
 	public WoodType registerWoodType(String name, BlockSetType setType, SoundType soundType, SoundType hangingSignSoundType, SoundEvent fenceGateClose, SoundEvent fenceGateOpen) {
-		return WoodTypeRegistry.register(prefix(name), setType, soundType, hangingSignSoundType, fenceGateClose, fenceGateOpen);
+		return new WoodTypeBuilder()
+				.soundType(soundType)
+				.hangingSignSoundType(hangingSignSoundType)
+				.fenceGateCloseSound(fenceGateClose)
+				.fenceGateOpenSound(fenceGateOpen)
+				.register(prefix(name), setType);
 	}
 
-	private final boolean speedrunIGTLoaded = isModLoaded("speedrunigt");
+	// direct FabricLoader call: field initializers must not invoke overridable methods (this-escape)
+	private final boolean speedrunIGTLoaded = FabricLoader.getInstance().isModLoaded("speedrunigt");
 
 	@Override
 	public boolean isRunningCategory(BotaniaSpeedrunCategory category) {

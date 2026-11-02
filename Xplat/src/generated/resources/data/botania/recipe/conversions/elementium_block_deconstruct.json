@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#botania:elementium_blocks"
+  ],
+  "result": {
+    "count": 9,
+    "id": "botania:elementium_ingot"
+  }
+}

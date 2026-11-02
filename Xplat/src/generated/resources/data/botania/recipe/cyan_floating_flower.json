@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "botania:floating_flowers",
+  "key": {
+    "D": "minecraft:dirt",
+    "F": "botania:cyan_shiny_flower",
+    "S": "botania:grass_seeds"
+  },
+  "pattern": [
+    "F",
+    "S",
+    "D"
+  ],
+  "result": {
+    "id": "botania:cyan_floating_flower"
+  }
+}

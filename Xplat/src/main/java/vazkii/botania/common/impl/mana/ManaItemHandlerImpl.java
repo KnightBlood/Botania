@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 
+import vazkii.botania.common.helper.EnchHelper;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.item.ManaProficiencyArmor;
 import vazkii.botania.api.mana.*;
@@ -37,7 +38,8 @@ public class ManaItemHandlerImpl implements ManaItemHandler {
 
 		List<ItemStack> toReturn = new ArrayList<>();
 
-		for (ItemStack stackInSlot : Iterables.concat(player.getInventory().items, player.getInventory().offhand)) {
+		for (ItemStack stackInSlot : Iterables.concat(player.getInventory().getNonEquipmentItems(),
+				java.util.List.of(player.getItemBySlot(EquipmentSlot.OFFHAND)))) {
 			if (!stackInSlot.isEmpty() && XplatAbstractions.INSTANCE.findManaItem(stackInSlot) != null) {
 				toReturn.add(stackInSlot);
 			}
@@ -267,14 +269,14 @@ public class ManaItemHandlerImpl implements ManaItemHandler {
 	@Override
 	public float getFullDiscountForTools(Player player, ItemStack tool) {
 		float discount = 0F;
-		for (int i = 0; i < player.getInventory().armor.size(); i++) {
-			ItemStack armor = player.getInventory().armor.get(i);
+		for (EquipmentSlot slot : EquipmentSlot.values()) {
+			ItemStack armor = player.getItemBySlot(slot);
 			if (!armor.isEmpty() && armor.getItem() instanceof ManaDiscountArmor discountArmor) {
-				discount += discountArmor.getDiscount(armor, i, player, tool);
+				discount += discountArmor.getDiscount(armor, slot.getIndex(), player, tool);
 			}
 		}
 
-		int unbreaking = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, tool);
+		int unbreaking = EnchHelper.getItemEnchantmentLevel(tool, Enchantments.UNBREAKING);
 		discount += unbreaking * 0.05F;
 		discount = XplatAbstractions.INSTANCE.fireManaDiscountEvent(player, discount, tool);
 
@@ -286,7 +288,7 @@ public class ManaItemHandlerImpl implements ManaItemHandler {
 		boolean proficient = false;
 
 		for (EquipmentSlot e : EquipmentSlot.values()) {
-			if (e.getType() != EquipmentSlot.Type.ARMOR) {
+			if (e.getType() != EquipmentSlot.Type.HUMANOID_ARMOR) {
 				continue;
 			}
 			ItemStack stack = player.getItemBySlot(e);

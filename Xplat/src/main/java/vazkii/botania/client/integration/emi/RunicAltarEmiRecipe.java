@@ -5,8 +5,8 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 import vazkii.botania.api.recipe.RunicAltarRecipe;
 import vazkii.botania.common.block.BotaniaBlocks;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class RunicAltarEmiRecipe extends BotaniaEmiRecipe {
-	private static final ResourceLocation TEXTURE = prefix("textures/gui/petal_overlay.png");
+	private static final Identifier TEXTURE = prefix("textures/gui/petal_overlay.png");
 	private static final EmiStack LIVINGROCK = EmiStack.of(BotaniaBlocks.livingrock);
 	private static final EmiStack ALTAR = EmiStack.of(BotaniaBlocks.runeAltar);
 	public static final int CENTER_X = 44;
@@ -31,8 +31,9 @@ public class RunicAltarEmiRecipe extends BotaniaEmiRecipe {
 	private final List<EmiIngredient> ingredients;
 	private final int mana;
 
-	public RunicAltarEmiRecipe(RunicAltarRecipe recipe) {
-		super(BotaniaEmiPlugin.RUNIC_ALTAR, recipe);
+	public RunicAltarEmiRecipe(RecipeHolder<RunicAltarRecipe> holder) {
+		super(BotaniaEmiPlugin.RUNIC_ALTAR, holder);
+		RunicAltarRecipe recipe = holder.value();
 		this.ingredients = recipe.getIngredients().stream().map(EmiIngredient::of).toList();
 		this.input = Stream.concat(ingredients.stream(), Stream.of(LIVINGROCK)).toList();
 		// TODO classify these as catalysts instead?
@@ -43,8 +44,7 @@ public class RunicAltarEmiRecipe extends BotaniaEmiRecipe {
 				}
 			}
 		}
-		// TODO 1.19.4 figure out the proper way to get a registry access
-		this.output = List.of(EmiStack.of(recipe.getResultItem(RegistryAccess.EMPTY)));
+		this.output = List.of(EmiStack.of(recipe.getResultItem()));
 		this.mana = recipe.getManaUsage();
 	}
 

@@ -12,12 +12,14 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.ItemTagsProvider;
-import net.minecraft.data.tags.TagsProvider;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
+import net.minecraft.data.tags.TagAppender;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagBuilder;
+import net.minecraft.tags.TagEntry;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -28,17 +30,85 @@ import vazkii.botania.common.item.lens.LensItem;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.common.lib.LibMisc;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static vazkii.botania.common.item.BotaniaItems.*;
 
-public class ItemTagProvider extends ItemTagsProvider {
-	public ItemTagProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagsProvider.TagLookup<Block>> blockTagProvider) {
-		super(packOutput, lookupProvider, blockTagProvider);
+public class ItemTagProvider extends IntrinsicHolderTagsProvider<Item> implements PublicAddTags<Item> {
+	private final BlockTagProvider blockTags;
+
+	public ItemTagProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider, BlockTagProvider blockTags) {
+		super(packOutput, Registries.ITEM, lookupProvider, item -> item.builtInRegistryHolder().key());
+		this.blockTags = blockTags;
+	}
+
+	/**
+	 * Mirrors the contents of a block tag into the matching item tag, mapping every block element to its
+	 * item form. 26.1 has no {@code ItemTagsProvider.copy} anymore and its tag files are untyped on disk,
+	 * so referencing the block tag from the item tag would make the tag reference itself.
+	 * <p>
+	 * Only valid because providers run one after another: the block tag provider has to be registered
+	 * (and therefore have run) before this provider reads its entries.
+	 */
+	protected void copy(TagKey<Block> blockTag, TagKey<Item> itemTag) {
+		List<Identifier> nestedTags = new ArrayList<>();
+		List<Block> blocks = new ArrayList<>();
+		for (TagEntry entry : this.blockTags.rawEntries(blockTag)) {
+			entry.visitRequiredDependencies(nestedTags::add);
+			entry.visitOptionalDependencies(nestedTags::add);
+			// TagEntry exposes no accessors, so entries are resolved against the block registry directly.
+			// Nested tag references resolve to nothing here; they are re-added as references below.
+			if (!entry.build(BLOCK_LOOKUP, blocks::add)) {
+				throw new IllegalStateException("Block tag " + blockTag.location()
+						+ " references " + entry + ", which does not exist");
+			}
+		}
+
+		TagBuilder target = this.getOrCreateRawBuilder(itemTag);
+		for (Block block : blocks) {
+			Item item = block.asItem();
+			if (item == Items.AIR) {
+				throw new IllegalStateException("Cannot mirror block " + BuiltInRegistries.BLOCK.getKey(block)
+						+ " into item tag " + itemTag.location() + ": the block has no item form");
+			}
+			target.addElement(BuiltInRegistries.ITEM.getKey(item));
+		}
+		// Nested references stay references: the same-named tag in the item registry is the counterpart.
+		nestedTags.forEach(target::addTag);
+	}
+
+	private static final TagEntry.Lookup<Block> BLOCK_LOOKUP = new TagEntry.Lookup<>() {
+		@Override
+		public Block element(Identifier key, boolean required) {
+			return BuiltInRegistries.BLOCK.getOptional(key).orElse(null);
+		}
+
+		@Override
+		public Collection<Block> tag(Identifier key) {
+			return List.of();
+		}
+	};
+
+	/**
+	 * Adds optional item entries that may not be registered (e.g. from other mods).
+	 */
+	protected void addOptional(TagKey<Item> tag, Identifier... ids) {
+		TagBuilder builder = this.getOrCreateRawBuilder(tag);
+		for (Identifier id : ids) {
+			builder.addOptionalElement(id);
+		}
+	}
+
+	protected void addOptionalTag(TagKey<Item> tag, Identifier id) {
+		this.getOrCreateRawBuilder(tag).addOptionalTag(id);
 	}
 
 	@Override
-	protected void addTags(HolderLookup.Provider provider) {
+	public void addTags(HolderLookup.Provider provider) {
 		this.tag(ItemTags.AXES).add(manasteelAxe, elementiumAxe, terraAxe);
 		this.tag(ItemTags.HOES).add(manasteelHoe, elementiumHoe);
 		this.tag(ItemTags.PICKAXES).add(manasteelPick, elementiumPick, terraPick, glassPick);
@@ -74,21 +144,21 @@ public class ItemTagProvider extends ItemTagsProvider {
 				.addTag(BotaniaTags.Items.SPECIAL_FLOWERS)
 				.add(BotaniaBlocks.motifDaybloom.asItem(), BotaniaBlocks.motifNightshade.asItem());
 
-		this.tag(ItemTags.TALL_FLOWERS).addTag(BotaniaTags.Items.DOUBLE_MYSTICAL_FLOWERS);
+		this.tag(ItemTags.FLOWERS).addTag(BotaniaTags.Items.DOUBLE_MYSTICAL_FLOWERS);
 		this.tag(ItemTags.SMALL_FLOWERS).addTag(BotaniaTags.Items.MYSTICAL_FLOWERS).addTag(BotaniaTags.Items.SPECIAL_FLOWERS)
 				.add(BotaniaBlocks.motifDaybloom.asItem(), BotaniaBlocks.motifNightshade.asItem(), BotaniaBlocks.motifHydroangeas.asItem());
 
 		this.tag(BotaniaTags.Items.BURST_VIEWERS).add(monocle);
 		this.tag(BotaniaTags.Items.TERRA_PICK_BLACKLIST).add(auraRing, auraRingGreater, terrasteelHelm, spark);
-		TagsProvider.TagAppender<Item> builder = this.tag(BotaniaTags.Items.LENS);
-		BuiltInRegistries.ITEM.stream().filter(i -> i instanceof LensItem && BuiltInRegistries.ITEM.getKey(i).getNamespace().equals(LibMisc.MOD_ID))
-				.map(BuiltInRegistries.ITEM::getKey)
-				.sorted()
-				.forEach(item -> builder.add(ResourceKey.create(Registries.ITEM, item)));
+		TagAppender<Item, Item> builder = this.tag(BotaniaTags.Items.LENS);
+		BuiltInRegistries.ITEM.stream()
+				.filter(i -> i instanceof LensItem && BuiltInRegistries.ITEM.getKey(i).getNamespace().equals(LibMisc.MOD_ID))
+				.sorted(Comparator.comparing(i -> BuiltInRegistries.ITEM.getKey(i)))
+				.forEach(builder::add);
 
 		this.tag(ItemTags.PIGLIN_LOVED).add(BotaniaBlocks.alchemyCatalyst.asItem(), divaCharm,
 				BotaniaBlocks.hourglass.asItem(), BotaniaBlocks.manaPylon.asItem(), monocle);
-		this.tag(ItemTags.MUSIC_DISCS).add(recordGaia1, recordGaia2);
+		this.tag(ItemTags.CREEPER_DROP_MUSIC_DISCS).add(recordGaia1, recordGaia2);
 		this.tag(ItemTags.CLUSTER_MAX_HARVESTABLES).add(manasteelPick, elementiumPick, terraPick, glassPick);
 		this.tag(ItemTags.LECTERN_BOOKS).add(lexicon);
 		this.tag(ItemTags.BOOKSHELF_BOOKS).add(lexicon);
@@ -123,11 +193,12 @@ public class ItemTagProvider extends ItemTagsProvider {
 		this.tag(BotaniaTags.Items.SEMI_DISPOSABLE).add(Items.ANDESITE, Items.DIORITE, Items.GRANITE,
 				Items.TUFF, Items.CALCITE, Items.STONE, Items.BASALT, Items.BLACKSTONE,
 				Items.DEEPSLATE, Items.DRIPSTONE_BLOCK, Items.POINTED_DRIPSTONE, Items.MOSS_BLOCK,
-				Items.SANDSTONE, Items.RED_SANDSTONE)
-				.addOptional(new ResourceLocation("quark", "jasper"))
-				.addOptional(new ResourceLocation("quark", "limestone"))
-				.addOptional(new ResourceLocation("quark", "marble"))
-				.addOptional(new ResourceLocation("quark", "slate"));
+				Items.SANDSTONE, Items.RED_SANDSTONE);
+		this.addOptional(BotaniaTags.Items.SEMI_DISPOSABLE,
+				Identifier.fromNamespaceAndPath("quark", "jasper"),
+				Identifier.fromNamespaceAndPath("quark", "limestone"),
+				Identifier.fromNamespaceAndPath("quark", "marble"),
+				Identifier.fromNamespaceAndPath("quark", "slate"));
 
 		this.tag(BotaniaTags.Items.RUNES).add(
 				runeWater, runeFire, runeEarth, runeAir,
@@ -136,7 +207,7 @@ public class ItemTagProvider extends ItemTagsProvider {
 				runeSloth, runeWrath, runeEnvy, runePride
 		);
 
-		TagAppender<Item> allPetals = this.tag(BotaniaTags.Items.PETALS);
+		TagAppender<Item, Item> allPetals = this.tag(BotaniaTags.Items.PETALS);
 		ColorHelper.supportedColors().forEach(color -> {
 			var petalTag = BotaniaTags.Items.getPetalTag(color);
 			this.tag(petalTag).add(getPetal(color), BotaniaBlocks.getMushroom(color).asItem());
@@ -145,7 +216,7 @@ public class ItemTagProvider extends ItemTagsProvider {
 
 		this.tag(BotaniaTags.Items.LOONIUM_BLACKLIST)
 				.add(lexicon, overgrowthSeed, blackLotus, blackerLotus)
-				.addTag(ItemTags.MUSIC_DISCS);
+				.addTag(ItemTags.CREEPER_DROP_MUSIC_DISCS);
 		this.tag(ItemTags.ARROWS);
 		this.tag(BotaniaTags.Items.LOONIUM_OFFHAND_EQUIPMENT)
 				.add(Items.FIREWORK_ROCKET, Items.TOTEM_OF_UNDYING)
@@ -235,8 +306,8 @@ public class ItemTagProvider extends ItemTagsProvider {
 				manaweaveHelm, manaweaveChest, manaweaveLegs, manaweaveBoots);
 
 		this.tag(BotaniaTags.Items.SEED_APOTHECARY_REAGENT)
-				.add(Items.WHEAT_SEEDS, Items.BEETROOT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS)
-				.addOptionalTag(new ResourceLocation("forge", "seeds"));
+				.add(Items.WHEAT_SEEDS, Items.BEETROOT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS);
+		this.addOptionalTag(BotaniaTags.Items.SEED_APOTHECARY_REAGENT, Identifier.fromNamespaceAndPath("forge", "seeds"));
 
 		this.tag(BotaniaTags.Items.PICKABLE_BLOCK_PROVIDER)
 				.add(dirtRod, skyDirtRod, cobbleRod, blackHoleTalisman);

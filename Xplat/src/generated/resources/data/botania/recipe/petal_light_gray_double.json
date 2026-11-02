@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:petal_double",
+  "ingredients": [
+    "botania:light_gray_double_flower"
+  ],
+  "result": {
+    "count": 4,
+    "id": "botania:light_gray_petal"
+  }
+}

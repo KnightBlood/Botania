@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": "#botania:terrasteel_ingots",
+    "P": "botania:mana_pearl",
+    "R": "botania:livingrock",
+    "S": "botania:livingwood_twig",
+    "T": "botania:mana_tablet"
+  },
+  "pattern": [
+    " PR",
+    " SI",
+    "T  "
+  ],
+  "result": {
+    "id": "botania:mana_mirror"
+  }
+}

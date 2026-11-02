@@ -1,16 +1,16 @@
 package vazkii.botania.forge.data;
 
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.data.tags.TagAppender;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.Tags;
 
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.helper.ColorHelper;
@@ -32,11 +32,13 @@ public class ForgeBlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 	public static final TagKey<Block> BLAZE_MESH = forge("storage_blocks/blaze_mesh");
 	public static final Map<DyeColor, TagKey<Block>> PETAL_BLOCKS = ColorHelper.supportedColors().collect(
 			Collectors.toMap(Function.identity(), color -> forge("storage_blocks/"
-					+ ForgeRegistries.BLOCKS.getKey(BotaniaBlocks.getPetalBlock(color)).getPath())));
+					+ BuiltInRegistries.BLOCK.getKey(BotaniaBlocks.getPetalBlock(color)).getPath())));
 
-	public ForgeBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> provider,
-			ExistingFileHelper existingFileHelper) {
-		super(output, Registries.BLOCK, provider, (block) -> block.builtInRegistryHolder().key(), LibMisc.MOD_ID, existingFileHelper);
+	public static final TagKey<Block> STORAGE_QUARTZ = TagKey.create(Registries.BLOCK,
+			Identifier.fromNamespaceAndPath("c", "storage_blocks/quartz"));
+
+	public ForgeBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> provider) {
+		super(output, Registries.BLOCK, provider, (block) -> block.builtInRegistryHolder().key(), LibMisc.MOD_ID);
 	}
 
 	@Override
@@ -46,12 +48,12 @@ public class ForgeBlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 
 	@Override
 	protected void addTags(HolderLookup.Provider provider) {
-		tag(Tags.Blocks.STORAGE_BLOCKS_QUARTZ).add(
+		tag(STORAGE_QUARTZ).add(
 				BotaniaBlocks.darkQuartz, BotaniaBlocks.manaQuartz, BotaniaBlocks.blazeQuartz,
 				BotaniaBlocks.lavenderQuartz, BotaniaBlocks.redQuartz, BotaniaBlocks.elfQuartz, BotaniaBlocks.sunnyQuartz
 		);
 
-		IntrinsicTagAppender<Block> storageBlocks = tag(Tags.Blocks.STORAGE_BLOCKS);
+		TagAppender<Block, Block> storageBlocks = tag(Tags.Blocks.STORAGE_BLOCKS);
 		ColorHelper.supportedColors().forEach(color -> {
 			tag(MUSHROOMS).add(BotaniaBlocks.getMushroom(color));
 			TagKey<Block> petalStorageBlockTag = PETAL_BLOCKS.get(color);
@@ -59,7 +61,7 @@ public class ForgeBlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 			storageBlocks.addTag(petalStorageBlockTag);
 		});
 
-		tag(TagKey.create(Registries.BLOCK, new ResourceLocation("buzzier_bees", "flower_blacklist")))
+		tag(TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("buzzier_bees", "flower_blacklist")))
 				.addTag(BotaniaTags.Blocks.MYSTICAL_FLOWERS)
 				.addTag(BotaniaTags.Blocks.SPECIAL_FLOWERS);
 
@@ -76,13 +78,13 @@ public class ForgeBlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 				.addTag(MANA_DIAMOND)
 				.addTag(DRAGONSTONE)
 				.addTag(BLAZE_MESH);
-		tag(Tags.Blocks.GLASS).add(BotaniaBlocks.manaGlass, BotaniaBlocks.elfGlass, BotaniaBlocks.bifrostPerm);
+		tag(Tags.Blocks.GLASS_BLOCKS).add(BotaniaBlocks.manaGlass, BotaniaBlocks.elfGlass, BotaniaBlocks.bifrostPerm);
 		tag(Tags.Blocks.GLASS_PANES).add(BotaniaBlocks.managlassPane, BotaniaBlocks.alfglassPane, BotaniaBlocks.bifrostPane);
 		tag(Tags.Blocks.FENCES_WOODEN).add(BotaniaBlocks.livingwoodFence, BotaniaBlocks.dreamwoodFence);
 		tag(Tags.Blocks.FENCE_GATES_WOODEN).add(BotaniaBlocks.livingwoodFenceGate, BotaniaBlocks.dreamwoodFenceGate);
 	}
 
 	private static TagKey<Block> forge(String name) {
-		return TagKey.create(Registries.BLOCK, new ResourceLocation("forge", name));
+		return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("forge", name));
 	}
 }

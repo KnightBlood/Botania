@@ -1,0 +1,10 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:clear",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:quartz",
+    "minecraft:emerald",
+    "minecraft:melon_slice"
+  ]
+}

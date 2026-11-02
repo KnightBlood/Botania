@@ -14,6 +14,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -30,7 +31,6 @@ import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.common.block.block_entity.SimpleInventoryBlockEntity;
 import vazkii.botania.mixin.HopperBlockEntityAccessor;
-import vazkii.botania.mixin.InventoryAccessor;
 
 import java.util.List;
 import java.util.function.Function;
@@ -167,7 +167,7 @@ public class InventoryHelper {
 
 			for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
 				ItemStack pstack = player.getInventory().getItem(i);
-				if (player.isCreative() || (!pstack.isEmpty() && ItemStack.isSameItemSameTags(stack, pstack))) {
+				if (player.isCreative() || (!pstack.isEmpty() && ItemStack.isSameItemSameComponents(stack, pstack))) {
 					inv.setItem(index, player.isCreative() ? stack.copy() : pstack.split(1));
 					didAny = true;
 					index++;
@@ -194,11 +194,15 @@ public class InventoryHelper {
 	 * @return {@code true} if the inventory contains an item of the specified type, otherwise {@code false}.
 	 */
 	public static boolean containsType(Inventory inventory, Item item) {
-		for (List<ItemStack> compartment : ((InventoryAccessor) inventory).getCompartments()) {
-			for (ItemStack stack : compartment) {
-				if (stack.is(item)) {
-					return true;
-				}
+		// 26.1: Inventory only holds non-equipment items now; armor/offhand live on the entity
+		for (ItemStack stack : inventory.getNonEquipmentItems()) {
+			if (stack.is(item)) {
+				return true;
+			}
+		}
+		for (EquipmentSlot slot : EquipmentSlot.values()) {
+			if (inventory.player.getItemBySlot(slot).is(item)) {
+				return true;
 			}
 		}
 

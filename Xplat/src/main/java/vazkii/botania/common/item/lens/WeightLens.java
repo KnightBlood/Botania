@@ -9,6 +9,8 @@
 package vazkii.botania.common.item.lens;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -18,6 +20,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,14 +37,14 @@ public class WeightLens extends Lens {
 	@Override
 	public boolean collideBurst(ManaBurst burst, HitResult pos, boolean isManaBlock, boolean shouldKill, ItemStack stack) {
 		Projectile entity = burst.entity();
-		if (!entity.level().isClientSide && !burst.isFake() && pos.getType() == HitResult.Type.BLOCK) {
+		if (!entity.level().isClientSide() && !burst.isFake() && pos.getType() == HitResult.Type.BLOCK) {
 			int harvestLevel = BotaniaConfig.common().harvestLevelWeight();
 
 			ServerLevel level = (ServerLevel) entity.level();
 			BlockPos bPos = ((BlockHitResult) pos).getBlockPos();
 			BlockState state = level.getBlockState(bPos);
 
-			if (entity.mayInteract(entity.level(), bPos)
+			if (entity.mayInteract((ServerLevel) entity.level(), bPos)
 					&& FallingBlock.isFree(level.getBlockState(bPos.below()))
 					&& state.getDestroySpeed(level, bPos) != -1
 					&& level.getBlockEntity(bPos) == null
@@ -65,7 +68,7 @@ public class WeightLens extends Lens {
 		if (harvestToolStack.isEmpty()) {
 			return false;
 		}
-		harvestToolStack.enchant(Enchantments.SILK_TOUCH, 1);
+		harvestToolStack.enchant(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH), 1);
 
 		Item blockItem = state.getBlock().asItem();
 		for (var drop : Block.getDrops(state, level, pos, null, owner, harvestToolStack)) {

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:metamorphic_fungal_cobblestone",
+  "result": {
+    "id": "botania:metamorphic_fungal_cobblestone_stairs"
+  }
+}

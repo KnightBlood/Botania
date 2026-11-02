@@ -3,6 +3,7 @@ package vazkii.botania.mixin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
 
 import org.spongepowered.asm.mixin.Mixin;

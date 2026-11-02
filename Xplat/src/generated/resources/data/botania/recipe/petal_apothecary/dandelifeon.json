@@ -1,0 +1,20 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/purple",
+    "#botania:petals/purple",
+    "#botania:petals/lime",
+    "#botania:petals/green",
+    "botania:rune_water",
+    "botania:rune_fire",
+    "botania:rune_earth",
+    "botania:rune_air",
+    "botania:redstone_root",
+    "botania:life_essence"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:dandelifeon"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

@@ -14,6 +14,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.LevelReader;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +36,7 @@ public class SolidVineBlock extends VineBlock {
 
 	@NotNull
 	@Override
-	public ItemStack getCloneItemStack(@NotNull BlockGetter world, @NotNull BlockPos pos, @NotNull BlockState state) {
+	protected ItemStack getCloneItemStack(LevelReader world, BlockPos pos, BlockState state, boolean includeData) {
 		return new ItemStack(Blocks.VINE);
 	}
 }

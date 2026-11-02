@@ -13,75 +13,96 @@
   ],
   "spawnedMobs": [
     {
-      "type": "minecraft:shulker",
-      "effectsToApply": [
-        {
-          "effect": "minecraft:fire_resistance"
-        },
-        {
-          "effect": "minecraft:regeneration"
-        },
-        {
-          "effect": "minecraft:water_breathing"
-        }
-      ],
+      "data": {
+        "type": "minecraft:shulker",
+        "effectsToApply": [
+          {
+            "effect": "minecraft:fire_resistance"
+          },
+          {
+            "effect": "minecraft:regeneration"
+          },
+          {
+            "effect": "minecraft:water_breathing"
+          }
+        ],
+        "weight": 100
+      },
       "weight": 100
     },
     {
-      "type": "minecraft:enderman",
+      "data": {
+        "type": "minecraft:enderman",
+        "weight": 300
+      },
       "weight": 300
     },
     {
-      "type": "minecraft:creeper",
-      "effectsToApply": [
-        {
-          "duration": 100,
-          "effect": "minecraft:fire_resistance"
-        },
-        {
-          "duration": 100,
-          "effect": "minecraft:regeneration"
-        },
-        {
-          "duration": 400,
-          "effect": "minecraft:slow_falling"
-        }
-      ],
+      "data": {
+        "type": "minecraft:creeper",
+        "effectsToApply": [
+          {
+            "duration": 100,
+            "effect": "minecraft:fire_resistance"
+          },
+          {
+            "duration": 100,
+            "effect": "minecraft:regeneration"
+          },
+          {
+            "duration": 400,
+            "effect": "minecraft:slow_falling"
+          }
+        ],
+        "weight": 99
+      },
       "weight": 99
     },
     {
-      "type": "minecraft:creeper",
-      "effectsToApply": [
-        {
-          "duration": 100,
-          "effect": "minecraft:fire_resistance"
+      "data": {
+        "type": "minecraft:creeper",
+        "effectsToApply": [
+          {
+            "duration": 100,
+            "effect": "minecraft:fire_resistance"
+          },
+          {
+            "duration": 100,
+            "effect": "minecraft:regeneration"
+          },
+          {
+            "duration": 400,
+            "effect": "minecraft:slow_falling"
+          }
+        ],
+        "nbt": {
+          "powered": 1
         },
-        {
-          "duration": 100,
-          "effect": "minecraft:regeneration"
-        },
-        {
-          "duration": 400,
-          "effect": "minecraft:slow_falling"
-        }
-      ],
-      "nbt": {
-        "powered": 1
+        "weight": 1
       },
       "weight": 1
     },
     {
-      "type": "minecraft:zombie",
-      "equipmentTable": "botania:equipment/loonium/zombie_end_city",
+      "data": {
+        "type": "minecraft:zombie",
+        "equipmentTable": "botania:equipment/loonium/zombie_end_city",
+        "weight": 300
+      },
       "weight": 300
     },
     {
-      "type": "minecraft:skeleton",
-      "equipmentTable": "botania:equipment/loonium/skeleton_end_city",
+      "data": {
+        "type": "minecraft:skeleton",
+        "equipmentTable": "botania:equipment/loonium/skeleton_end_city",
+        "weight": 300
+      },
       "weight": 300
     },
     {
-      "type": "minecraft:spider",
+      "data": {
+        "type": "minecraft:spider",
+        "weight": 300
+      },
       "weight": 300
     }
   ]

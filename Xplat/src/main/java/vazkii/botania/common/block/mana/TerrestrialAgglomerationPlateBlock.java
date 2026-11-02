@@ -28,15 +28,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.core.Direction;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.block.BotaniaWaterloggedBlock;
 import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
 import vazkii.botania.common.block.block_entity.TerrestrialAgglomerationPlateBlockEntity;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
-import vazkii.botania.mixin.RecipeManagerAccessor;
 
 public class TerrestrialAgglomerationPlateBlock extends BotaniaWaterloggedBlock implements EntityBlock {
 
@@ -53,10 +54,16 @@ public class TerrestrialAgglomerationPlateBlock extends BotaniaWaterloggedBlock 
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+	protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level world, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hit) {
+		return useItemOn(itemStack, world, player, hand, hit);
+	}
+
+	private InteractionResult useItemOn(ItemStack itemStack, Level world, Player player, InteractionHand hand, BlockHitResult hit) {
+		BlockPos pos = hit.getBlockPos();
+
 		ItemStack stack = player.getItemInHand(hand);
 		if (!stack.isEmpty() && usesItem(stack, world)) {
-			if (!world.isClientSide) {
+			if (!world.isClientSide()) {
 				ItemStack target = stack.split(1);
 				ItemEntity item = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, target);
 				item.setPickUpDelay(40);
@@ -64,15 +71,15 @@ public class TerrestrialAgglomerationPlateBlock extends BotaniaWaterloggedBlock 
 				world.addFreshEntity(item);
 			}
 
-			return InteractionResult.sidedSuccess(world.isClientSide());
+			return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 		}
 
 		return InteractionResult.PASS;
 	}
 
 	private static boolean usesItem(ItemStack stack, Level world) {
-		for (Recipe<?> value : ((RecipeManagerAccessor) world.getRecipeManager()).botania_getAll(BotaniaRecipeTypes.TERRA_PLATE_TYPE).values()) {
-			for (Ingredient i : value.getIngredients()) {
+		for (Recipe<?> value : BotaniaRecipeTypes.getRecipes(world, BotaniaRecipeTypes.TERRA_PLATE_TYPE).values()) {
+			for (Ingredient i : value.placementInfo().ingredients()) {
 				if (i.test(stack)) {
 					return true;
 				}
@@ -82,7 +89,7 @@ public class TerrestrialAgglomerationPlateBlock extends BotaniaWaterloggedBlock 
 	}
 
 	@Override
-	public boolean isPathfindable(@NotNull BlockState state, @NotNull BlockGetter world, @NotNull BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(@NotNull BlockState state, PathComputationType type) {
 		return false;
 	}
 
@@ -95,7 +102,7 @@ public class TerrestrialAgglomerationPlateBlock extends BotaniaWaterloggedBlock 
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			return createTickerHelper(type, BotaniaBlockEntities.TERRA_PLATE, TerrestrialAgglomerationPlateBlockEntity::serverTick);
 		}
 		return null;
@@ -107,7 +114,7 @@ public class TerrestrialAgglomerationPlateBlock extends BotaniaWaterloggedBlock 
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos) {
+	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
 		return world.getBlockEntity(pos) instanceof TerrestrialAgglomerationPlateBlockEntity plate
 				? plate.getComparatorLevel()
 				: 0;

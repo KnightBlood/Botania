@@ -8,8 +8,6 @@
  */
 package vazkii.botania.client.fx;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -84,13 +82,18 @@ public class WispParticleData implements ParticleOptions {
 		}
 	}
 
+	public static WispParticleData fromNetwork(FriendlyByteBuf buf) {
+		return new WispParticleData(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(),
+				buf.readBoolean(), buf.readBoolean(), buf.readFloat());
+	}
+
 	@NotNull
 	@Override
 	public ParticleType<WispParticleData> getType() {
 		return BotaniaParticles.WISP;
 	}
 
-	@Override
+	// MC 26.1: no longer part of ParticleOptions, kept as helper for the stream codec
 	public void writeToNetwork(FriendlyByteBuf buf) {
 		buf.writeFloat(size);
 		buf.writeFloat(r);
@@ -102,48 +105,10 @@ public class WispParticleData implements ParticleOptions {
 		buf.writeFloat(gravity);
 	}
 
-	@NotNull
-	@Override
+	// MC 26.1: no longer part of ParticleOptions, kept as helper
 	public String writeToString() {
 		return String.format(Locale.ROOT, "%s %.2f %.2f %.2f %.2f %.2f %s",
 				BuiltInRegistries.PARTICLE_TYPE.getKey(getType()), this.size, this.r, this.g, this.b, this.maxAgeMul, this.depthTest);
 	}
 
-	public static final Deserializer<WispParticleData> DESERIALIZER = new Deserializer<>() {
-		@NotNull
-		@Override
-		public WispParticleData fromCommand(@NotNull ParticleType<WispParticleData> type, @NotNull StringReader reader) throws CommandSyntaxException {
-			reader.expect(' ');
-			float size = reader.readFloat();
-			reader.expect(' ');
-			float r = reader.readFloat();
-			reader.expect(' ');
-			float g = reader.readFloat();
-			reader.expect(' ');
-			float b = reader.readFloat();
-			reader.expect(' ');
-			float mam = reader.readFloat();
-			boolean depth = true;
-			if (reader.canRead()) {
-				reader.expect(' ');
-				depth = reader.readBoolean();
-			}
-			boolean noClip = false;
-			if (reader.canRead()) {
-				reader.expect(' ');
-				noClip = reader.readBoolean();
-			}
-			float gravity = 0;
-			if (reader.canRead()) {
-				reader.expect(' ');
-				gravity = reader.readFloat();
-			}
-			return new WispParticleData(size, r, g, b, mam, depth, noClip, gravity);
-		}
-
-		@Override
-		public WispParticleData fromNetwork(@NotNull ParticleType<WispParticleData> type, FriendlyByteBuf buf) {
-			return new WispParticleData(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readBoolean(), buf.readBoolean(), buf.readFloat());
-		}
-	};
 }

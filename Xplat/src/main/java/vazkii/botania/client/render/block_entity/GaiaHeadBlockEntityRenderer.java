@@ -8,39 +8,57 @@
  */
 package vazkii.botania.client.render.block_entity;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.systems.RenderSystem;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.SkullModelBase;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.object.skull.DragonHeadModel;
+import net.minecraft.client.model.object.skull.PiglinHeadModel;
+import net.minecraft.client.model.object.skull.SkullModel;
+import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Skeleton;
-import net.minecraft.world.entity.monster.WitherSkeleton;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.monster.skeleton.Skeleton;
+import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.level.block.SkullBlock;
 
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import vazkii.botania.client.core.helper.CoreShaders;
-import vazkii.botania.client.render.entity.GaiaGuardianRenderer;
+import vazkii.botania.client.model.GaiaHeadModel;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
-public class GaiaHeadBlockEntityRenderer extends SkullBlockRenderer {
+/**
+ * Supplies the {@link GaiaHeadModel} and populates the per-viewer skull models it mirrors.
+ */
+public class GaiaHeadBlockEntityRenderer {
 	public static Map<SkullBlock.Type, SkullModelBase> models = Collections.emptyMap();
 
-	public GaiaHeadBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-		super(ctx);
-		models = SkullBlockRenderer.createSkullRenderers(ctx.getModelSet());
+	public static SkullModelBase createGaiaHeadModel(EntityModelSet modelSet) {
+		initModels(modelSet);
+		return new GaiaHeadModel(modelSet.bakeLayer(ModelLayers.PLAYER_HEAD));
+	}
+
+	/**
+	 * Bakes a head model for every vanilla skull type, so that the Gaia head can mirror the entity
+	 * that is looking at it.
+	 */
+	public static synchronized void initModels(EntityModelSet modelSet) {
+		if (!models.isEmpty()) {
+			return;
+		}
+
+		Map<SkullBlock.Type, SkullModelBase> baked = new HashMap<>();
+		baked.put(SkullBlock.Types.SKELETON, new SkullModel(modelSet.bakeLayer(ModelLayers.SKELETON_SKULL)));
+		baked.put(SkullBlock.Types.WITHER_SKELETON, new SkullModel(modelSet.bakeLayer(ModelLayers.WITHER_SKELETON_SKULL)));
+		baked.put(SkullBlock.Types.PLAYER, new SkullModel(modelSet.bakeLayer(ModelLayers.PLAYER_HEAD)));
+		baked.put(SkullBlock.Types.ZOMBIE, new SkullModel(modelSet.bakeLayer(ModelLayers.ZOMBIE_HEAD)));
+		baked.put(SkullBlock.Types.CREEPER, new SkullModel(modelSet.bakeLayer(ModelLayers.CREEPER_HEAD)));
+		baked.put(SkullBlock.Types.DRAGON, new DragonHeadModel(modelSet.bakeLayer(ModelLayers.DRAGON_SKULL)));
+		baked.put(SkullBlock.Types.PIGLIN, new PiglinHeadModel(modelSet.bakeLayer(ModelLayers.PIGLIN_HEAD)));
+		models = baked;
 	}
 
 	public static SkullBlock.Type getViewType() {
@@ -61,32 +79,5 @@ public class GaiaHeadBlockEntityRenderer extends SkullBlockRenderer {
 			type = SkullBlock.Types.DRAGON;
 		}
 		return type;
-	}
-
-	public static void hookGetRenderType(CallbackInfoReturnable<RenderType> cir) {
-		SkullBlock.Type type = getViewType();
-		GameProfile profile = null;
-		if (type == SkullBlock.Types.PLAYER && Minecraft.getInstance().getCameraEntity() instanceof Player player) {
-			profile = player.getGameProfile();
-		}
-
-		RenderType layer = SkullBlockRenderer.getRenderType(type, profile);
-		cir.setReturnValue(new WrapperLayer(layer));
-	}
-
-	private static class WrapperLayer extends RenderType {
-		public WrapperLayer(RenderType compose) {
-			super(compose.toString(), compose.format(), compose.mode(), compose.bufferSize(), compose.affectsCrumbling(), false,
-					() -> {
-						compose.setupRenderState();
-						// Override the shader to ours
-						ShaderInstance shader = CoreShaders.doppleganger();
-						if (shader != null) {
-							RenderSystem.setShader(CoreShaders::doppleganger);
-							shader.safeGetUniform("BotaniaDisfiguration").set(GaiaGuardianRenderer.DEFAULT_DISFIGURATION);
-							shader.safeGetUniform("BotaniaGrainIntensity").set(GaiaGuardianRenderer.DEFAULT_GRAIN_INTENSITY);
-						}
-					}, compose::clearRenderState);
-		}
 	}
 }

@@ -16,6 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.phys.AABB;
 
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +36,7 @@ public class ThundercallerItem extends ManasteelSwordItem {
 	}
 
 	@Override
-	public boolean hurtEnemy(ItemStack stack, LivingEntity entity, @NotNull LivingEntity attacker) {
+	public void hurtEnemy(ItemStack stack, LivingEntity entity, @NotNull LivingEntity attacker) {
 		double range = 8;
 		IntList alreadyTargetedEntities = new IntArrayList();
 
@@ -69,7 +70,7 @@ public class ThundercallerItem extends ManasteelSwordItem {
 							alreadyTargetedEntities.toArray(new int[0])));
 		}
 
-		return super.hurtEnemy(stack, entity, attacker);
+		super.hurtEnemy(stack, entity, attacker);
 	}
 
 }

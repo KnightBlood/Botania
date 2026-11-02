@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "botania:bifrost_perm",
+    "P": "botania:mana_pool"
+  },
+  "pattern": [
+    "BPB",
+    "BBB"
+  ],
+  "result": {
+    "id": "botania:fabulous_pool"
+  }
+}

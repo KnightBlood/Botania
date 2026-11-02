@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "0": "#botania:dreamwood_logs",
+    "3": "botania:framed_dreamwood",
+    "4": "botania:pattern_framed_dreamwood",
+    "D": "botania:pixie_dust"
+  },
+  "pattern": [
+    "343",
+    "0D0"
+  ],
+  "result": {
+    "count": 2,
+    "id": "botania:spectral_platform"
+  }
+}

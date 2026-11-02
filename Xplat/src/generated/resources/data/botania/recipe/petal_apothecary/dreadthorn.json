@@ -1,0 +1,16 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/black",
+    "#botania:petals/black",
+    "#botania:petals/black",
+    "#botania:petals/cyan",
+    "#botania:petals/cyan",
+    "botania:redstone_root"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:dreadthorn"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

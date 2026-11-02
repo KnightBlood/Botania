@@ -21,13 +21,14 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -35,7 +36,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.AbstractGlassBlock;
+import net.minecraft.world.entity.EquipmentSlot;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -95,15 +98,15 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 
 		if (player != null && player.isSecondaryUseActive()) {
 			if (world.getBlockEntity(pos) == null && block.asItem() != Items.AIR
-					&& (wstate.isSolidRender(world, pos) || wstate.getRenderShape() == RenderShape.MODEL)
-					&& (wstate.canOcclude() || block instanceof AbstractGlassBlock || block instanceof IronBarsBlock)
+					&& (wstate.isSolidRender() || wstate.getRenderShape() == RenderShape.MODEL)
+					&& (wstate.canOcclude() || block instanceof HalfTransparentBlock || block instanceof IronBarsBlock)
 					&& block.asItem() instanceof BlockItem) {
 				setItemToPlace(stack, block.asItem());
 				setSwapTemplateDirection(stack, ctx.getClickedFace());
 				setHitPos(stack, ctx.getClickLocation());
 
 				displayRemainderCounter(player, stack);
-				return InteractionResult.sidedSuccess(world.isClientSide());
+				return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 			}
 		} else if (canExchange(stack) && !ItemNBTHelper.getBoolean(stack, TAG_SWAPPING, false)) {
 			Item replacement = getItemToPlace(stack);
@@ -118,12 +121,12 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 			}
 		}
 
-		return InteractionResult.sidedSuccess(world.isClientSide());
+		return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 	}
 
 	@Override
-	public boolean canAttackBlock(BlockState state, Level world, BlockPos pos, Player player) {
-		return !player.isCreative();
+	public boolean canDestroyBlock(ItemStack stack, BlockState state, Level world, BlockPos pos, LivingEntity entity) {
+		return !(entity instanceof Player player) || !player.isCreative();
 	}
 
 	public InteractionResult onLeftClick(Player player, Level world, InteractionHand hand, BlockPos pos, Direction side) {
@@ -152,7 +155,7 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean equipped) {
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
 		if (!canExchange(stack) || !(entity instanceof Player player)) {
 			return;
 		}
@@ -163,8 +166,8 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 			ItemNBTHelper.setInt(stack, TAG_EXTRA_RANGE, extraRangeNew);
 		}
 		boolean temperanceActive = StoneOfTemperanceItem.hasTemperanceActive(player);
-		if (temperanceActive != stack.getOrCreateTag().getBoolean(TAG_TEMPERANCE_STONE)) {
-			stack.getOrCreateTag().putBoolean(TAG_TEMPERANCE_STONE, temperanceActive);
+		if (temperanceActive != ItemNBTHelper.getBoolean(stack, TAG_TEMPERANCE_STONE, false)) {
+			ItemNBTHelper.setBoolean(stack, TAG_TEMPERANCE_STONE, temperanceActive);
 		}
 
 		Item replacement = getItemToPlace(stack);
@@ -184,7 +187,7 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 				return;
 			}
 
-			BlockPos coords = swap.get(world.random.nextInt(swap.size()));
+			BlockPos coords = swap.get(world.getRandom().nextInt(swap.size()));
 			int exchange = exchange(world, player, coords, stack, replacement);
 			if (exchange > 0) {
 				ManaItemHandler.instance().requestManaForTool(stack, player, exchange, true);
@@ -254,7 +257,7 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 			if (!stateAt.isAir() && stateAt.getDestroyProgress(player, world, pos) > 0
 					&& stateAt.getBlock().asItem() != replacement) {
 				float hardness = stateAt.getDestroySpeed(world, pos);
-				if (!world.isClientSide) {
+				if (!world.isClientSide()) {
 					final NeighborUpdater neighborUpdater = ((LevelAccessor) world).getNeighborUpdater();
 					try {
 						if (neighborUpdater instanceof CollectingNeighborUpdaterAccess access) {
@@ -390,7 +393,7 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 	}
 
 	public void displayRemainderCounter(Player player, ItemStack stack) {
-		if (!player.level().isClientSide) {
+		if (!player.level().isClientSide()) {
 			Item item = getItemToPlace(stack);
 			int count = getInventoryItemCount(player, stack, item);
 			ItemsRemainingRenderHandler.send(player, new ItemStack(item), count);
@@ -402,7 +405,7 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 	}
 
 	private Item getItemToPlace(ItemStack stack) {
-		return BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(ItemNBTHelper.getString(stack, TAG_REPLACEMENT_ITEM, "air")));
+		return BuiltInRegistries.ITEM.getValue(Identifier.tryParse(ItemNBTHelper.getString(stack, TAG_REPLACEMENT_ITEM, "air")));
 	}
 
 	private void setHitPos(ItemStack stack, Vec3 vec) {
@@ -410,34 +413,34 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 		list.add(DoubleTag.valueOf(Mth.frac(vec.x())));
 		list.add(DoubleTag.valueOf(Mth.frac(vec.y())));
 		list.add(DoubleTag.valueOf(Mth.frac(vec.z())));
-		stack.getOrCreateTag().put(TAG_SWAP_HIT_VEC, list);
+		ItemNBTHelper.setList(stack, TAG_SWAP_HIT_VEC, list);
 	}
 
 	private Vec3 getHitPos(ItemStack stack, BlockPos pos) {
-		ListTag list = stack.getOrCreateTag().getList(TAG_SWAP_HIT_VEC, Tag.TAG_DOUBLE);
-		return new Vec3(pos.getX() + list.getDouble(0),
-				pos.getY() + list.getDouble(1),
-				pos.getZ() + list.getDouble(2));
+		ListTag list = ItemNBTHelper.getList(stack, TAG_SWAP_HIT_VEC, Tag.TAG_DOUBLE, false);
+		return new Vec3(pos.getX() + list.getDoubleOr(0, 0.0),
+				pos.getY() + list.getDoubleOr(1, 0.0),
+				pos.getZ() + list.getDoubleOr(2, 0.0));
 	}
 
 	private void setSwapTemplateDirection(ItemStack stack, Direction direction) {
-		stack.getOrCreateTag().putInt(TAG_SWAP_DIRECTION, direction.get3DDataValue());
+		ItemNBTHelper.setInt(stack, TAG_SWAP_DIRECTION, direction.get3DDataValue());
 	}
 
 	private Direction getSwapTemplateDirection(ItemStack stack) {
-		return Direction.from3DDataValue(stack.getOrCreateTag().getInt(TAG_SWAP_DIRECTION));
+		return Direction.from3DDataValue(ItemNBTHelper.getInt(stack, TAG_SELECT_X, 0));
 	}
 
 	private void setSwapClickDirection(ItemStack stack, Direction direction) {
-		stack.getOrCreateTag().putInt(TAG_SWAP_CLICKED_AXIS, direction.get3DDataValue());
+		ItemNBTHelper.setInt(stack, TAG_SWAP_CLICKED_AXIS, direction.get3DDataValue());
 	}
 
 	private Direction getSwapClickDirection(ItemStack stack) {
-		return Direction.from3DDataValue(stack.getOrCreateTag().getInt(TAG_SWAP_CLICKED_AXIS));
+		return Direction.from3DDataValue(ItemNBTHelper.getInt(stack, TAG_SWAP_CLICKED_AXIS, 0));
 	}
 
 	private int getRange(ItemStack stack, Direction.Axis clickAxis, Direction.Axis rangeAxis) {
-		if (stack.getOrCreateTag().getBoolean(TAG_TEMPERANCE_STONE) && rangeAxis == clickAxis) {
+		if (ItemNBTHelper.getBoolean(stack, TAG_TEMPERANCE_STONE, false) && rangeAxis == clickAxis) {
 			return 0;
 		}
 		return RANGE + ItemNBTHelper.getInt(stack, TAG_EXTRA_RANGE, 1) - 1;
@@ -471,8 +474,8 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 	}
 
 	public static Block getTargetState(ItemStack stack) {
-		ResourceLocation id = new ResourceLocation(ItemNBTHelper.getString(stack, TAG_TARGET_BLOCK_NAME, "minecraft:air"));
-		return BuiltInRegistries.BLOCK.get(id);
+		Identifier id = Identifier.parse(ItemNBTHelper.getString(stack, TAG_TARGET_BLOCK_NAME, "minecraft:air"));
+		return BuiltInRegistries.BLOCK.getValue(id);
 	}
 
 	@Override
@@ -507,3 +510,4 @@ public class ShiftingCrustRodItem extends Item implements WireframeCoordinateLis
 	}
 
 }
+

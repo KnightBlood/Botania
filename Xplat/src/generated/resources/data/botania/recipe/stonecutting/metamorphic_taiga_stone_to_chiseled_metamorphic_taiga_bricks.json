@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:metamorphic_taiga_stone",
+  "result": {
+    "id": "botania:chiseled_metamorphic_taiga_bricks"
+  }
+}

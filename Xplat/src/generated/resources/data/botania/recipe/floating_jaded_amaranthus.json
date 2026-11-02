@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:floating_flower",
+  "ingredients": [
+    "#botania:floating_flowers",
+    "botania:jaded_amaranthus"
+  ],
+  "result": {
+    "id": "botania:floating_jaded_amaranthus"
+  }
+}

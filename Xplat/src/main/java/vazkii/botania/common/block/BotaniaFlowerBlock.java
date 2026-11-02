@@ -11,10 +11,12 @@ package vazkii.botania.common.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BonemealableBlock;
@@ -37,23 +39,23 @@ public class BotaniaFlowerBlock extends FlowerBlock implements BonemealableBlock
 		this.color = color;
 	}
 
-	private static MobEffect effectForFlower(DyeColor color) {
+	private static Holder<MobEffect> effectForFlower(DyeColor color) {
 		return switch (color) {
-			case WHITE -> MobEffects.MOVEMENT_SPEED;
+			case WHITE -> MobEffects.SPEED;
 			case ORANGE -> MobEffects.FIRE_RESISTANCE;
-			case MAGENTA -> MobEffects.DIG_SLOWDOWN;
-			case LIGHT_BLUE -> MobEffects.JUMP;
+			case MAGENTA -> MobEffects.MINING_FATIGUE;
+			case LIGHT_BLUE -> MobEffects.JUMP_BOOST;
 			case YELLOW -> MobEffects.ABSORPTION;
 			case LIME -> MobEffects.POISON;
 			case PINK -> MobEffects.REGENERATION;
-			case GRAY -> MobEffects.DAMAGE_RESISTANCE;
+			case GRAY -> MobEffects.RESISTANCE;
 			case LIGHT_GRAY -> MobEffects.WEAKNESS;
 			case CYAN -> MobEffects.WATER_BREATHING;
-			case PURPLE -> MobEffects.CONFUSION;
+			case PURPLE -> MobEffects.NAUSEA;
 			case BLUE -> MobEffects.NIGHT_VISION;
 			case BROWN -> MobEffects.WITHER;
 			case GREEN -> MobEffects.HUNGER;
-			case RED -> MobEffects.DAMAGE_BOOST;
+			case RED -> MobEffects.HEALTH_BOOST;
 			case BLACK -> MobEffects.BLINDNESS;
 		};
 	}
@@ -64,7 +66,7 @@ public class BotaniaFlowerBlock extends FlowerBlock implements BonemealableBlock
 		int r = (hex & 0xFF0000) >> 16;
 		int g = (hex & 0xFF00) >> 8;
 		int b = hex & 0xFF;
-		Vec3 offset = state.getOffset(world, pos);
+		Vec3 offset = state.getOffset(pos);
 		double x = pos.getX() + offset.x;
 		double y = pos.getY() + offset.y;
 		double z = pos.getZ() + offset.z;
@@ -76,13 +78,13 @@ public class BotaniaFlowerBlock extends FlowerBlock implements BonemealableBlock
 	}
 
 	@Override
-	public boolean isValidBonemealTarget(@NotNull LevelReader world, @NotNull BlockPos pos, @NotNull BlockState state, boolean fuckifiknow) {
+	public boolean isValidBonemealTarget(@NotNull LevelReader world, @NotNull BlockPos pos, @NotNull BlockState state) {
 		return world.getBlockState(pos.above()).isAir();
 	}
 
 	@Override
 	public boolean isBonemealSuccess(@NotNull Level world, @NotNull RandomSource rand, @NotNull BlockPos pos, @NotNull BlockState state) {
-		return isValidBonemealTarget(world, pos, state, false);
+		return isValidBonemealTarget(world, pos, state);
 	}
 
 	@Override

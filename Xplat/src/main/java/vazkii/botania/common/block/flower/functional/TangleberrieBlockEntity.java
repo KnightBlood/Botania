@@ -55,7 +55,7 @@ public class TangleberrieBlockEntity extends FunctionalFlowerBlockEntity {
 
 			SparkleParticleData data = SparkleParticleData.sparkle(1F, 0.5F, 0.5F, 0.5F, 3);
 			for (LivingEntity entity : entities) {
-				if (entity instanceof Player || !entity.canChangeDimensions()) {
+				if (entity instanceof Player || !entity.canTeleport(getLevel(), getLevel())) {
 					continue;
 				}
 
@@ -67,7 +67,7 @@ public class TangleberrieBlockEntity extends FunctionalFlowerBlockEntity {
 
 				if (distance > maxDist && distance < range) {
 					MathHelper.setEntityMotionFromVector(entity, new Vec3(x1, y1, z1), getMotionVelocity(entity));
-					if (getLevel().random.nextInt(3) == 0) {
+					if (getLevel().getRandom().nextInt(3) == 0) {
 						level.addParticle(data, x2 + Math.random() * entity.getBbWidth(), y2 + Math.random() * entity.getBbHeight(), z2 + Math.random() * entity.getBbWidth(), 0, 0, 0);
 					}
 				}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": "botania:livingrock"
+  },
+  "pattern": [
+    "R R",
+    "RRR"
+  ],
+  "result": {
+    "id": "botania:mana_pool"
+  }
+}

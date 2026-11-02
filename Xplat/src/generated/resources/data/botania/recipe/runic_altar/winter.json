@@ -1,0 +1,16 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    "botania:rune_water",
+    "botania:rune_earth",
+    "minecraft:snow_block",
+    "minecraft:snow_block",
+    "#minecraft:wool",
+    "minecraft:cake"
+  ],
+  "mana": 8000,
+  "output": {
+    "count": 1,
+    "id": "botania:rune_winter"
+  }
+}

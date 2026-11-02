@@ -12,7 +12,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -27,6 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MobBucketItem;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -48,6 +49,8 @@ import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.helper.EntityHelper;
 import vazkii.botania.common.helper.InventoryHelper;
 import vazkii.botania.xplat.XplatAbstractions;
+import vazkii.botania.common.helper.IngredientHelper;
+import vazkii.botania.common.helper.RecipeHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +62,7 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 	private static final int CRAFT_EFFECT_EVENT = 1;
 
 	private List<ItemStack> lastRecipe = null;
-	private Ingredient lastReagent = Ingredient.EMPTY;
+	private Ingredient lastReagent = IngredientHelper.EMPTY;
 	private int recipeKeepTicks = 0;
 
 	public PetalApothecaryBlockEntity(BlockPos pos, BlockState state) {
@@ -68,7 +71,7 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 
 	public boolean collideEntityItem(ItemEntity item) {
 		ItemStack stack = item.getItem();
-		if (level.isClientSide || stack.isEmpty() || !item.isAlive()) {
+		if (level.isClientSide() || stack.isEmpty() || !item.isAlive()) {
 			return false;
 		}
 
@@ -98,16 +101,18 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 		}
 
 		if (getFluid() == State.LAVA) {
-			item.setSecondsOnFire(100);
+			item.igniteForSeconds(100);
 			return true;
 		}
 
-		Optional<PetalApothecaryRecipe> maybeRecipe = level.getRecipeManager().getRecipeFor(BotaniaRecipeTypes.PETAL_TYPE, getItemHandler(), level);
+		Optional<PetalApothecaryRecipe> maybeRecipe = RecipeHelper.getRecipeManager(level)
+			.getRecipeFor(BotaniaRecipeTypes.PETAL_TYPE, RecipeHelper.adapt(getItemHandler()), level)
+			.map(RecipeHolder::value);
 		if (maybeRecipe.isPresent()) {
 			var recipe = maybeRecipe.get();
 			if (recipe.getReagent().test(item.getItem())) {
 				saveLastRecipe(recipe.getReagent());
-				ItemStack output = recipe.assemble(getItemHandler(), getLevel().registryAccess());
+				ItemStack output = recipe.assemble(RecipeHelper.adapt(getItemHandler()));;
 				Entity thrower = item.getOwner();
 
 				for (int i = 0; i < inventorySize(); i++) {
@@ -119,8 +124,9 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 				ItemEntity outputItem = new ItemEntity(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5, output);
 				XplatAbstractions.INSTANCE.itemFlagsComponent(outputItem).apothecarySpawned = true;
 				if (thrower instanceof Player player) {
-					player.triggerRecipeCrafted(recipe, List.of(output));
-					output.onCraftedBy(level, player, output.getCount());
+					BotaniaRecipeTypes.getHolder(level, BotaniaRecipeTypes.PETAL_TYPE, recipe)
+							.ifPresent(h -> player.triggerRecipeCrafted(h, List.of(output)));
+					output.getItem().onCraftedBy(output, player);
 				}
 				level.addFreshEntity(outputItem);
 
@@ -182,7 +188,7 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 
 	public void clearLastRecipe() {
 		lastRecipe = null;
-		lastReagent = Ingredient.EMPTY;
+		lastReagent = IngredientHelper.EMPTY;
 	}
 
 	public InteractionResult trySetLastRecipe(Player player) {
@@ -190,7 +196,7 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 		// the apothecary has water and no items, so just optimistically assume
 		// success on the client.
 		if (player.level().isClientSide()) {
-			return InteractionResult.sidedSuccess(true);
+			return InteractionResult.SUCCESS;
 		}
 		boolean success = InventoryHelper.tryToSetLastRecipe(player, getItemHandler(), lastRecipe, SoundEvents.GENERIC_SPLASH);
 		if (success) {
@@ -198,7 +204,7 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 		}
 		return success
-				? InteractionResult.sidedSuccess(false)
+				? InteractionResult.SUCCESS_SERVER
 				: InteractionResult.PASS;
 	}
 
@@ -276,7 +282,7 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 				recipeKeepTicks = param;
 				return true;
 			case CRAFT_EFFECT_EVENT: {
-				if (level.isClientSide) {
+				if (level.isClientSide()) {
 					for (int i = 0; i < 25; i++) {
 						float red = (float) Math.random();
 						float green = (float) Math.random();
@@ -325,7 +331,7 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 	}
 
 	public static class Hud {
-		public static void render(PetalApothecaryBlockEntity altar, GuiGraphics gui, Minecraft mc) {
+		public static void render(PetalApothecaryBlockEntity altar, GuiGraphicsExtractor gui, Minecraft mc) {
 			int xc = mc.getWindow().getGuiScaledWidth() / 2;
 			int yc = mc.getWindow().getGuiScaledHeight() / 2;
 
@@ -342,46 +348,44 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 			if (amt > 0) {
 				float anglePer = 360F / amt;
 
-				Optional<PetalApothecaryRecipe> maybeRecipe = altar.level.getRecipeManager()
-						.getRecipeFor(BotaniaRecipeTypes.PETAL_TYPE, altar.getItemHandler(), altar.level);
+				Optional<PetalApothecaryRecipe> maybeRecipe = RecipeHelper.getRecipeManager(altar.level)
+						.getRecipeFor(BotaniaRecipeTypes.PETAL_TYPE, RecipeHelper.adapt(altar.getItemHandler()), altar.level)
+				.map(RecipeHolder::value);
 				maybeRecipe.ifPresent(recipe -> {
-					RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
 					RenderHelper.drawTexturedModalRect(gui, HUDHandler.manaBar, xc + radius + 9, yc - 8, 0, 8, 22, 15);
 
-					ItemStack stack = recipe.assemble(altar.getItemHandler(), altar.getLevel().registryAccess());
-					gui.renderFakeItem(stack, xc + radius + 32, yc - 8);
+					ItemStack stack = recipe.assemble(RecipeHelper.adapt(altar.getItemHandler()));
+					gui.fakeItem(stack, xc + radius + 32, yc - 8);
 
-					var reagents = recipe.getReagent().getItems();
+					var reagents = recipe.getReagent().items().toList();
 					ItemStack reagent;
-					if (reagents.length == 0) {
+					if (reagents.isEmpty()) {
 						reagent = new ItemStack(Items.BARRIER);
 					} else {
-						int idx = (int) ((altar.level.getGameTime() / 20) % reagents.length);
-						reagent = reagents[idx];
+						int idx = (int) ((altar.level.getGameTime() / 20) % reagents.size());
+						reagent = new ItemStack(reagents.get(idx));
 					}
-					gui.renderFakeItem(reagent, xc + radius + 16, yc + 6);
-					gui.drawString(mc.font, "+", xc + radius + 14, yc + 10, 0xFFFFFF, false);
+					gui.fakeItem(reagent, xc + radius + 16, yc + 6);
+					gui.text(mc.font, "+", xc + radius + 14, yc + 10, 0xFFFFFF, false);
 				});
 
 				for (int i = 0; i < amt; i++) {
 					double xPos = xc + Math.cos(angle * Math.PI / 180D) * radius - 8;
 					double yPos = yc + Math.sin(angle * Math.PI / 180D) * radius - 8;
-					PoseStack pose = RenderSystem.getModelViewStack();
-					pose.pushPose();
-					pose.translate(xPos, yPos, 0);
-					RenderSystem.applyModelViewMatrix();
-					gui.renderFakeItem(altar.getItemHandler().getItem(i), 0, 0);
-					pose.popPose();
-					RenderSystem.applyModelViewMatrix();
+					var pose = gui.pose();
+					pose.pushMatrix();
+					pose.translate((float) xPos, (float) yPos);
+					gui.fakeItem(altar.getItemHandler().getItem(i), 0, 0);
+					pose.popMatrix();
 
 					angle += anglePer;
 				}
 			}
 			if (altar.recipeKeepTicks > 0 && altar.canAddLastRecipe()) {
 				String s = I18n.get("botaniamisc.altarRefill0");
-				gui.drawString(mc.font, s, xc - mc.font.width(s) / 2, yc + 10, 0xFFFFFF, false);
+				gui.text(mc.font, s, xc - mc.font.width(s) / 2, yc + 10, 0xFFFFFF, false);
 				s = I18n.get("botaniamisc.altarRefill1");
-				gui.drawString(mc.font, s, xc - mc.font.width(s) / 2, yc + 20, 0xFFFFFF, false);
+				gui.text(mc.font, s, xc - mc.font.width(s) / 2, yc + 20, 0xFFFFFF, false);
 			}
 		}
 	}

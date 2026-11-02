@@ -4,9 +4,9 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 import vazkii.botania.api.recipe.ManaInfusionRecipe;
 import vazkii.botania.common.block.BotaniaBlocks;
@@ -18,7 +18,7 @@ import java.util.List;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class ManaInfusionEmiRecipe extends BotaniaEmiRecipe {
-	private static final ResourceLocation TEXTURE = prefix("textures/gui/pure_daisy_overlay.png");
+	private static final Identifier TEXTURE = prefix("textures/gui/pure_daisy_overlay.png");
 	private static final EmiStack POOL;
 	private final int mana;
 
@@ -28,15 +28,15 @@ public class ManaInfusionEmiRecipe extends BotaniaEmiRecipe {
 		POOL = EmiStack.of(stack);
 	}
 
-	public ManaInfusionEmiRecipe(ManaInfusionRecipe recipe) {
-		super(BotaniaEmiPlugin.MANA_INFUSION, recipe);
+	public ManaInfusionEmiRecipe(RecipeHolder<ManaInfusionRecipe> holder) {
+		super(BotaniaEmiPlugin.MANA_INFUSION, holder);
+		ManaInfusionRecipe recipe = holder.value();
 		this.input = recipe.getIngredients().stream().map(EmiIngredient::of).toList();
 		if (recipe.getRecipeCatalyst() != null) {
 			this.catalysts = List.of(EmiIngredient.of(recipe.getRecipeCatalyst().getDisplayed().stream()
 					.map(s -> EmiStack.of(s.getBlock())).toList()));
 		}
-		// TODO 1.19.4 figure out the proper way to get a registry access
-		this.output = List.of(EmiStack.of(recipe.getResultItem(RegistryAccess.EMPTY)));
+		this.output = List.of(EmiStack.of(recipe.getResultItem()));
 		mana = recipe.getManaToConsume();
 	}
 
@@ -59,7 +59,7 @@ public class ManaInfusionEmiRecipe extends BotaniaEmiRecipe {
 		if (catalysts.size() > 0) {
 			widgets.addSlot(catalysts.get(0), 0, 13).catalyst(true).drawBack(false);
 		}
-		widgets.addSlot(output.get(0), 79, 13).drawBack(false).recipeContext(this);
+		widgets.addSlot(input.get(0), 79, 13).drawBack(false).recipeContext(this);
 	}
 
 }

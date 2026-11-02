@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.server.level.ServerLevel;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,6 +38,7 @@ import vazkii.botania.common.item.WandOfTheForestItem;
 
 public class ManaEnchanterBlock extends BotaniaBlock implements EntityBlock {
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public ManaEnchanterBlock(Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BotaniaStateProperties.ENCHANTER_DIRECTION, Direction.Axis.X));
@@ -60,7 +62,13 @@ public class ManaEnchanterBlock extends BotaniaBlock implements EntityBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+	protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level world, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hit) {
+		return useItemOn(itemStack, world, player, hand, hit);
+	}
+
+	private InteractionResult useItemOn(ItemStack itemStack, Level world, Player player, InteractionHand hand, BlockHitResult hit) {
+		BlockPos pos = hit.getBlockPos();
+
 		ItemStack stack = player.getItemInHand(hand);
 		if (!(world.getBlockEntity(pos) instanceof ManaEnchanterBlockEntity enchanter) || !stack.isEmpty() && stack.getItem() instanceof WandOfTheForestItem) {
 			return InteractionResult.PASS;
@@ -85,11 +93,12 @@ public class ManaEnchanterBlock extends BotaniaBlock implements EntityBlock {
 			enchanter.sync();
 		}
 
-		return InteractionResult.sidedSuccess(world.isClientSide());
+		return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 	}
 
 	@Override
-	public void onRemove(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving) {
+	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
+		BlockState newState = world.getBlockState(pos);
 		if (!state.is(newState.getBlock())) {
 
 			if (world.getBlockEntity(pos) instanceof ManaEnchanterBlockEntity enchanter
@@ -97,7 +106,7 @@ public class ManaEnchanterBlock extends BotaniaBlock implements EntityBlock {
 				Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), enchanter.itemToEnchant);
 			}
 
-			super.onRemove(state, world, pos, newState, isMoving);
+			super.affectNeighborsAfterRemoval(state, world, pos, isMoving);
 		}
 	}
 }

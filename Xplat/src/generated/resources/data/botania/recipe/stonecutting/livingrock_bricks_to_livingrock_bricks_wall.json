@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:livingrock_bricks",
+  "result": {
+    "id": "botania:livingrock_bricks_wall"
+  }
+}

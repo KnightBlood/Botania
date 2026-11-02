@@ -16,6 +16,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +41,7 @@ public class ManaSparkItem extends Item {
 			}
 		}
 		return attachSpark(ctx.getLevel(), ctx.getClickedPos(), ctx.getItemInHand(), otherHandStack)
-				? InteractionResult.sidedSuccess(ctx.getLevel().isClientSide)
+				? (ctx.getLevel().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER)
 				: InteractionResult.PASS;
 	}
 
@@ -48,13 +49,13 @@ public class ManaSparkItem extends Item {
 		var attach = XplatAbstractions.INSTANCE.findSparkAttachable(world, pos, world.getBlockState(pos), world.getBlockEntity(pos), Direction.UP);
 		if (attach != null) {
 			if (attach.canAttachSpark(stack) && attach.getAttachedSpark() == null) {
-				if (!world.isClientSide) {
+				if (!world.isClientSide()) {
 					stack.shrink(1);
 					ManaSparkEntity spark = new ManaSparkEntity(world);
 					spark.setPos(pos.getX() + 0.5, pos.getY() + 1.25, pos.getZ() + 0.5);
 					if (otherHandStack.getItem() instanceof DyeItem dye) {
 						otherHandStack.shrink(1);
-						spark.setNetwork(dye.getDyeColor());
+						spark.setNetwork(otherHandStack.get(net.minecraft.core.component.DataComponents.DYE));
 					}
 					world.addFreshEntity(spark);
 					attach.attachSpark(spark);

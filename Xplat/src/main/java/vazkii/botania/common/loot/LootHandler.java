@@ -8,11 +8,14 @@
  */
 package vazkii.botania.common.loot;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.minecraft.world.level.storage.loot.entries.LootTableReference;
+import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import vazkii.botania.api.BotaniaAPI;
@@ -24,9 +27,9 @@ import java.util.function.Consumer;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public final class LootHandler {
-	public static final ResourceLocation GOG_SEEDS_TABLE = new ResourceLocation(BotaniaAPI.GOG_MODID, "extra_seeds");
+	public static final Identifier GOG_SEEDS_TABLE = Identifier.fromNamespaceAndPath(BotaniaAPI.GOG_MODID, "extra_seeds");
 
-	public static void lootLoad(ResourceLocation id, Consumer<LootPool.Builder> addPool) {
+	public static void lootLoad(Identifier id, Consumer<LootPool.Builder> addPool) {
 		String prefix = "minecraft:chests/";
 		String name = id.toString();
 
@@ -51,11 +54,16 @@ public final class LootHandler {
 			}
 		} else if (id.getPath().startsWith("entities/")) {
 			// not great, as it's inserted into absolutely every single entity loot table (this evaluates twice for sheep, for example)
-			addPool.accept(LootPool.lootPool().add(LootTableReference.lootTableReference(ElementiumAxeItem.BEHEADING_LOOT_TABLE)));
+			addPool.accept(LootPool.lootPool().add(NestedLootTable.lootTableReference(
+					ResourceKey.create(Registries.LOOT_TABLE, ElementiumAxeItem.BEHEADING_LOOT_TABLE))));
 		} else if (XplatAbstractions.INSTANCE.gogLoaded()
-				&& (Blocks.GRASS.getLootTable().equals(id) || Blocks.TALL_GRASS.getLootTable().equals(id))) {
-			addPool.accept(LootPool.lootPool().add(LootTableReference.lootTableReference(GOG_SEEDS_TABLE)));
+				&& (id.equals(lootTableId(Blocks.SHORT_GRASS)) || id.equals(lootTableId(Blocks.TALL_GRASS)))) {
+			addPool.accept(LootPool.lootPool().add(NestedLootTable.lootTableReference(ResourceKey.create(Registries.LOOT_TABLE, GOG_SEEDS_TABLE))));
 		}
+	}
+
+	private static Identifier lootTableId(Block block) {
+		return block.getLootTable().map(ResourceKey::identifier).orElse(null);
 	}
 
 	private static LootPool.Builder getInjectPool(String entryName) {
@@ -64,10 +72,10 @@ public final class LootHandler {
 				.setBonusRolls(UniformGenerator.between(0, 1));
 	}
 
-	private static LootPoolEntryContainer.Builder<?> getInjectEntry(String name, int weight) {
-		ResourceLocation table = prefix("inject/" + name);
-		return LootTableReference.lootTableReference(table)
-				.setWeight(weight);
+	private static LootPoolEntryContainer.Builder<?> getInjectEntry(String name, int Weighted) {
+		Identifier table = prefix("inject/" + name);
+		return NestedLootTable.lootTableReference(ResourceKey.create(Registries.LOOT_TABLE, table))
+				.setWeight(Weighted);
 	}
 
 }

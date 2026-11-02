@@ -14,11 +14,17 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.AABB;
 
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +40,7 @@ public class FlameRingEntity extends Entity {
 	}
 
 	@Override
-	protected void defineSynchedData() {}
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {}
 
 	@Override
 	public void baseTick() {
@@ -49,7 +55,7 @@ public class FlameRingEntity extends Entity {
 				a = 45 + a;
 			}
 
-			if (level().random.nextInt(tickCount < 90 ? 8 : 20) == 0) {
+			if (level().getRandom().nextInt(tickCount < 90 ? 8 : 20) == 0) {
 				float rad = (float) (a * 4 * Math.PI / 180F);
 				double x = Math.cos(rad) * renderRadius;
 				double z = Math.sin(rad) * renderRadius;
@@ -66,11 +72,11 @@ public class FlameRingEntity extends Entity {
 			}
 		}
 
-		if (level().random.nextInt(20) == 0) {
+		if (level().getRandom().nextInt(20) == 0) {
 			level().playLocalSound(getX(), getY(), getZ(), SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 1F, 1F, false);
 		}
 
-		if (level().isClientSide) {
+		if (level().isClientSide()) {
 			return;
 		}
 
@@ -92,24 +98,24 @@ public class FlameRingEntity extends Entity {
 					continue;
 				}
 
-				entity.setSecondsOnFire(4);
+				entity.igniteForSeconds(4);
 			}
 		}
 	}
 
 	@Override
-	public boolean hurt(@NotNull DamageSource source, float amount) {
+	public boolean hurtServer(ServerLevel level, @NotNull DamageSource source, float amount) {
 		return false;
 	}
 
 	@Override
-	protected void readAdditionalSaveData(@NotNull CompoundTag var1) {}
+	protected void readAdditionalSaveData(ValueInput input) {}
 
 	@Override
-	protected void addAdditionalSaveData(@NotNull CompoundTag var1) {}
+	protected void addAdditionalSaveData(ValueOutput output) {}
 
 	@Override
-	public Packet<ClientGamePacketListener> getAddEntityPacket() {
-		return new ClientboundAddEntityPacket(this);
+	public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity serverEntity) {
+		return new ClientboundAddEntityPacket(this, serverEntity);
 	}
 }

@@ -10,6 +10,7 @@ package vazkii.botania.common.item.lens;
 
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
@@ -29,7 +30,7 @@ public class RedirectiveLens extends Lens {
 	public boolean collideBurst(ManaBurst burst, HitResult pos, boolean isManaBlock, boolean shouldKill, ItemStack stack) {
 		BlockPos sourcePos = burst.getBurstSourceBlockPos();
 		var burstEntity = burst.entity();
-		if (!burstEntity.level().isClientSide && !burst.isFake()) {
+		if (!burstEntity.level().isClientSide() && !burst.isFake()) {
 			if (pos instanceof BlockHitResult result
 					&& result.getType() != HitResult.Type.MISS
 					&& !result.getBlockPos().equals(sourcePos)) {
@@ -55,7 +56,7 @@ public class RedirectiveLens extends Lens {
 			AABB axis;
 			VoxelShape collideShape = level.getBlockState(sourcePos).getCollisionShape(level, sourcePos);
 			if (collideShape.isEmpty()) {
-				axis = new AABB(sourcePos, sourcePos.offset(1, 1, 1));
+				axis = new AABB(Vec3.atLowerCornerOf(sourcePos), Vec3.atLowerCornerOf(sourcePos.offset(1, 1, 1)));
 			} else {
 				axis = collideShape.bounds().move(sourcePos);
 			}
@@ -87,7 +88,7 @@ public class RedirectiveLens extends Lens {
 
 		var entity = burst.entity();
 		var hitPos = result.getBlockPos();
-		if (!entity.mayInteract(entity.level(), hitPos)) {
+		if (!entity.mayInteract((ServerLevel) entity.level(), hitPos)) {
 			return;
 		}
 		var receiver = XplatAbstractions.INSTANCE.findManaReceiver(entity.level(), hitPos, result.getDirection());

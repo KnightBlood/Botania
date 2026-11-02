@@ -1,0 +1,13 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "input": "minecraft:writable_book",
+  "mana": 6000,
+  "output": {
+    "count": 1,
+    "id": "minecraft:name_tag"
+  }
+}

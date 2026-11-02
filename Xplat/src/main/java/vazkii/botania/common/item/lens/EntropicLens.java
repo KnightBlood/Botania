@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -30,7 +31,7 @@ public class EntropicLens extends Lens {
 				return shouldKill;
 			}
 
-			if (!entity.level().isClientSide && !burst.isFake() && !isManaBlock) {
+			if (!entity.level().isClientSide() && !burst.isFake() && !isManaBlock) {
 				entity.level().explode(entity, entity.getX(), entity.getY(), entity.getZ(),
 						burst.getMana() / 50F, Level.ExplosionInteraction.TNT);
 			}

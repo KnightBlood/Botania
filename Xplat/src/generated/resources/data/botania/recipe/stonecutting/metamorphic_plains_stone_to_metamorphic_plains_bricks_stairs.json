@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:metamorphic_plains_stone",
+  "result": {
+    "id": "botania:metamorphic_plains_bricks_stairs"
+  }
+}

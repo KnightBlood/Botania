@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:red_quartz",
+  "result": {
+    "id": "botania:chiseled_red_quartz"
+  }
+}

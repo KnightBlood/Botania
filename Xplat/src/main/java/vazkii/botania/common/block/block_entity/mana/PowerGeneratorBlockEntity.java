@@ -11,6 +11,7 @@ package vazkii.botania.common.block.block_entity.mana;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 
 import vazkii.botania.api.mana.ManaReceiver;
@@ -75,7 +76,7 @@ public class PowerGeneratorBlockEntity extends BotaniaBlockEntity implements Man
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
-		energy = cmp.getInt(TAG_MANA);
+		energy = cmp.getIntOr(TAG_MANA, 0);
 	}
 
 	public int getEnergy() {

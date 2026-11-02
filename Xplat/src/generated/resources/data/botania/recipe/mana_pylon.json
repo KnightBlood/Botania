@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "#botania:mana_diamond_gems",
+    "G": "minecraft:gold_ingot",
+    "M": "#botania:manasteel_ingots"
+  },
+  "pattern": [
+    " G ",
+    "MDM",
+    " G "
+  ],
+  "result": {
+    "id": "botania:mana_pylon"
+  }
+}

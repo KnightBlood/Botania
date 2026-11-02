@@ -9,34 +9,45 @@
 package vazkii.botania.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.phys.AABB;
 
-import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
 import vazkii.botania.client.core.handler.ClientTickHandler;
 import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.entity.MagicLandmineEntity;
 
-public class MagicLandmineRenderer extends EntityRenderer<MagicLandmineEntity> {
+public class MagicLandmineRenderer extends EntityRenderer<MagicLandmineEntity, MagicLandmineRenderer.MagicLandmineRenderState> {
 
 	public MagicLandmineRenderer(EntityRendererProvider.Context ctx) {
 		super(ctx);
 	}
 
 	@Override
-	public void render(MagicLandmineEntity e, float entityYaw, float partialTicks, PoseStack ms, MultiBufferSource buffers, int light) {
-		super.render(e, entityYaw, partialTicks, ms, buffers, light);
+	public MagicLandmineRenderState createRenderState() {
+		return new MagicLandmineRenderState();
+	}
+
+	@Override
+	public void extractRenderState(MagicLandmineEntity e, MagicLandmineRenderState state, float partialTicks) {
+		super.extractRenderState(e, state, partialTicks);
+		state.tickCount = e.tickCount;
+		state.partialTick = partialTicks;
+		state.relativeBounds = e.getBoundingBox().move(e.position().scale(-1));
+	}
+
+	@Override
+	public void submit(MagicLandmineRenderState state, PoseStack ms, SubmitNodeCollector collector, CameraRenderState camera) {
+		super.submit(state, ms, collector, camera);
 
 		ms.pushPose();
-		AABB aabb = e.getBoundingBox().move(e.position().scale(-1));
+		AABB aabb = state.relativeBounds;
 
 		float gs = (float) (Math.sin(ClientTickHandler.total() / 20) + 1) * 0.2F + 0.6F;
 		int r = (int) (105 * gs);
@@ -44,10 +55,10 @@ public class MagicLandmineRenderer extends EntityRenderer<MagicLandmineEntity> {
 		int b = (int) (145 * gs);
 
 		int alpha = 32;
-		if (e.tickCount < 8) {
-			alpha *= Math.min((e.tickCount + partialTicks) / 8F, 1F);
-		} else if (e.tickCount > 47) {
-			alpha *= Math.min(1F - (e.tickCount - 47 + partialTicks) / 8F, 1F);
+		if (state.tickCount < 8) {
+			alpha = (int) (alpha * Math.min((state.tickCount + state.partialTick) / 8F, 1F));
+		} else if (state.tickCount > 47) {
+			alpha = (int) (alpha * Math.min(1F - (state.tickCount - 47 + state.partialTick) / 8F, 1F));
 		}
 
 		ms.translate(aabb.minX, aabb.minY + RenderHelper.getOffY(), aabb.minZ);
@@ -56,16 +67,21 @@ public class MagicLandmineRenderer extends EntityRenderer<MagicLandmineEntity> {
 		float x = (float) (aabb.getXsize() - f);
 		float z = (float) (aabb.getZsize() - f);
 
-		VertexConsumer buffer = buffers.getBuffer(RenderHelper.RECTANGLE);
-		Matrix4f mat = ms.last().pose();
-		RenderHelper.flatRectangle(buffer, mat, f, x, 0, f, z, r, g, b, alpha);
+		final float ff = f;
+		final float fx = x;
+		final float fz = z;
+		final int falpha = alpha;
+		collector.submitCustomGeometry(ms, RenderHelper.RECTANGLE, (pose, buffer) -> {
+			Matrix4f mat = pose.pose();
+			RenderHelper.flatRectangle(buffer, mat, ff, fx, 0, ff, fz, r, g, b, falpha);
+		});
 		RenderHelper.incrementOffY();
 		ms.popPose();
 	}
 
-	@NotNull
-	@Override
-	public ResourceLocation getTextureLocation(@NotNull MagicLandmineEntity entity) {
-		return InventoryMenu.BLOCK_ATLAS;
+	public static class MagicLandmineRenderState extends EntityRenderState {
+		public int tickCount;
+		public float partialTick;
+		public AABB relativeBounds;
 	}
 }

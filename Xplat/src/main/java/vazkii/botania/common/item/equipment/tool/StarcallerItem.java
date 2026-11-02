@@ -8,6 +8,7 @@
  */
 package vazkii.botania.common.item.equipment.tool;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -16,6 +17,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.clock.WorldClock;
+import net.minecraft.world.clock.WorldClocks;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -38,8 +45,8 @@ public class StarcallerItem extends ManasteelSwordItem {
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
-		super.inventoryTick(stack, world, entity, slot, selected);
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
+		super.inventoryTick(stack, world, entity, slot);
 		if (!(entity instanceof Player player)) {
 			return;
 		}
@@ -49,11 +56,11 @@ public class StarcallerItem extends ManasteelSwordItem {
 			ItemNBTHelper.setLong(stack, TAG_LAST_TRIGGER, world.getGameTime());
 		}
 
-		MobEffectInstance haste = player.getEffect(MobEffects.DIG_SPEED);
+		MobEffectInstance haste = player.getEffect(MobEffects.HASTE);
 		float check = haste == null ? 0.16666667F : haste.getAmplifier() == 1 ? 0.5F : 0.4F;
 
 		long timeSinceLast = world.getGameTime() - ItemNBTHelper.getLong(stack, TAG_LAST_TRIGGER, world.getGameTime());
-		if (timeSinceLast > INTERVAL && player.getMainHandItem() == stack && player.attackAnim == check && !world.isClientSide) {
+		if (timeSinceLast > INTERVAL && player.getMainHandItem() == stack && player.attackAnim == check && !world.isClientSide()) {
 			ItemNBTHelper.setLong(stack, TAG_LAST_TRIGGER, world.getGameTime());
 			summonFallingStar(stack, world, player);
 		}
@@ -72,8 +79,10 @@ public class StarcallerItem extends ManasteelSwordItem {
 			star.setDeltaMovement(motVec);
 			world.addFreshEntity(star);
 
+			long dayTime = world.clockManager().getTotalTicks(
+					world.registryAccess().lookupOrThrow(Registries.WORLD_CLOCK).getOrThrow(WorldClocks.OVERWORLD)) % 24000L;
 			if (!world.isRaining()
-					&& Math.abs(world.getDayTime() - 18000) < 1800
+					&& Math.abs(dayTime - 18000) < 1800
 					&& Math.random() < 0.125) {
 				FallingStarEntity bonusStar = new FallingStarEntity(player, world);
 				bonusStar.setPos(posVec.x, posVec.y, posVec.z);
@@ -82,7 +91,7 @@ public class StarcallerItem extends ManasteelSwordItem {
 				world.addFreshEntity(bonusStar);
 			}
 
-			stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(InteractionHand.MAIN_HAND));
+			stack.hurtAndBreak(1, player, InteractionHand.MAIN_HAND);
 			world.playSound(null, player.getX(), player.getY(), player.getZ(), BotaniaSounds.starcaller, SoundSource.PLAYERS, 1F, 1F);
 		}
 	}

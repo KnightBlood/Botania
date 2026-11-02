@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "E": "#botania:elementium_ingots",
+    "R": "minecraft:redstone",
+    "S": "botania:livingrock"
+  },
+  "pattern": [
+    "ESE",
+    "SRS"
+  ],
+  "result": {
+    "id": "botania:spark_changer"
+  }
+}

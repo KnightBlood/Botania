@@ -4,13 +4,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.MushroomCow;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
@@ -84,15 +85,12 @@ public class DrumBlockTest {
 				.thenExecute(() -> {
 					final var item = helper.getEntities(EntityType.ITEM, POSITION_MOB, 1.0).stream().findFirst();
 					helper.assertTrue(item.isPresent() && item.get().getItem().is(Items.SUSPICIOUS_STEW), "Item not found or not suspicious stew");
-					final var nbt = item.get().getItem().getTag();
-					// TODO: update for 1.20.2 (effect will be stored as string and tag names might change)
-					helper.assertTrue(nbt.contains(SuspiciousStewItem.EFFECTS_TAG, Tag.TAG_LIST), "Missing effects list tag");
-					final var effects = nbt.getList(SuspiciousStewItem.EFFECTS_TAG, Tag.TAG_COMPOUND);
-					helper.assertTrue(effects.size() == 1, "Exactly one effect expected");
-					final var effectTag = effects.getCompound(0);
-					helper.assertTrue(effectTag.contains(SuspiciousStewItem.EFFECT_ID_TAG, Tag.TAG_INT) && effectTag.contains(SuspiciousStewItem.EFFECT_DURATION_TAG, Tag.TAG_INT), "Missing ID and/or duration tag for effect");
-					final var effect = MobEffect.byId(effectTag.getInt(SuspiciousStewItem.EFFECT_ID_TAG));
-					final var effectDuration = effectTag.getInt(SuspiciousStewItem.EFFECT_DURATION_TAG);
+					final var stewEffects = item.get().getItem().get(DataComponents.SUSPICIOUS_STEW_EFFECTS);
+					helper.assertTrue(stewEffects != null, "Missing suspicious stew effects component");
+					helper.assertTrue(stewEffects.effects().size() == 1, "Exactly one effect expected");
+					final var effectEntry = stewEffects.effects().get(0);
+					final var effect = effectEntry.effect().value();
+					final var effectDuration = effectEntry.duration();
 					helper.assertTrue(effect == MobEffects.BLINDNESS && effectDuration == 15, "Unexpected effect type or duration");
 				})
 				.thenSucceed();

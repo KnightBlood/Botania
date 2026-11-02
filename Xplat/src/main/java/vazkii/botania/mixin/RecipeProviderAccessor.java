@@ -8,8 +8,9 @@
  */
 package vazkii.botania.mixin;
 
-import net.minecraft.advancements.critereon.InventoryChangeTrigger;
-import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.data.recipes.RecipeProvider;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,7 +19,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(RecipeProvider.class)
 public interface RecipeProviderAccessor {
 	@Invoker("inventoryTrigger")
-	static InventoryChangeTrigger.TriggerInstance botania_condition(ItemPredicate... predicates) {
+	static Criterion<InventoryChangeTrigger.TriggerInstance> botania_condition(ItemPredicate... predicates) {
 		throw new IllegalStateException("");
 	}
 }

@@ -1,0 +1,34 @@
+{
+  "parent": "botania:challenge/loki_ring",
+  "criteria": {
+    "place_blocks": {
+      "conditions": {
+        "blocks_placed": {
+          "min": 255
+        }
+      },
+      "trigger": "botania:loki_placed_blocks"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.botania:lokiRingMany.desc"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "botania:loki_ring"
+    },
+    "title": {
+      "translate": "advancement.botania:lokiRingMany"
+    }
+  },
+  "requirements": [
+    [
+      "place_blocks"
+    ]
+  ],
+  "rewards": {
+    "experience": 85
+  },
+  "sends_telemetry_event": true
+}

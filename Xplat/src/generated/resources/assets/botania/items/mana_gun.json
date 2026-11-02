@@ -1,0 +1,7 @@
+{
+  "model": {
+    "type": "botania:mana_gun",
+    "gun_clip": "botania:item/mana_gun_clip",
+    "gun_noclip": "botania:item/mana_gun_noclip"
+  }
+}

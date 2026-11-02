@@ -9,7 +9,9 @@
 package vazkii.botania.common.block.block_entity.red_string;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 
 import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
@@ -28,7 +30,7 @@ public class RedStringComparatorBlockEntity extends RedStringBlockEntity {
 		int origVal = self.comparatorValue;
 
 		if (bindState.hasAnalogOutputSignal()) {
-			self.comparatorValue = bindState.getAnalogOutputSignal(level, binding);
+			self.comparatorValue = bindState.getAnalogOutputSignal(level, binding, Direction.NORTH);
 		} else {
 			self.comparatorValue = 0;
 		}

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:metamorphic_forest_bricks",
+  "result": {
+    "id": "botania:metamorphic_forest_bricks_wall"
+  }
+}

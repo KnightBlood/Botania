@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": "botania:grass_seeds",
+    "W": "#botania:livingwood_logs"
+  },
+  "pattern": [
+    " W ",
+    "WSW",
+    "WW "
+  ],
+  "result": {
+    "id": "botania:horn_grass"
+  }
+}

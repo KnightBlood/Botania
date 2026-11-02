@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "group": "botania:spreader",
+  "ingredients": [
+    "botania:mana_spreader",
+    "minecraft:redstone"
+  ],
+  "result": {
+    "id": "botania:redstone_spreader"
+  }
+}

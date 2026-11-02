@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "L": "botania:livingrock",
+    "P": "botania:mana_pearl",
+    "S": "minecraft:stone"
+  },
+  "pattern": [
+    "LSL",
+    "SPS",
+    "LSL"
+  ],
+  "result": {
+    "id": "botania:tiny_planet"
+  }
+}

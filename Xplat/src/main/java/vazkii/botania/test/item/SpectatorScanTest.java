@@ -3,7 +3,7 @@ package vazkii.botania.test.item;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -20,7 +20,6 @@ import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.equipment.bauble.SpectatorItem;
 import vazkii.botania.mixin.AbstractHorseAccessor;
-import vazkii.botania.mixin.RandomizableContainerBlockEntityAccessor;
 import vazkii.botania.test.TestingUtil;
 
 import java.util.Arrays;
@@ -91,10 +90,10 @@ public class SpectatorScanTest {
 
 		// set loot tables
 		var lootChestCart = helper.spawn(EntityType.CHEST_MINECART, POSITION_CART_LOOT);
-		lootChestCart.setLootTable(new ResourceLocation(LOOT_TABLE_CART), 1L);
+		lootChestCart.setLootTable(Identifier.parse(LOOT_TABLE_CART), 1L);
 
 		var lootChest = TestingUtil.assertBlockEntity(helper, POSITION_CHEST_LOOT, BlockEntityType.CHEST);
-		lootChest.setLootTable(new ResourceLocation(LOOT_TABLE_CHEST), 1L);
+		lootChest.setLootTable(Identifier.parse(LOOT_TABLE_CHEST), 1L);
 
 		// set up player
 		var player = helper.makeMockPlayer();
@@ -107,7 +106,7 @@ public class SpectatorScanTest {
 
 		// ensure loot content has not been rolled
 		TestingUtil.assertThat(lootChestCart.getLootTable() != null, () -> "Chest loot was rolled");
-		TestingUtil.assertThat(((RandomizableContainerBlockEntityAccessor) lootChest).getLootTable() != null,
+		TestingUtil.assertThat(lootChest.getLootTable() != null,
 				() -> "Chest loot was rolled");
 
 		// check that exactly the relevant positions have been found

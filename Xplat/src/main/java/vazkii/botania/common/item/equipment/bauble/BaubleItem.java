@@ -16,12 +16,18 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.item.CosmeticAttachable;
 import vazkii.botania.api.item.PhantomInkable;
@@ -41,20 +47,21 @@ public abstract class BaubleItem extends Item implements CosmeticAttachable, Pha
 	private static final String TAG_COSMETIC_ITEM = "cosmeticItem";
 	private static final String TAG_PHANTOM_INK = "phantomInk";
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public BaubleItem(Properties props) {
 		super(props);
 		EquipmentHandler.instance.onInit(this);
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> tooltip, TooltipFlag flags) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
 		ItemStack cosmetic = getCosmeticItem(stack);
 		if (!cosmetic.isEmpty()) {
-			tooltip.add(Component.translatable("botaniamisc.hasCosmetic", cosmetic.getHoverName()).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+			builder.accept(Component.translatable("botaniamisc.hasCosmetic", cosmetic.getHoverName()).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
 		}
 
 		if (hasPhantomInk(stack)) {
-			tooltip.add(Component.translatable("botaniamisc.hasPhantomInk").withStyle(ChatFormatting.AQUA));
+			builder.accept(Component.translatable("botaniamisc.hasPhantomInk").withStyle(ChatFormatting.AQUA));
 		}
 	}
 
@@ -64,35 +71,18 @@ public abstract class BaubleItem extends Item implements CosmeticAttachable, Pha
 		if (cmp == null) {
 			return ItemStack.EMPTY;
 		}
-		return ItemStack.of(cmp);
+		return ItemNBTHelper.deserializeStackNbt(cmp);
 	}
 
 	@Override
 	public void setCosmeticItem(ItemStack stack, ItemStack cosmetic) {
-		CompoundTag cmp = new CompoundTag();
-		if (!cosmetic.isEmpty()) {
-			cmp = cosmetic.save(cmp);
-		}
+		CompoundTag cmp = ItemNBTHelper.serializeStackNbt(cosmetic);
 		ItemNBTHelper.setCompound(stack, TAG_COSMETIC_ITEM, cmp);
 	}
 
-	public static UUID getBaubleUUID(ItemStack stack) {
-		var tag = stack.getOrCreateTag();
-
-		// Legacy handling
-		String tagBaubleUuidMostLegacy = "baubleUUIDMost";
-		String tagBaubleUuidLeastLegacy = "baubleUUIDLeast";
-		if (tag.contains(tagBaubleUuidMostLegacy) && tag.contains(tagBaubleUuidLeastLegacy)) {
-			UUID uuid = new UUID(tag.getLong(tagBaubleUuidMostLegacy), tag.getLong(tagBaubleUuidLeastLegacy));
-			tag.putUUID(TAG_BAUBLE_UUID, uuid);
-		}
-
-		if (!tag.hasUUID(TAG_BAUBLE_UUID)) {
-			UUID uuid = UUID.randomUUID();
-			tag.putUUID(TAG_BAUBLE_UUID, uuid);
-		}
-
-		return tag.getUUID(TAG_BAUBLE_UUID);
+	public static Identifier getBaubleModifierId(ItemStack stack) {
+		// Use the item's registry name as a stable modifier identifier
+		return Identifier.parse("botania:bauble_" + stack.getItem().toString().replace(":", "_"));
 	}
 
 	@Override
@@ -108,7 +98,7 @@ public abstract class BaubleItem extends Item implements CosmeticAttachable, Pha
 	public void onWornTick(ItemStack stack, LivingEntity entity) {}
 
 	public void onEquipped(ItemStack stack, LivingEntity entity) {
-		if (!entity.level().isClientSide && entity instanceof ServerPlayer player) {
+		if (!entity.level().isClientSide() && entity instanceof ServerPlayer player) {
 			PlayerHelper.grantCriterion(player, prefix("main/bauble_wear"), "code_triggered");
 		}
 	}
@@ -119,7 +109,7 @@ public abstract class BaubleItem extends Item implements CosmeticAttachable, Pha
 		return true;
 	}
 
-	public Multimap<Attribute, AttributeModifier> getEquippedAttributeModifiers(ItemStack stack) {
+	public Multimap<Holder<Attribute>, AttributeModifier> getEquippedAttributeModifiers(ItemStack stack) {
 		return HashMultimap.create();
 	}
 
@@ -129,3 +119,4 @@ public abstract class BaubleItem extends Item implements CosmeticAttachable, Pha
 				&& !living.isInvisible();
 	}
 }
+

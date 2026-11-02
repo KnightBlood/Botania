@@ -11,12 +11,10 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -29,18 +27,15 @@ import org.joml.Quaternionf;
 
 import vazkii.botania.api.block.PetalApothecary;
 import vazkii.botania.client.core.handler.ClientTickHandler;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.block.block_entity.PetalApothecaryBlockEntity;
 import vazkii.botania.common.helper.VecHelper;
 
-public class PetalApothecaryBlockEntityRenderer implements BlockEntityRenderer<PetalApothecaryBlockEntity> {
-	private final BlockRenderDispatcher blockRenderDispatcher;
-
-	public PetalApothecaryBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
-		this.blockRenderDispatcher = context.getBlockRenderDispatcher();
-	}
+public class PetalApothecaryBlockEntityRenderer extends BotaniaBlockEntityRenderer<PetalApothecaryBlockEntity> {
+	public PetalApothecaryBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
 
 	@Override
-	public void render(@NotNull PetalApothecaryBlockEntity altar, float pticks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@NotNull PetalApothecaryBlockEntity altar, float pticks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		ms.pushPose();
 		ms.translate(0.5, 1.25, 0.5);
 
@@ -95,8 +90,8 @@ public class PetalApothecaryBlockEntityRenderer implements BlockEntityRenderer<P
 						v *= 2F;
 
 						ItemStack stack = altar.getItemHandler().getItem(i);
-						Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.GROUND,
-								light, overlay, ms, buffers, altar.getLevel(), 0);
+						RenderHelper.renderItemStatic(stack, ItemDisplayContext.GROUND, false,
+								ms, buffers, light, overlay, altar.getLevel(), 0);
 						ms.popPose();
 					}
 
@@ -110,11 +105,14 @@ public class PetalApothecaryBlockEntityRenderer implements BlockEntityRenderer<P
 			ms.mulPose(VecHelper.rotateX(90));
 			ms.scale(1 / 16F, 1 / 16F, 1 / 16F);
 
-			TextureAtlasSprite sprite = lava ? this.blockRenderDispatcher.getBlockModel(Blocks.LAVA.defaultBlockState()).getParticleIcon()
-					: this.blockRenderDispatcher.getBlockModel(Blocks.WATER.defaultBlockState()).getParticleIcon();
+			TextureAtlasSprite sprite = lava
+					? Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(Blocks.LAVA.defaultBlockState()).particleMaterial().sprite()
+					: Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(Blocks.WATER.defaultBlockState()).particleMaterial().sprite();
 			int color = lava ? -1
-					: BiomeColors.getAverageWaterColor(altar.getLevel(), altar.getBlockPos());
-			VertexConsumer buffer = buffers.getBuffer(Sheets.translucentCullBlockSheet());
+					: altar.getLevel() instanceof BlockAndTintGetter tintGetter
+							? BiomeColors.getAverageWaterColor(tintGetter, altar.getBlockPos())
+							: -1;
+			VertexConsumer buffer = buffers.getBuffer(RenderTypes.translucentMovingBlock());
 			renderIcon(ms, buffer, sprite, color, alpha, overlay, lava ? 0xF000F0 : light);
 			ms.popPose();
 		}
@@ -128,14 +126,14 @@ public class PetalApothecaryBlockEntityRenderer implements BlockEntityRenderer<P
 		Matrix4f mat = ms.last().pose();
 		int start = 3;
 		int end = 13;
-		builder.vertex(mat, start, end, 0).color(red, green, blue, (int) (alpha * 255F))
-				.uv(sprite.getU(start), sprite.getV(end)).overlayCoords(overlay).uv2(light).normal(0, 0, 1).endVertex();
-		builder.vertex(mat, end, end, 0).color(red, green, blue, (int) (alpha * 255F))
-				.uv(sprite.getU(end), sprite.getV(end)).overlayCoords(overlay).uv2(light).normal(0, 0, 1).endVertex();
-		builder.vertex(mat, end, start, 0).color(red, green, blue, (int) (alpha * 255F))
-				.uv(sprite.getU(end), sprite.getV(start)).overlayCoords(overlay).uv2(light).normal(0, 0, 1).endVertex();
-		builder.vertex(mat, start, start, 0).color(red, green, blue, (int) (alpha * 255F))
-				.uv(sprite.getU(start), sprite.getV(start)).overlayCoords(overlay).uv2(light).normal(0, 0, 1).endVertex();
+		builder.addVertex(mat, start, end, 0).setColor(red, green, blue, (int) (alpha * 255F))
+				.setUv(sprite.getU(start), sprite.getV(end)).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
+		builder.addVertex(mat, end, end, 0).setColor(red, green, blue, (int) (alpha * 255F))
+				.setUv(sprite.getU(end), sprite.getV(end)).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
+		builder.addVertex(mat, end, start, 0).setColor(red, green, blue, (int) (alpha * 255F))
+				.setUv(sprite.getU(end), sprite.getV(start)).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
+		builder.addVertex(mat, start, start, 0).setColor(red, green, blue, (int) (alpha * 255F))
+				.setUv(sprite.getU(start), sprite.getV(start)).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
 	}
 
 }

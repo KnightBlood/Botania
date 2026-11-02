@@ -28,6 +28,7 @@ import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
 
 public class AlfheimPortalBlock extends BotaniaBlock implements EntityBlock {
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public AlfheimPortalBlock(Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BotaniaStateProperties.ALFPORTAL_STATE, AlfheimPortalState.OFF));

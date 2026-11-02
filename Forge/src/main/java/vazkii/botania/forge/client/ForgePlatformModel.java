@@ -1,20 +1,23 @@
+/*
+ * This class is distributed as part of the Botania Mod.
+ * Get the Source Code in github:
+ * https://github.com/Vazkii/Botania
+ *
+ * Botania is Open Source and distributed under the
+ * Botania License: http://botaniamod.net/license.php
+ */
 package vazkii.botania.forge.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.ChunkRenderTypeSet;
-import net.minecraftforge.client.model.BakedModelWrapper;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.data.ModelProperty;
+import net.neoforged.neoforge.client.model.DelegateBlockStateModel;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.block.PlatformBlock;
@@ -23,61 +26,51 @@ import vazkii.botania.common.lib.BotaniaTags;
 
 import java.util.List;
 
-public class ForgePlatformModel extends BakedModelWrapper<BakedModel> {
-	public static final ModelProperty<PlatformBlockEntity.PlatformData> PROPERTY = new ModelProperty<>();
-
-	public ForgePlatformModel(BakedModel originalModel) {
+/**
+ * Camouflage wrapper for platform blocks. In MC 26.1 {@code ModelData} is gone; the
+ * disguised state is resolved per position inside {@link #collectParts}.
+ */
+public class ForgePlatformModel extends DelegateBlockStateModel {
+	public ForgePlatformModel(BlockStateModel originalModel) {
 		super(originalModel);
 	}
 
-	@NotNull
-	@Override
-	public ModelData getModelData(@NotNull BlockAndTintGetter world, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ModelData tileData) {
+	@Nullable
+	private BlockStateModel disguiseModel(BlockAndTintGetter world, BlockPos pos, BlockState state) {
 		if (world.getBlockEntity(pos) instanceof PlatformBlockEntity platform) {
-			return ModelData.builder()
-					.with(PROPERTY, new PlatformBlockEntity.PlatformData(platform))
-					.build();
+			var data = new PlatformBlockEntity.PlatformData(platform);
+			BlockState heldState = data.state();
+			if (heldState != null && !heldState.is(BotaniaTags.Blocks.UNSUPPORTED_PLATFORM_DISGUISE)) {
+				return Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(heldState);
+			}
 		}
-		return tileData;
+		return null;
 	}
 
-	@NotNull
 	@Override
-	public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side,
-			@NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType) {
-		var data = extraData.get(PROPERTY);
-		if (state == null || !(state.getBlock() instanceof PlatformBlock) || data == null) {
-			return Minecraft.getInstance().getBlockRenderer().getBlockModelShaper()
-					.getModelManager().getMissingModel().getQuads(state, side, rand, extraData, renderType);
+	public void collectParts(BlockAndTintGetter world, BlockPos pos, BlockState state,
+			RandomSource rand, List<BlockStateModelPart> parts) {
+		if (!(state.getBlock() instanceof PlatformBlock)) {
+			super.collectParts(world, pos, state, rand, parts);
+			return;
 		}
-
-		BlockState heldState = data.state();
-
-		if (heldState == null || heldState.is(BotaniaTags.Blocks.UNSUPPORTED_PLATFORM_DISGUISE)) {
-			// No camo
-			return super.getQuads(state, side, rand, extraData, renderType);
+		BlockStateModel disguise = disguiseModel(world, pos, state);
+		if (disguise == null) {
+			super.collectParts(world, pos, state, rand, parts);
 		} else {
-			BakedModel model = Minecraft.getInstance().getBlockRenderer()
-					.getBlockModelShaper().getBlockModel(heldState);
-			return model.getQuads(heldState, side, rand, ModelData.EMPTY, renderType);
+			disguise.collectParts(rand, parts);
 		}
 	}
 
-	@NotNull
 	@Override
-	public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData extraData) {
-		var data = extraData.get(PROPERTY);
-		if (!(state.getBlock() instanceof PlatformBlock) || data == null) {
-			return Minecraft.getInstance().getBlockRenderer().getBlockModelShaper()
-					.getModelManager().getMissingModel().getRenderTypes(state, rand, extraData);
-		}
+	public Material.Baked particleMaterial(BlockAndTintGetter world, BlockPos pos, BlockState state) {
+		BlockStateModel disguise = disguiseModel(world, pos, state);
+		return disguise != null ? disguise.particleMaterial() : super.particleMaterial(world, pos, state);
+	}
 
-		BlockState heldState = data.state();
-		if (heldState == null) {
-			return super.getRenderTypes(state, rand, extraData);
-		} else {
-			BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(heldState);
-			return model.getRenderTypes(heldState, rand, ModelData.EMPTY);
-		}
+	@Override
+	public int materialFlags(BlockAndTintGetter world, BlockPos pos, BlockState state) {
+		BlockStateModel disguise = disguiseModel(world, pos, state);
+		return disguise != null ? disguise.materialFlags() : super.materialFlags(world, pos, state);
 	}
 }

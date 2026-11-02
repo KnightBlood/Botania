@@ -1,0 +1,25 @@
+{
+  "parent": "botania:main/ender_air_make",
+  "criteria": {
+    "code_triggered": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.botania:luminizerRide.desc"
+    },
+    "icon": {
+      "id": "botania:light_relay"
+    },
+    "title": {
+      "translate": "advancement.botania:luminizerRide"
+    }
+  },
+  "requirements": [
+    [
+      "code_triggered"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

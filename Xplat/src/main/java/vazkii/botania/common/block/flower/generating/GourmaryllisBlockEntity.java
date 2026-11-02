@@ -9,8 +9,10 @@
 package vazkii.botania.common.block.flower.generating;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -20,6 +22,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
@@ -34,6 +37,7 @@ import vazkii.botania.xplat.XplatAbstractions;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import vazkii.botania.common.helper.ItemNBTHelper;
 
 public class GourmaryllisBlockEntity extends GeneratingFlowerBlockEntity {
 	private static final String TAG_COOLDOWN = "cooldown";
@@ -81,7 +85,7 @@ public class GourmaryllisBlockEntity extends GeneratingFlowerBlockEntity {
 		for (ListIterator<ItemStack> it = lastFoods.listIterator(); it.hasNext();) {
 			int index = it.nextIndex();
 			ItemStack streakFood = it.next();
-			if (ItemStack.isSameItemSameTags(streakFood, food)) {
+			if (ItemStack.isSameItemSameComponents(streakFood, food)) {
 				it.remove();
 				lastFoods.add(0, streakFood);
 				return index;
@@ -99,7 +103,7 @@ public class GourmaryllisBlockEntity extends GeneratingFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide) {
+		if (getLevel().isClientSide()) {
 			return;
 		}
 
@@ -120,20 +124,20 @@ public class GourmaryllisBlockEntity extends GeneratingFlowerBlockEntity {
 				sync();
 			} else if (cooldown % munchInterval == 0) {
 				//Usage of vanilla sound event: Subtitle is "Eating", generic sounds are meant to be reused.
-				getLevel().playSound(null, getEffectivePos(), SoundEvents.GENERIC_EAT, SoundSource.BLOCKS, 0.5F, 1F);
+				getLevel().playSound(null, getEffectivePos(), SoundEvents.GENERIC_EAT.value(), SoundSource.BLOCKS, 0.5F, 1F);
 
-				Vec3 offset = getLevel().getBlockState(getEffectivePos()).getOffset(getLevel(), getEffectivePos()).add(0.4, 0.6, 0.4);
+				Vec3 offset = getLevel().getBlockState(getEffectivePos()).getOffset(getEffectivePos()).add(0.4, 0.6, 0.4);
 
-				((ServerLevel) getLevel()).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, lastFoods.get(0)), getEffectivePos().getX() + offset.x, getEffectivePos().getY() + offset.y, getEffectivePos().getZ() + offset.z, 10, 0.1D, 0.1D, 0.1D, 0.03D);
+				((ServerLevel) getLevel()).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStackTemplate(BuiltInRegistries.ITEM.wrapAsHolder(lastFoods.get(0).getItem()), lastFoods.get(0).getCount(), lastFoods.get(0).getComponentsPatch())), getEffectivePos().getX() + offset.x, getEffectivePos().getY() + offset.y, getEffectivePos().getZ() + offset.z, 10, 0.1D, 0.1D, 0.1D, 0.03D);
 			}
 		}
 
-		List<ItemEntity> items = getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(getEffectivePos().offset(-RANGE, -RANGE, -RANGE), getEffectivePos().offset(RANGE + 1, RANGE + 1, RANGE + 1)));
+		List<ItemEntity> items = getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(Vec3.atLowerCornerOf(getEffectivePos().offset(-RANGE, -RANGE, -RANGE)), Vec3.atLowerCornerOf(getEffectivePos().offset(RANGE + 1, RANGE + 1, RANGE + 1))));
 
 		for (ItemEntity item : items) {
 			ItemStack stack = item.getItem();
 
-			if (DelayHelper.canInteractWithImmediate(this, item) && stack.getItem().isEdible()) {
+			if (DelayHelper.canInteractWithImmediate(this, item) && stack.has(DataComponents.FOOD)) {
 				if (cooldown <= 0) {
 					streakLength = Math.min(streakLength + 1, processFood(stack));
 
@@ -141,11 +145,11 @@ public class GourmaryllisBlockEntity extends GeneratingFlowerBlockEntity {
 					digestingMana = getDigestingMana(val, getMultiplierForStreak(streakLength));
 					cooldown = getCooldown(val);
 					//Usage of vanilla sound event: Subtitle is "Eating", generic sounds are meant to be reused.
-					item.playSound(SoundEvents.GENERIC_EAT, 0.2F, 0.6F);
+					item.playSound(SoundEvents.GENERIC_EAT.value(), 0.2F, 0.6F);
 					getLevel().gameEvent(null, GameEvent.EAT, item.position());
 					getLevel().gameEvent(null, GameEvent.BLOCK_ACTIVATE, getEffectivePos());
 					sync();
-					((ServerLevel) getLevel()).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, stack), item.getX(), item.getY(), item.getZ(), 20, 0.1D, 0.1D, 0.1D, 0.05D);
+					((ServerLevel) getLevel()).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStackTemplate(BuiltInRegistries.ITEM.wrapAsHolder(stack.getItem()), stack.getCount(), stack.getComponentsPatch())), item.getX(), item.getY(), item.getZ(), 20, 0.1D, 0.1D, 0.1D, 0.05D);
 				}
 
 				item.discard();
@@ -164,7 +168,7 @@ public class GourmaryllisBlockEntity extends GeneratingFlowerBlockEntity {
 	private static int getFoodValue(ItemStack stack) {
 		// support for Forge's NBT-based food properties
 		FoodProperties foodProperties = XplatAbstractions.INSTANCE.getFoodProperties(stack);
-		int nutrition = foodProperties != null ? foodProperties.getNutrition() : 0;
+		int nutrition = foodProperties != null ? foodProperties.nutrition() : 0;
 		return Math.min(MAX_FOOD_VALUE, nutrition);
 	}
 
@@ -175,7 +179,7 @@ public class GourmaryllisBlockEntity extends GeneratingFlowerBlockEntity {
 		cmp.putInt(TAG_DIGESTING_MANA, digestingMana);
 		ListTag foodList = new ListTag();
 		for (ItemStack food : lastFoods) {
-			foodList.add(food.save(new CompoundTag()));
+			foodList.add(ItemNBTHelper.serializeStackNbt(food, level.registryAccess()));
 		}
 		cmp.put(TAG_LAST_FOODS, foodList);
 		cmp.putInt(TAG_LAST_FOOD_COUNT, lastFoodCount);
@@ -185,15 +189,15 @@ public class GourmaryllisBlockEntity extends GeneratingFlowerBlockEntity {
 	@Override
 	public void readFromPacketNBT(CompoundTag cmp) {
 		super.readFromPacketNBT(cmp);
-		cooldown = cmp.getInt(TAG_COOLDOWN);
-		digestingMana = cmp.getInt(TAG_DIGESTING_MANA);
+		cooldown = cmp.getIntOr(TAG_COOLDOWN, 0);
+		digestingMana = cmp.getIntOr(TAG_DIGESTING_MANA, 0);
 		lastFoods.clear();
-		ListTag foodList = cmp.getList(TAG_LAST_FOODS, Tag.TAG_COMPOUND);
+		ListTag foodList = cmp.getListOrEmpty(TAG_LAST_FOODS);
 		for (int i = 0; i < foodList.size(); i++) {
-			lastFoods.add(ItemStack.of(foodList.getCompound(i)));
+			lastFoods.add(ItemNBTHelper.deserializeStackNbt(foodList.getCompoundOrEmpty(i), level.registryAccess()));
 		}
-		lastFoodCount = cmp.getInt(TAG_LAST_FOOD_COUNT);
-		streakLength = cmp.getInt(TAG_STREAK_LENGTH);
+		lastFoodCount = cmp.getIntOr(TAG_LAST_FOOD_COUNT, 0);
+		streakLength = cmp.getIntOr(TAG_STREAK_LENGTH, 0);
 	}
 
 	@Override

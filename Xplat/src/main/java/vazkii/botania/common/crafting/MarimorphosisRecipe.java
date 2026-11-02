@@ -11,30 +11,43 @@ package vazkii.botania.common.crafting;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import net.minecraft.commands.CommandFunction;
+import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.commands.CacheableFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeInput;
+
+import vazkii.botania.api.recipe.BotaniaRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.biome.Biome;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.api.recipe.StateIngredient;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import com.mojang.serialization.Codec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import java.util.Optional;
+import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 
 public class MarimorphosisRecipe extends OrechidRecipe {
 	private final int weightBonus;
 	private final TagKey<Biome> biomes;
 
-	public MarimorphosisRecipe(ResourceLocation id, StateIngredient input, StateIngredient output, int weight,
-			CommandFunction.CacheableFunction successFunction,
+	public MarimorphosisRecipe(Identifier id, StateIngredient input, StateIngredient output, int Weighted,
+			@Nullable CacheableFunction successFunction,
 			int weightBonus, TagKey<Biome> biomes) {
-		super(id, input, output, weight, successFunction);
+		super(id, input, output, Weighted, successFunction);
 		this.weightBonus = weightBonus;
 		this.biomes = biomes;
 	}
@@ -54,45 +67,37 @@ public class MarimorphosisRecipe extends OrechidRecipe {
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends BotaniaRecipe<RecipeInput>> getSerializer() {
 		return BotaniaRecipeTypes.MARIMORPHOSIS_SERIALIZER;
 	}
 
-	public static class Serializer implements RecipeSerializer<MarimorphosisRecipe> {
-		@Override
-		public MarimorphosisRecipe fromJson(@NotNull ResourceLocation recipeId, @NotNull JsonObject json) {
-			OrechidRecipe base = BotaniaRecipeTypes.ORECHID_SERIALIZER.fromJson(recipeId, json);
+	public static final MapCodec<MarimorphosisRecipe> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			StateIngredientHelper.CODEC.fieldOf("input").forGetter(r -> r.input),
+			StateIngredientHelper.CODEC.fieldOf("output").forGetter(r -> r.output),
+			Codec.INT.fieldOf("weight").forGetter(r -> r.getWeight()),
+			CacheableFunction.CODEC.optionalFieldOf("success_function")
+					.forGetter(r -> Optional.ofNullable(r.successFunction)),
+			Codec.INT.optionalFieldOf("biome_bonus", 0).forGetter(r -> r.weightBonus),
+			Codec.STRING.fieldOf("biome_bonus_tag").forGetter(r -> r.biomes.location().toString())
+	).apply(i, (input, output, weight, function, bonus, biomeTag) -> new MarimorphosisRecipe(RecipeSerializers.UNKNOWN_ID,
+			input, output, weight, function.orElse(null), bonus,
+			// 26.1: the 1.20.1 source round-trips the tag id through `new ResourceLocation(String)`,
+			// which splits on ':'; `withDefaultNamespace` instead prepends minecraft: blindly and
+			// crashes on already-namespaced ids like "botania:marimorphosis_desert_bonus".
+			TagKey.create(Registries.BIOME, Identifier.parse(biomeTag)))));
 
-			var biomes = TagKey.create(Registries.BIOME,
-					new ResourceLocation(GsonHelper.getAsString(json, "biome_bonus_tag")));
-			int weightBonus = GsonHelper.getAsInt(json, "biome_bonus", 0);
-			if (base.getWeight() + weightBonus <= 0) {
-				throw new JsonSyntaxException("Weight combined with bonus cannot be 0 or less");
-			}
+	public static final StreamCodec<RegistryFriendlyByteBuf, MarimorphosisRecipe> STREAM_CODEC = StreamCodec.composite(
+			StateIngredientHelper.STREAM_CODEC, r -> r.input,
+			StateIngredientHelper.STREAM_CODEC, r -> r.output,
+			ByteBufCodecs.VAR_INT, r -> r.getWeight(),
+			ByteBufCodecs.VAR_INT, r -> r.weightBonus,
+			TagKey.streamCodec(Registries.BIOME), r -> r.biomes,
+			(input, output, weight, bonus, biomes) -> new MarimorphosisRecipe(RecipeSerializers.UNKNOWN_ID,
+					input, output, weight, null, bonus, biomes)
+	);
 
-			return new MarimorphosisRecipe(recipeId, base.getInput(), base.getOutput(),
-					base.getWeight(), base.getSuccessFunction(), weightBonus, biomes);
-		}
+	public static final RecipeSerializer<MarimorphosisRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
 
-		@Override
-		public MarimorphosisRecipe fromNetwork(@NotNull ResourceLocation recipeId, @NotNull FriendlyByteBuf buffer) {
-			OrechidRecipe base = BotaniaRecipeTypes.ORECHID_SERIALIZER.fromNetwork(recipeId, buffer);
-
-			TagKey<Biome> biomes = TagKey.create(Registries.BIOME, buffer.readResourceLocation());
-			int weightBonus = buffer.readVarInt();
-
-			return new MarimorphosisRecipe(recipeId, base.getInput(), base.getOutput(),
-					base.getWeight(), base.getSuccessFunction(), weightBonus, biomes);
-		}
-
-		@Override
-		public void toNetwork(@NotNull FriendlyByteBuf buffer, @NotNull MarimorphosisRecipe recipe) {
-			BotaniaRecipeTypes.ORECHID_SERIALIZER.toNetwork(buffer, recipe);
-
-			buffer.writeResourceLocation(recipe.biomes.location());
-			buffer.writeVarInt(recipe.weightBonus);
-		}
-	}
 
 	public int getWeightBonus() {
 		return weightBonus;

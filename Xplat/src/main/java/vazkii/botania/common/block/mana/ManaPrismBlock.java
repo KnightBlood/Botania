@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -27,11 +28,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.server.level.ServerLevel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -47,6 +50,7 @@ import vazkii.botania.common.handler.BotaniaSounds;
 public class ManaPrismBlock extends BotaniaWaterloggedBlock implements EntityBlock, ManaCollisionGhost {
 	private static final VoxelShape SHAPE = box(4, 0, 4, 12, 16, 12);
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public ManaPrismBlock(Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState()
@@ -97,7 +101,13 @@ public class ManaPrismBlock extends BotaniaWaterloggedBlock implements EntityBlo
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+	protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level world, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hit) {
+		return useItemOn(itemStack, world, player, hand, hit);
+	}
+
+	private InteractionResult useItemOn(ItemStack itemStack, Level world, Player player, InteractionHand hand, BlockHitResult hit) {
+		BlockPos pos = hit.getBlockPos();
+
 		if (!(world.getBlockEntity(pos) instanceof ManaPrismBlockEntity prism)) {
 			return InteractionResult.PASS;
 		}
@@ -105,7 +115,7 @@ public class ManaPrismBlock extends BotaniaWaterloggedBlock implements EntityBlo
 		ItemStack lens = prism.getItemHandler().getItem(0);
 		ItemStack heldItem = player.getItemInHand(hand);
 		boolean playerHasLens = !heldItem.isEmpty() && heldItem.getItem() instanceof BasicLensItem;
-		boolean lensIsSame = playerHasLens && ItemStack.isSameItemSameTags(heldItem, lens);
+		boolean lensIsSame = playerHasLens && ItemStack.isSameItemSameComponents(heldItem, lens);
 		boolean mainHandEmpty = player.getMainHandItem().isEmpty();
 
 		if (playerHasLens && !lensIsSame) {
@@ -118,7 +128,7 @@ public class ManaPrismBlock extends BotaniaWaterloggedBlock implements EntityBlo
 			prism.getItemHandler().setItem(0, toInsert);
 			world.playSound(player, pos, BotaniaSounds.prismAddLens, SoundSource.BLOCKS, 1F, 1F);
 			world.gameEvent(null, GameEvent.BLOCK_CHANGE, pos);
-			return InteractionResult.sidedSuccess(world.isClientSide());
+			return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 		}
 		if (!lens.isEmpty() && (mainHandEmpty || lensIsSame)) {
 			player.getInventory().placeItemBackInInventory(lens);
@@ -126,7 +136,7 @@ public class ManaPrismBlock extends BotaniaWaterloggedBlock implements EntityBlo
 
 			world.playSound(player, pos, BotaniaSounds.prismRemoveLens, SoundSource.BLOCKS, 1F, 1F);
 			world.gameEvent(null, GameEvent.BLOCK_CHANGE, pos);
-			return InteractionResult.sidedSuccess(world.isClientSide());
+			return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 		}
 		return InteractionResult.PASS;
 	}
@@ -140,11 +150,11 @@ public class ManaPrismBlock extends BotaniaWaterloggedBlock implements EntityBlo
 	}
 
 	@Override
-	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, @Nullable Orientation orientation, boolean isMoving) {
 		boolean power = world.getBestNeighborSignal(pos) > 0;
 		boolean powered = state.getValue(BlockStateProperties.POWERED);
 
-		if (!world.isClientSide) {
+		if (!world.isClientSide()) {
 			if (power && !powered) {
 				world.setBlockAndUpdate(pos, state.setValue(BlockStateProperties.POWERED, true));
 			} else if (!power && powered) {
@@ -154,12 +164,13 @@ public class ManaPrismBlock extends BotaniaWaterloggedBlock implements EntityBlo
 	}
 
 	@Override
-	public void onRemove(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving) {
+	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
+		BlockState newState = world.getBlockState(pos);
 		if (!state.is(newState.getBlock())) {
 			if (world.getBlockEntity(pos) instanceof SimpleInventoryBlockEntity inventory) {
 				Containers.dropContents(world, pos, inventory.getItemHandler());
 			}
-			super.onRemove(state, world, pos, newState, isMoving);
+			super.affectNeighborsAfterRemoval(state, world, pos, isMoving);
 		}
 	}
 

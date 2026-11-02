@@ -8,14 +8,12 @@
  */
 package vazkii.botania.common.loot;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -23,16 +21,21 @@ import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.xplat.XplatAbstractions;
 
-public class BindUuid extends LootItemConditionalFunction {
+import java.util.List;
 
-	protected BindUuid(LootItemCondition[] conditionsIn) {
+public class BindUuid extends LootItemConditionalFunction {
+	public static final MapCodec<BindUuid> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter(f -> f.predicates)
+	).apply(i, BindUuid::new));
+
+	protected BindUuid(List<LootItemCondition> conditionsIn) {
 		super(conditionsIn);
 	}
 
 	@NotNull
 	@Override
-	public ItemStack run(@NotNull ItemStack stack, @NotNull LootContext context) {
-		if (context.getParamOrNull(LootContextParams.KILLER_ENTITY) instanceof Player player) {
+	protected ItemStack run(@NotNull ItemStack stack, @NotNull LootContext context) {
+		if (context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY) instanceof net.minecraft.world.entity.player.Player player) {
 			var relic = XplatAbstractions.INSTANCE.findRelic(stack);
 			if (relic != null) {
 				relic.bindToUUID(player.getUUID());
@@ -43,16 +46,7 @@ public class BindUuid extends LootItemConditionalFunction {
 	}
 
 	@Override
-	public LootItemFunctionType getType() {
-		return BotaniaLootModifiers.BIND_UUID;
+	public MapCodec<? extends LootItemConditionalFunction> codec() {
+		return CODEC;
 	}
-
-	public static class Serializer extends LootItemConditionalFunction.Serializer<BindUuid> {
-		@NotNull
-		@Override
-		public BindUuid deserialize(@NotNull JsonObject object, @NotNull JsonDeserializationContext deserializationContext, @NotNull LootItemCondition[] conditionsIn) {
-			return new BindUuid(conditionsIn);
-		}
-	}
-
 }

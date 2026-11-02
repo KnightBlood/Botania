@@ -10,19 +10,28 @@ package vazkii.botania.common.crafting;
 
 import com.google.gson.JsonObject;
 
-import net.minecraft.commands.CommandFunction;
+import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.commands.CacheableFunction;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeInput;
+
+import vazkii.botania.api.recipe.BotaniaRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.api.recipe.StateIngredient;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 
 public class OrechidIgnemRecipe extends OrechidRecipe {
-	public OrechidIgnemRecipe(ResourceLocation id, StateIngredient input, StateIngredient output, int weight, CommandFunction.CacheableFunction successFunction) {
-		super(id, input, output, weight, successFunction);
+	public OrechidIgnemRecipe(Identifier id, StateIngredient input, StateIngredient output, int Weighted, CacheableFunction successFunction) {
+		super(id, input, output, Weighted, successFunction);
 	}
 
 	private OrechidIgnemRecipe(OrechidRecipe recipe) {
@@ -36,24 +45,22 @@ public class OrechidIgnemRecipe extends OrechidRecipe {
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends BotaniaRecipe<RecipeInput>> getSerializer() {
 		return BotaniaRecipeTypes.ORECHID_IGNEM_SERIALIZER;
 	}
 
-	public static class Serializer implements RecipeSerializer<OrechidIgnemRecipe> {
-		@Override
-		public OrechidIgnemRecipe fromJson(@NotNull ResourceLocation recipeId, @NotNull JsonObject json) {
-			return new OrechidIgnemRecipe(BotaniaRecipeTypes.ORECHID_SERIALIZER.fromJson(recipeId, json));
-		}
+	public static final MapCodec<OrechidIgnemRecipe> CODEC = OrechidRecipe.CODEC.xmap(
+			recipe -> new OrechidIgnemRecipe(RecipeSerializers.UNKNOWN_ID, recipe.getInput(), recipe.getOutput(),
+					recipe.getWeight(), recipe.getSuccessFunction()),
+			recipe -> new OrechidRecipe(RecipeSerializers.UNKNOWN_ID, recipe.getInput(), recipe.getOutput(),
+					recipe.getWeight(), recipe.getSuccessFunction()));
 
-		@Override
-		public OrechidIgnemRecipe fromNetwork(@NotNull ResourceLocation recipeId, @NotNull FriendlyByteBuf buffer) {
-			return new OrechidIgnemRecipe(BotaniaRecipeTypes.ORECHID_SERIALIZER.fromNetwork(recipeId, buffer));
-		}
+	public static final StreamCodec<RegistryFriendlyByteBuf, OrechidIgnemRecipe> STREAM_CODEC = OrechidRecipe.STREAM_CODEC.map(
+			recipe -> new OrechidIgnemRecipe(RecipeSerializers.UNKNOWN_ID, recipe.getInput(), recipe.getOutput(),
+					recipe.getWeight(), recipe.getSuccessFunction()),
+			recipe -> new OrechidRecipe(RecipeSerializers.UNKNOWN_ID, recipe.getInput(), recipe.getOutput(),
+					recipe.getWeight(), recipe.getSuccessFunction()));
 
-		@Override
-		public void toNetwork(@NotNull FriendlyByteBuf buffer, @NotNull OrechidIgnemRecipe recipe) {
-			BotaniaRecipeTypes.ORECHID_SERIALIZER.toNetwork(buffer, recipe);
-		}
-	}
+	public static final RecipeSerializer<OrechidIgnemRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
+
 }

@@ -18,7 +18,8 @@ import vazkii.botania.common.entity.ManaBurstEntity;
 
 @Mixin(ThrowableProjectile.class)
 public class ThrowableProjectileMixin {
-	@ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;scale(D)Lnet/minecraft/world/phys/Vec3;"))
+	// 26.1: the Vec3.scale drag call moved from tick into private applyInertia()
+	@ModifyArg(method = "applyInertia", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;scale(D)Lnet/minecraft/world/phys/Vec3;"))
 	private double noDrag(double origScale) {
 		// Do not apply drag to bursts
 		if ((Object) this instanceof ManaBurstEntity) {

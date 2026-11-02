@@ -36,6 +36,7 @@ import vazkii.botania.common.block.block_entity.red_string.RedStringInterceptorB
 
 public class RedStringInterceptorBlock extends RedStringBlock {
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public RedStringInterceptorBlock(BlockBehaviour.Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.FACING, Direction.DOWN).setValue(BlockStateProperties.POWERED, false));

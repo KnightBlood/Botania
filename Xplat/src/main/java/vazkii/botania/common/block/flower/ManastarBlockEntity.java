@@ -35,7 +35,7 @@ public class ManastarBlockEntity extends SpecialFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide) {
+		if (getLevel().isClientSide()) {
 			if (state != NONE && Math.random() > 0.6) {
 				float r = state == INCREASING ? 0.05F : 1F;
 				float b = state == INCREASING ? 1F : 0.05F;

@@ -9,18 +9,26 @@
 package vazkii.botania.common.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.item.SparkEntity;
 import vazkii.botania.api.mana.ManaCollisionGhost;
@@ -34,8 +42,14 @@ public abstract class SparkBaseEntity extends Entity implements SparkEntity, Man
 		super(type, world);
 	}
 
+	@NotNull @Override
+	public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+		// sparks are invulnerable, matching pre-1.21 Entity#hurt default behaviour
+		return false;
+	}
+
 	@Override
-	protected void defineSynchedData() {
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {
 		entityData.define(NETWORK, 0);
 	}
 
@@ -73,19 +87,19 @@ public abstract class SparkBaseEntity extends Entity implements SparkEntity, Man
 	}
 
 	@Override
-	protected void readAdditionalSaveData(CompoundTag compound) {
-		setInvisible(compound.getBoolean(TAG_INVIS));
-		setNetwork(DyeColor.byId(compound.getInt(TAG_NETWORK)));
+	protected void readAdditionalSaveData(ValueInput input) {
+		setInvisible(input.getBooleanOr(TAG_INVIS, false));
+		setNetwork(DyeColor.byId(input.getIntOr(TAG_NETWORK, 0)));
 	}
 
 	@Override
-	protected void addAdditionalSaveData(CompoundTag compound) {
-		compound.putBoolean(TAG_INVIS, isInvisible());
-		compound.putInt(TAG_NETWORK, getNetwork().getId());
+	protected void addAdditionalSaveData(ValueOutput output) {
+		output.putBoolean(TAG_INVIS, isInvisible());
+		output.putInt(TAG_NETWORK, getNetwork().getId());
 	}
 
 	@Override
-	public Packet<ClientGamePacketListener> getAddEntityPacket() {
-		return new ClientboundAddEntityPacket(this);
+	public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity serverEntity) {
+		return new ClientboundAddEntityPacket(this, serverEntity);
 	}
 }

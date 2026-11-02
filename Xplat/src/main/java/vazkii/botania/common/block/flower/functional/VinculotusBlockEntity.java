@@ -35,7 +35,7 @@ public class VinculotusBlockEntity extends FunctionalFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (!getLevel().isClientSide) {
+		if (!getLevel().isClientSide()) {
 			existingFlowers.add(this);
 		}
 	}
@@ -89,7 +89,7 @@ public class VinculotusBlockEntity extends FunctionalFlowerBlockEntity {
 		}
 
 		if (!possibleFlowers.isEmpty()) {
-			VinculotusBlockEntity flower = possibleFlowers.get(entity.level().random.nextInt(possibleFlowers.size()));
+			VinculotusBlockEntity flower = possibleFlowers.get(entity.level().getRandom().nextInt(possibleFlowers.size()));
 			BlockPos activePos = flower.getEffectivePos();
 
 			double x = activePos.getX() + 0.5;

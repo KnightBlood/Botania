@@ -10,6 +10,7 @@ package vazkii.botania.common.block.block_entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,7 +43,7 @@ public class PylonBlockEntity extends BlockEntity {
 
 		PylonBlock.Variant variant = ((PylonBlock) state.getBlock()).variant;
 
-		if (self.activated && level.isClientSide) {
+		if (self.activated && level.isClientSide()) {
 			if (!level.getBlockState(self.centerPos).is(variant.getTargetBlock())
 					|| variant == PylonBlock.Variant.NATURA && (self.portalOff() || !(level.getBlockState(worldPosition.below()).getBlock() instanceof ManaPoolBlock))) {
 				self.activated = false;
@@ -67,7 +68,7 @@ public class PylonBlockEntity extends BlockEntity {
 
 					WispParticleData data = WispParticleData.wisp(0.25F + (float) Math.random() * 0.1F, (float) Math.random() * 0.25F, 0.75F + (float) Math.random() * 0.25F, (float) Math.random() * 0.25F, 1);
 					level.addParticle(data, x, worldPosition.getY() + 0.25, z, 0, -(-0.075F - (float) Math.random() * 0.015F), 0);
-					if (level.random.nextInt(3) == 0) {
+					if (level.getRandom().nextInt(3) == 0) {
 						WispParticleData data1 = WispParticleData.wisp(0.25F + (float) Math.random() * 0.1F, (float) Math.random() * 0.25F, 0.75F + (float) Math.random() * 0.25F, (float) Math.random() * 0.25F);
 						level.addParticle(data1, x, worldPosition.getY() + 0.25, z, (float) movementVector.x, (float) movementVector.y, (float) movementVector.z);
 					}
@@ -83,7 +84,7 @@ public class PylonBlockEntity extends BlockEntity {
 					int g = (hex & 0xFF00) >> 8;
 					int b = hex & 0xFF;
 
-					if (level.random.nextInt(4) == 0) {
+					if (level.getRandom().nextInt(4) == 0) {
 						SparkleParticleData data = SparkleParticleData.sparkle((float) Math.random(), r / 255F, g / 255F, b / 255F, 8);
 						level.addParticle(data, centerBlock.x + (Math.random() - 0.5) * 0.5, centerBlock.y, centerBlock.z + (Math.random() - 0.5) * 0.5, 0, 0, 0);
 					}
@@ -98,7 +99,7 @@ public class PylonBlockEntity extends BlockEntity {
 			}
 		}
 
-		if (level.random.nextBoolean() && level.isClientSide) {
+		if (level.getRandom().nextBoolean() && level.isClientSide()) {
 			SparkleParticleData data = SparkleParticleData.sparkle((float) Math.random(), variant.r, variant.g, variant.b, 2);
 			level.addParticle(data, worldPosition.getX() + Math.random(), worldPosition.getY() + Math.random() * 1.5, worldPosition.getZ() + Math.random(), 0, 0, 0);
 		}

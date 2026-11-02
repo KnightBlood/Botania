@@ -5,7 +5,8 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 import vazkii.botania.api.recipe.PureDaisyRecipe;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
@@ -16,11 +17,12 @@ import java.util.stream.Collectors;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class PureDaisyEmiRecipe extends BotaniaEmiRecipe {
-	private static final ResourceLocation TEXTURE = prefix("textures/gui/pure_daisy_overlay.png");
+	private static final Identifier TEXTURE = prefix("textures/gui/pure_daisy_overlay.png");
 	private static final EmiStack PURE_DAISY = EmiStack.of(BotaniaFlowerBlocks.pureDaisy);
 
-	public PureDaisyEmiRecipe(PureDaisyRecipe recipe) {
-		super(BotaniaEmiPlugin.PURE_DAISY, recipe);
+	public PureDaisyEmiRecipe(RecipeHolder<PureDaisyRecipe> holder) {
+		super(BotaniaEmiPlugin.PURE_DAISY, holder);
+		PureDaisyRecipe recipe = holder.value();
 		this.input = List.of(EmiIngredient.of(recipe.getInput().getDisplayed().stream().map(s -> {
 			if (s.getFluidState().isEmpty()) {
 				return EmiStack.of(s.getBlock());
@@ -43,11 +45,11 @@ public class PureDaisyEmiRecipe extends BotaniaEmiRecipe {
 
 	@Override
 	public void addWidgets(WidgetHolder widgets) {
-		addPureDaisyWidgets(widgets, this, input.get(0), PURE_DAISY, output.get(0));
+		addPureDaisyWidgets(widgets, this, input.get(0), PURE_DAISY, input.get(0));
 	}
 
 	public static void addPureDaisyWidgets(WidgetHolder widgets, EmiRecipe recipe,
-			EmiIngredient input, EmiIngredient flower, EmiStack output) {
+			EmiIngredient input, EmiIngredient flower, EmiIngredient output) {
 		widgets.add(new BlendTextureWidget(TEXTURE, 17, 0, 65, 44, 0, 0));
 		widgets.addSlot(input, 10, 13).drawBack(false);
 		widgets.addSlot(flower, 39, 13).catalyst(true).drawBack(false);

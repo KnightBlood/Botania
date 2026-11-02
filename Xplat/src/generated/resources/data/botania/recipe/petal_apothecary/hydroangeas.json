@@ -1,0 +1,14 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/blue",
+    "#botania:petals/blue",
+    "#botania:petals/cyan",
+    "#botania:petals/cyan"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:hydroangeas"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

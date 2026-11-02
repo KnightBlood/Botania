@@ -12,15 +12,17 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.model.Model;
+import net.minecraft.util.ARGB;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.util.Unit;
 
 import vazkii.botania.common.helper.VecHelper;
 
-public class BellowsModel extends Model {
+public class BellowsModel extends Model<Unit> {
 
 	private final ModelPart top;
 	private final ModelPart base;
@@ -28,7 +30,7 @@ public class BellowsModel extends Model {
 	private final ModelPart funnel;
 
 	public BellowsModel(ModelPart root) {
-		super(RenderType::entityCutout);
+		super(root, t -> RenderTypes.entityCutout(t));
 
 		top = root.getChild("top");
 		base = root.getChild("base");
@@ -54,25 +56,24 @@ public class BellowsModel extends Model {
 		return mesh;
 	}
 
-	@Override
-	public void renderToBuffer(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float a) {
+	public void render(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float a) {
 		render(ms, buffer, light, overlay, r, g, b, a, 1);
 	}
 
 	public void render(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float alpha, float fract) {
-		base.render(ms, buffer, light, overlay, r, g, b, alpha);
-		pipe.render(ms, buffer, light, overlay, r, g, b, alpha);
+		base.render(ms, buffer, light, overlay, ARGB.colorFromFloat(alpha, r, g, b));
+		pipe.render(ms, buffer, light, overlay, ARGB.colorFromFloat(alpha, r, g, b));
 
 		float mov = (1F - fract) * 0.5F;
 
 		ms.translate(0F, mov, 0F);
-		top.render(ms, buffer, light, overlay, r, g, b, alpha);
+		top.render(ms, buffer, light, overlay, ARGB.colorFromFloat(alpha, r, g, b));
 		ms.translate(0F, -mov, 0F);
 
 		ms.mulPose(VecHelper.rotateX(180F));
 		ms.translate(-0.19F, -1.375F, -0.19F);
 		ms.scale(1F, fract, 1F);
-		funnel.render(ms, buffer, light, overlay, r, g, b, alpha);
+		funnel.render(ms, buffer, light, overlay, ARGB.colorFromFloat(alpha, r, g, b));
 		ms.scale(1F, 1F / fract, 1F);
 	}
 

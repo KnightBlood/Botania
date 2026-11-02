@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "minecraft:ender_eye",
+    "P": "botania:mana_pylon",
+    "T": "#botania:terrasteel_nuggets"
+  },
+  "pattern": [
+    " T ",
+    "TPT",
+    " E "
+  ],
+  "result": {
+    "id": "botania:natura_pylon"
+  }
+}

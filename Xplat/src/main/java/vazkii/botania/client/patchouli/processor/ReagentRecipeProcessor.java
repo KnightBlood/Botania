@@ -1,5 +1,6 @@
 package vazkii.botania.client.patchouli.processor;
 
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 
 import vazkii.botania.api.recipe.RecipeWithReagent;
@@ -22,10 +23,13 @@ public abstract class ReagentRecipeProcessor implements IComponentProcessor {
 			return null;
 		}
 		return switch (key) {
-			case "recipe" -> IVariable.wrap(recipe.getId().toString());
-			case "reagent" -> PatchouliUtils.interweaveIngredients(List.of(recipe.getReagent()));
-			case "output" -> IVariable.from(recipe.getResultItem(level.registryAccess()));
-			case "heading" -> IVariable.from(recipe.getResultItem(level.registryAccess()).getHoverName());
+			case "recipe" -> {
+				Identifier id = recipe.getId();
+				yield id == null ? null : IVariable.wrap(id.toString(), level.registryAccess());
+			}
+			case "reagent" -> PatchouliUtils.interweaveIngredients(List.of(recipe.getReagent()), level.registryAccess());
+			case "output" -> IVariable.from(recipe.getResultItem(), level.registryAccess());
+			case "heading" -> IVariable.from(recipe.getResultItem().getHoverName(), level.registryAccess());
 			default -> null;
 		};
 	}

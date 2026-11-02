@@ -9,7 +9,8 @@
 package vazkii.botania.network.serverbound;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -21,20 +22,20 @@ import vazkii.botania.network.BotaniaPacket;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public record IndexKeybindRequestPacket(ItemStack stack) implements BotaniaPacket {
-	public static final ResourceLocation ID = prefix("idx");
+	public static final Identifier ID = prefix("idx");
 
 	@Override
 	public void encode(FriendlyByteBuf buf) {
-		buf.writeItem(stack());
+		buf.writeWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, stack());
 	}
 
 	@Override
-	public ResourceLocation getFabricId() {
+	public Identifier getFabricId() {
 		return ID;
 	}
 
 	public static IndexKeybindRequestPacket decode(FriendlyByteBuf buf) {
-		return new IndexKeybindRequestPacket(buf.readItem());
+		return new IndexKeybindRequestPacket(buf.readWithCodecTrusted(NbtOps.INSTANCE, ItemStack.CODEC));
 	}
 
 	public void handle(MinecraftServer server, ServerPlayer player) {

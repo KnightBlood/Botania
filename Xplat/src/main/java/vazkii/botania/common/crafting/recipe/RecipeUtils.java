@@ -11,9 +11,10 @@ package vazkii.botania.common.crafting.recipe;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -26,10 +27,10 @@ public class RecipeUtils {
 	 * Check if every ingredient in {@code inputs} is satisfied by {@code inv}.
 	 * Optionally, the slots from the inventory used to fulfill the inputs are placed into {@code usedSlots}.
 	 */
-	public static boolean matches(List<Ingredient> inputs, Container inv, @Nullable IntSet usedSlots) {
+	public static boolean matches(List<Ingredient> inputs, RecipeInput inv, @Nullable IntSet usedSlots) {
 		List<Ingredient> ingredientsMissing = new ArrayList<>(inputs);
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack input = inv.getItem(i);
 			if (input.isEmpty()) {
 				break;
@@ -62,16 +63,17 @@ public class RecipeUtils {
 	 * Like the vanilla method on recipe interface, but specialHandler is called first, and if it returns
 	 * nonnull, that result is used instead of vanilla's
 	 */
-	public static NonNullList<ItemStack> getRemainingItemsSub(Container inv, Function<ItemStack, ItemStack> specialHandler) {
-		NonNullList<ItemStack> ret = NonNullList.withSize(inv.getContainerSize(), ItemStack.EMPTY);
+	public static NonNullList<ItemStack> getRemainingItemsSub(RecipeInput inv, Function<ItemStack, ItemStack> specialHandler) {
+		NonNullList<ItemStack> ret = NonNullList.withSize(inv.size(), ItemStack.EMPTY);
 
 		for (int i = 0; i < ret.size(); ++i) {
 			ItemStack item = inv.getItem(i);
 			ItemStack special = specialHandler.apply(item);
+			ItemStackTemplate remainder = item.getCraftingRemainder();
 			if (special != null) {
 				ret.set(i, special);
-			} else if (item.getItem().hasCraftingRemainingItem()) {
-				ret.set(i, new ItemStack(item.getItem().getCraftingRemainingItem()));
+			} else if (remainder != null) {
+				ret.set(i, remainder.create());
 			}
 		}
 

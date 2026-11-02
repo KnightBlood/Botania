@@ -11,29 +11,42 @@ package vazkii.botania.common.crafting;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import net.minecraft.commands.CommandFunction;
+import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.commands.CacheableFunction;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeInput;
+
+import vazkii.botania.api.recipe.BotaniaRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.api.recipe.StateIngredient;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import com.mojang.serialization.Codec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import java.util.Optional;
+import org.jetbrains.annotations.Nullable;
+import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 
 public class OrechidRecipe implements vazkii.botania.api.recipe.OrechidRecipe {
-	private final ResourceLocation id;
-	private final StateIngredient input;
-	private final StateIngredient output;
-	private final int weight;
-	private final CommandFunction.CacheableFunction successFunction;
+	protected Identifier id;
+	protected final StateIngredient input;
+	protected final StateIngredient output;
+	protected final int Weighted;
+	protected final @Nullable CacheableFunction successFunction;
 
-	public OrechidRecipe(ResourceLocation id, StateIngredient input, StateIngredient output, int weight, CommandFunction.CacheableFunction successFunction) {
+	public OrechidRecipe(Identifier id, StateIngredient input, StateIngredient output, int Weighted, @Nullable CacheableFunction successFunction) {
 		this.id = id;
 		this.input = input;
 		this.output = output;
-		this.weight = weight;
+		this.Weighted = Weighted;
 		this.successFunction = successFunction;
 	}
 
@@ -49,16 +62,15 @@ public class OrechidRecipe implements vazkii.botania.api.recipe.OrechidRecipe {
 
 	@Override
 	public int getWeight() {
-		return weight;
+		return Weighted;
 	}
 
 	@Override
-	public CommandFunction.CacheableFunction getSuccessFunction() {
+	public @Nullable CacheableFunction getSuccessFunction() {
 		return this.successFunction;
 	}
 
-	@Override
-	public ResourceLocation getId() {
+		public Identifier getId() {
 		return id;
 	}
 
@@ -69,44 +81,27 @@ public class OrechidRecipe implements vazkii.botania.api.recipe.OrechidRecipe {
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends BotaniaRecipe<RecipeInput>> getSerializer() {
 		return BotaniaRecipeTypes.ORECHID_SERIALIZER;
 	}
 
-	public static class Serializer implements RecipeSerializer<OrechidRecipe> {
-		@Override
-		public OrechidRecipe fromJson(@NotNull ResourceLocation recipeId, @NotNull JsonObject json) {
-			var input = StateIngredientHelper.tryDeserialize(GsonHelper.getAsJsonObject(json, "input"));
-			if (input == null) {
-				throw new JsonSyntaxException("Unknown input: " + GsonHelper.getAsJsonObject(json, "input"));
-			}
-			var output = StateIngredientHelper.tryDeserialize(GsonHelper.getAsJsonObject(json, "output"));
-			if (output == null) {
-				throw new JsonSyntaxException("Unknown output: " + GsonHelper.getAsJsonObject(json, "output"));
-			}
-			var weight = GsonHelper.getAsInt(json, "weight");
-			var functionIdString = GsonHelper.getAsString(json, "success_function", null);
-			var functionId = functionIdString == null ? null : new ResourceLocation(functionIdString);
-			var function = functionId == null
-					? CommandFunction.CacheableFunction.NONE
-					: new CommandFunction.CacheableFunction(functionId);
+	public static final MapCodec<OrechidRecipe> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			StateIngredientHelper.CODEC.fieldOf("input").forGetter(r -> r.input),
+			StateIngredientHelper.CODEC.fieldOf("output").forGetter(r -> r.output),
+			Codec.INT.fieldOf("weight").forGetter(r -> r.Weighted),
+			CacheableFunction.CODEC.optionalFieldOf("success_function")
+					.forGetter(r -> Optional.ofNullable(r.successFunction))
+	).apply(i, (input, output, weight, function) -> new OrechidRecipe(RecipeSerializers.UNKNOWN_ID,
+			input, output, weight, function.orElse(null))));
 
-			return new OrechidRecipe(recipeId, input, output, weight, function);
-		}
+	public static final StreamCodec<RegistryFriendlyByteBuf, OrechidRecipe> STREAM_CODEC = StreamCodec.composite(
+			StateIngredientHelper.STREAM_CODEC, r -> r.input,
+			StateIngredientHelper.STREAM_CODEC, r -> r.output,
+			ByteBufCodecs.VAR_INT, r -> r.Weighted,
+			(input, output, weight) -> new OrechidRecipe(RecipeSerializers.UNKNOWN_ID,
+					input, output, weight, null)
+	);
 
-		@Override
-		public OrechidRecipe fromNetwork(@NotNull ResourceLocation recipeId, @NotNull FriendlyByteBuf buffer) {
-			var input = StateIngredientHelper.read(buffer);
-			var output = StateIngredientHelper.read(buffer);
-			var weight = buffer.readVarInt();
-			return new OrechidRecipe(recipeId, input, output, weight, CommandFunction.CacheableFunction.NONE);
-		}
+	public static final RecipeSerializer<OrechidRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
 
-		@Override
-		public void toNetwork(@NotNull FriendlyByteBuf buffer, @NotNull OrechidRecipe recipe) {
-			recipe.getInput().write(buffer);
-			recipe.getOutput().write(buffer);
-			buffer.writeVarInt(recipe.getWeight());
-		}
-	}
 }

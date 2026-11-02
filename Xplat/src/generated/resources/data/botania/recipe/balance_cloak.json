@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "R": "minecraft:emerald",
+    "S": "botania:life_essence",
+    "W": "minecraft:light_gray_wool"
+  },
+  "pattern": [
+    "WWW",
+    "RWR",
+    "RSR"
+  ],
+  "result": {
+    "id": "botania:balance_cloak"
+  }
+}

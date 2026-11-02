@@ -15,19 +15,25 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
-import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 
 import org.apache.commons.lang3.StringUtils;
 
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.api.recipe.BotanicalBreweryRecipe;
 import vazkii.botania.api.recipe.ElvenTradeRecipe;
 import vazkii.botania.api.recipe.ManaInfusionRecipe;
@@ -46,7 +52,6 @@ import vazkii.botania.common.item.equipment.tool.terrasteel.TerraShattererItem;
 import vazkii.botania.common.item.lens.LensItem;
 import vazkii.botania.common.lib.BotaniaTags;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +100,17 @@ public class BotaniaEmiPlugin implements EmiPlugin {
 
 	private static EmiRecipeCategory createCategory(String idPath, EmiRenderable icon, Comparator<EmiRecipe> comp) {
 		return new EmiRecipeCategory(prefix(idPath), icon, icon, comp);
+	}
+
+	/**
+	 * 26.1: {@code RecipeManager#recipeMap()} is gone; filter the flat recipe collection by type.
+	 */
+	@SuppressWarnings("unchecked")
+	private static <T extends Recipe<?>> List<RecipeHolder<T>> recipesOfType(RecipeType<T> type) {
+		return RecipeHelper.getRecipeManager(Minecraft.getInstance().level).getRecipes().stream()
+				.filter(h -> h.value().getType() == type)
+				.map(h -> (RecipeHolder<T>) h)
+				.toList();
 	}
 
 	private static final Supplier<ItemStack> HOVERED_STACK_GETTER = () -> {
@@ -157,11 +173,11 @@ public class BotaniaEmiPlugin implements EmiPlugin {
 		registry.addWorkstation(MARIMORPHOSIS, EmiStack.of(BotaniaFlowerBlocks.marimorphosisChibi));
 		registry.addWorkstation(MARIMORPHOSIS, EmiStack.of(BotaniaFlowerBlocks.marimorphosisChibiFloating));
 
-		registry.setDefaultComparison(BotaniaItems.lexicon, Comparison.compareNbt());
-		registry.setDefaultComparison(BotaniaItems.brewFlask, Comparison.compareNbt());
-		registry.setDefaultComparison(BotaniaItems.brewVial, Comparison.compareNbt());
-		registry.setDefaultComparison(BotaniaItems.bloodPendant, Comparison.compareNbt());
-		registry.setDefaultComparison(BotaniaItems.incenseStick, Comparison.compareNbt());
+		registry.setDefaultComparison(BotaniaItems.lexicon, Comparison.compareComponents());
+		registry.setDefaultComparison(BotaniaItems.brewFlask, Comparison.compareComponents());
+		registry.setDefaultComparison(BotaniaItems.brewVial, Comparison.compareComponents());
+		registry.setDefaultComparison(BotaniaItems.bloodPendant, Comparison.compareComponents());
+		registry.setDefaultComparison(BotaniaItems.incenseStick, Comparison.compareComponents());
 		// Disables the ability to see the no wings tiara recipe, probably an nbt mismatch
 		//registry.setDefaultComparison(BotaniaItems.flightTiara, compareNbt);
 
@@ -175,7 +191,7 @@ public class BotaniaEmiPlugin implements EmiPlugin {
 		))));
 
 		registry.addRecipe(new CompositeLensEmiRecipe(
-				StreamSupport.stream(BuiltInRegistries.ITEM.getOrCreateTag(BotaniaTags.Items.LENS).spliterator(), false)
+				StreamSupport.stream(BuiltInRegistries.ITEM.getTagOrEmpty(BotaniaTags.Items.LENS).spliterator(), false)
 						.map(ItemStack::new)
 						.filter(s -> !((LensItem) s.getItem()).isControlLens(s))
 						.filter(s -> ((LensItem) s.getItem()).isCombinable(s))
@@ -187,45 +203,46 @@ public class BotaniaEmiPlugin implements EmiPlugin {
 		registry.addRecipe(new EmiCraftingRecipe(List.of(EmiStack.of(BotaniaItems.terraPick),
 				EmiStack.of(BotaniaItems.elementiumPick)), EmiStack.of(tipped), null));
 
-		for (PetalApothecaryRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.PETAL_TYPE)) {
-			registry.addRecipe(new PetalApothecaryEmiRecipe(recipe));
+		for (var holder : recipesOfType(BotaniaRecipeTypes.PETAL_TYPE)) {
+			registry.addRecipe(new PetalApothecaryEmiRecipe(holder));
 		}
-		for (ManaInfusionRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.MANA_INFUSION_TYPE)) {
-			registry.addRecipe(new ManaInfusionEmiRecipe(recipe));
+		for (var holder : recipesOfType(BotaniaRecipeTypes.MANA_INFUSION_TYPE)) {
+			registry.addRecipe(new ManaInfusionEmiRecipe(holder));
 		}
-		for (RunicAltarRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.RUNE_TYPE)) {
-			registry.addRecipe(new RunicAltarEmiRecipe(recipe));
+		for (var holder : recipesOfType(BotaniaRecipeTypes.RUNE_TYPE)) {
+			registry.addRecipe(new RunicAltarEmiRecipe(holder));
 		}
-		for (TerrestrialAgglomerationRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.TERRA_PLATE_TYPE)) {
-			registry.addRecipe(new TerrestrialAgglomerationEmiRecipe(recipe));
+		for (var holder : recipesOfType(BotaniaRecipeTypes.TERRA_PLATE_TYPE)) {
+			registry.addRecipe(new TerrestrialAgglomerationEmiRecipe(holder));
 		}
-		for (ElvenTradeRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.ELVEN_TRADE_TYPE)) {
-			registry.addRecipe(new ElvenTradeEmiRecipe(recipe));
+		for (var holder : recipesOfType(BotaniaRecipeTypes.ELVEN_TRADE_TYPE)) {
+			registry.addRecipe(new ElvenTradeEmiRecipe(holder));
 		}
 		List<ItemStack> containers = List.of(BotaniaItems.vial, BotaniaItems.flask, BotaniaItems.incenseStick, BotaniaItems.bloodPendant)
 				.stream().map(ItemStack::new).toList();
-		for (BotanicalBreweryRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.BREW_TYPE)) {
+		for (var holder : recipesOfType(BotaniaRecipeTypes.BREW_TYPE)) {
+			BotanicalBreweryRecipe recipe = holder.value();
 			for (ItemStack container : containers) {
 				if (!recipe.getOutput(container.copy()).isEmpty()) {
-					registry.addRecipe(new BotanicalBreweryEmiRecipe(recipe, container));
+					registry.addRecipe(new BotanicalBreweryEmiRecipe(holder, container));
 				}
 			}
 		}
-		for (PureDaisyRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.PURE_DAISY_TYPE)) {
-			registry.addRecipe(new PureDaisyEmiRecipe(recipe));
+		for (var holder : recipesOfType(BotaniaRecipeTypes.PURE_DAISY_TYPE)) {
+			registry.addRecipe(new PureDaisyEmiRecipe(holder));
 		}
 
 		EmiIngredient flower = EmiStack.of(BotaniaFlowerBlocks.orechid);
-		for (OrechidRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.ORECHID_TYPE)) {
-			registry.addRecipe(new OrechidEmiRecipe(ORECHID, recipe, flower));
+		for (var holder : recipesOfType(BotaniaRecipeTypes.ORECHID_TYPE)) {
+			registry.addRecipe(new OrechidEmiRecipe(ORECHID, holder, flower));
 		}
 		flower = EmiStack.of(BotaniaFlowerBlocks.orechidIgnem);
-		for (OrechidRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.ORECHID_IGNEM_TYPE)) {
-			registry.addRecipe(new OrechidEmiRecipe(ORECHID_IGNEM, recipe, flower));
+		for (var holder : recipesOfType(BotaniaRecipeTypes.ORECHID_IGNEM_TYPE)) {
+			registry.addRecipe(new OrechidEmiRecipe(ORECHID_IGNEM, holder, flower));
 		}
 		flower = EmiStack.of(BotaniaFlowerBlocks.marimorphosis);
-		for (MarimorphosisRecipe recipe : registry.getRecipeManager().getAllRecipesFor(BotaniaRecipeTypes.MARIMORPHOSIS_TYPE)) {
-			registry.addRecipe(new MarimorphosisEmiRecipe(recipe, flower));
+		for (var holder : recipesOfType(BotaniaRecipeTypes.MARIMORPHOSIS_TYPE)) {
+			registry.addRecipe(new MarimorphosisEmiRecipe(holder, flower));
 		}
 
 		// pasture seed usage
@@ -273,27 +290,25 @@ public class BotaniaEmiPlugin implements EmiPlugin {
 
 		// rod of the molten core can smelt blocks into blocks
 		EmiIngredient moltenCoreRod = EmiStack.of(BotaniaItems.smeltRod);
-		for (SmeltingRecipe recipe : registry.getRecipeManager().getAllRecipesFor(RecipeType.SMELTING)) {
-			Level level = Minecraft.getInstance().level;
-			ItemStack output = recipe.getResultItem(level.registryAccess());
+		for (var holder : recipesOfType(RecipeType.SMELTING)) {
+			SmeltingRecipe recipe = holder.value();
+			ItemStack output = recipe.assemble(new SingleRecipeInput(ItemStack.EMPTY));
 			if (output.isEmpty() || !(output.getItem() instanceof BlockItem)) {
 				continue;
 			}
-			List<ItemStack> filteredInputStacks = new ArrayList<>();
-			for (ItemStack stack : recipe.getIngredients().get(0).getItems()) {
-				if (stack.getItem() instanceof BlockItem) {
-					filteredInputStacks.add(stack);
-				}
-			}
-			if (filteredInputStacks.isEmpty()) {
+			List<Item> filteredInputs = recipe.input().items()
+					.map(Holder::value)
+					.filter(i -> i instanceof BlockItem)
+					.toList();
+			if (filteredInputs.isEmpty()) {
 				continue;
 			}
-			Ingredient filteredInput = Ingredient.of(filteredInputStacks.stream());
+			Ingredient filteredInput = Ingredient.of(filteredInputs.stream());
 			registry.addRecipe(EmiWorldInteractionRecipe.builder()
 					.leftInput(EmiIngredient.of(filteredInput))
 					.rightInput(moltenCoreRod, true)
 					.output(EmiStack.of(output))
-					.id(recipe.getId().withPrefix("/world/molten_core_rod/"))
+					.id(holder.id().identifier().withPrefix("/world/molten_core_rod/"))
 					.build());
 		}
 

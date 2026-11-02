@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "botania:metamorphic_apothecary",
+  "key": {
+    "C": "botania:metamorphic_swamp_cobblestone",
+    "P": "#botania:petals"
+  },
+  "pattern": [
+    "CPC",
+    " C ",
+    "CCC"
+  ],
+  "result": {
+    "id": "botania:apothecary_swamp"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/light_gray",
+    "#botania:petals/light_gray",
+    "#botania:petals/gray",
+    "#botania:petals/cyan",
+    "botania:rune_earth"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:clayconia"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

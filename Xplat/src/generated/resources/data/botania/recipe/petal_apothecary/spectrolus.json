@@ -1,0 +1,21 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/red",
+    "#botania:petals/red",
+    "#botania:petals/green",
+    "#botania:petals/green",
+    "#botania:petals/blue",
+    "#botania:petals/blue",
+    "#botania:petals/white",
+    "#botania:petals/white",
+    "botania:rune_winter",
+    "botania:rune_air",
+    "botania:pixie_dust"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:spectrolus"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

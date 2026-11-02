@@ -9,11 +9,15 @@
 package vazkii.botania.common.item;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.TooltipDisplay;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +29,7 @@ import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class ManaTabletItem extends Item implements CustomCreativeTabContents {
 
@@ -52,16 +57,10 @@ public class ManaTabletItem extends Item implements CustomCreativeTabContents {
 		output.accept(creative);
 	}
 
-	@NotNull
 	@Override
-	public Rarity getRarity(@NotNull ItemStack stack) {
-		return isStackCreative(stack) ? Rarity.EPIC : super.getRarity(stack);
-	}
-
-	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> stacks, TooltipFlag flags) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
 		if (isStackCreative(stack)) {
-			stacks.add(Component.translatable("botaniamisc.creative").withStyle(ChatFormatting.GRAY));
+			builder.accept(Component.translatable("botaniamisc.creative").withStyle(ChatFormatting.GRAY));
 		}
 	}
 
@@ -78,8 +77,13 @@ public class ManaTabletItem extends Item implements CustomCreativeTabContents {
 		}
 	}
 
+	/**
+	 * 26.1 removed {@code Item#getRarity}; rarity is a {@link net.minecraft.core.component.DataComponents#RARITY}
+	 * component now, so creative tablets get their rarity applied when the flag is set.
+	 */
 	public static void setStackCreative(ItemStack stack) {
 		ItemNBTHelper.setBoolean(stack, TAG_CREATIVE, true);
+		stack.set(DataComponents.RARITY, Rarity.EPIC);
 	}
 
 	public static boolean isStackCreative(ItemStack stack) {
@@ -156,3 +160,4 @@ public class ManaTabletItem extends Item implements CustomCreativeTabContents {
 		return Mth.hsvToRgb(ManaBarTooltip.getFractionForDisplay(manaItem) / 3.0F, 1.0F, 1.0F);
 	}
 }
+

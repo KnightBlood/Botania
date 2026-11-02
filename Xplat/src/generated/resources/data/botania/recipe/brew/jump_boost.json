@@ -1,0 +1,9 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:jump_boost",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:feather",
+    "minecraft:carrot"
+  ]
+}

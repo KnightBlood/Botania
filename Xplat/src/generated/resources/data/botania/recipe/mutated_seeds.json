@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:seeds",
+  "ingredients": [
+    "botania:grass_seeds",
+    "minecraft:spider_eye"
+  ],
+  "result": {
+    "id": "botania:mutated_seeds"
+  }
+}

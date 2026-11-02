@@ -1,20 +1,25 @@
 package vazkii.botania.api.recipe;
 
-import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import org.jetbrains.annotations.NotNull;
 
-public interface RecipeWithReagent extends Recipe<Container> {
+public interface RecipeWithReagent extends BotaniaRecipe<RecipeInput> {
 	/**
 	 * @return Ingredient matching the final item that needs to be thrown into the apothecary
 	 *         to perform a craft after a matching recipe is in.
 	 */
 	Ingredient getReagent();
 
-	@Override
-	default boolean canCraftInDimensions(int width, int height) {
-		return false;
+	/**
+	 * @return the preview of the result of this recipe.
+	 */
+	default ItemStack getResultItem() {
+		return ItemStack.EMPTY;
 	}
+
 
 	@Override
 	default boolean isSpecial() {

@@ -10,13 +10,15 @@ package vazkii.botania.common.crafting.recipe;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -26,18 +28,18 @@ import vazkii.botania.common.item.brew.BaseBrewItem;
 import java.util.Objects;
 
 public class MergeVialRecipe extends CustomRecipe {
-	public static final NoOpRecipeSerializer<MergeVialRecipe> SERIALIZER = new NoOpRecipeSerializer<>(MergeVialRecipe::new);
+	public static final RecipeSerializer<MergeVialRecipe> SERIALIZER = NoOpRecipeSerializer.create(MergeVialRecipe::new);
 
-	public MergeVialRecipe(ResourceLocation id) {
-		super(id, CraftingBookCategory.MISC);
+	public MergeVialRecipe(Identifier id) {
+		// MC 26.1: CustomRecipe no-arg constructor
 	}
 
 	@Override
-	public boolean matches(CraftingContainer inv, @NotNull Level worldIn) {
+	public boolean matches(CraftingInput inv, @NotNull Level worldIn) {
 		int count = 0;
 		Brew brew = null;
 
-		for (int i = 0; i < inv.getContainerSize(); ++i) {
+		for (int i = 0; i < inv.size(); ++i) {
 			ItemStack stack = inv.getItem(i);
 			if (stack.isEmpty()) {
 				continue;
@@ -60,12 +62,12 @@ public class MergeVialRecipe extends CustomRecipe {
 
 	@NotNull
 	@Override
-	public ItemStack assemble(CraftingContainer inv, @NotNull RegistryAccess registries) {
+	public ItemStack assemble(CraftingInput inv) {
 		ItemStack firstStack = ItemStack.EMPTY;
 		BaseBrewItem brew = null;
 		int swigs = 0;
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (stack.isEmpty()) {
 				continue;
@@ -87,14 +89,14 @@ public class MergeVialRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public NonNullList<ItemStack> getRemainingItems(CraftingContainer inv) {
-		NonNullList<ItemStack> remaining = NonNullList.withSize(inv.getContainerSize(), ItemStack.EMPTY);
+	public NonNullList<ItemStack> getRemainingItems(CraftingInput inv) {
+		NonNullList<ItemStack> remaining = NonNullList.withSize(inv.size(), ItemStack.EMPTY);
 
 		boolean foundFirst = false;
 		int swigs = 0;
 		int maxSwigs = 0;
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (stack.isEmpty()) {
 				continue;
@@ -121,14 +123,10 @@ public class MergeVialRecipe extends CustomRecipe {
 		return remaining;
 	}
 
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height > 2;
-	}
 
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends CustomRecipe> getSerializer() {
 		return SERIALIZER;
 	}
 }

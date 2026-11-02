@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BannerPattern;
 
@@ -56,8 +57,8 @@ public class TinyPotatoBlockItem extends BlockItem implements ItemWithBannerPatt
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity e, int t, boolean idunno) {
-		if (!world.isClientSide && e instanceof Player player && e.tickCount % 30 == 0
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity e, @Nullable EquipmentSlot slot) {
+		if (!world.isClientSide() && e instanceof Player player && e.tickCount % 30 == 0
 				&& TYPOS.matcher(stack.getHoverName().getString()).matches()) {
 			int ticks = ItemNBTHelper.getInt(stack, TAG_TICKS, 0);
 			if (ticks < NOT_MY_NAME) {
@@ -107,6 +108,7 @@ public class TinyPotatoBlockItem extends BlockItem implements ItemWithBannerPatt
 	@SoftImplement("IForgeItem") // TODO implement on fabric
 	public boolean canEquip(ItemStack stack, EquipmentSlot armorType, Entity entity) {
 		return armorType == getEquipmentSlot(stack) && entity instanceof Player player
-				&& ContributorList.hasFlower(player.getGameProfile().getName().toLowerCase(Locale.ROOT));
+				&& ContributorList.hasFlower(player.getGameProfile().name().toLowerCase(Locale.ROOT));
 	}
 }
+

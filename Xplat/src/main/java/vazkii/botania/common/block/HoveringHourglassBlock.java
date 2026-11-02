@@ -45,6 +45,7 @@ public class HoveringHourglassBlock extends BotaniaWaterloggedBlock implements E
 
 	private static final VoxelShape SHAPE = box(4, 0, 4, 12, 18.4, 12);
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	protected HoveringHourglassBlock(Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.POWERED, false));
@@ -63,7 +64,13 @@ public class HoveringHourglassBlock extends BotaniaWaterloggedBlock implements E
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+	protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level world, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hit) {
+		return useItemOn(itemStack, world, player, hand, hit);
+	}
+
+	private InteractionResult useItemOn(ItemStack itemStack, Level world, Player player, InteractionHand hand, BlockHitResult hit) {
+		BlockPos pos = hit.getBlockPos();
+
 		if (!(world.getBlockEntity(pos) instanceof HoveringHourglassBlockEntity hourglass)) {
 			return InteractionResult.FAIL;
 		}
@@ -74,7 +81,7 @@ public class HoveringHourglassBlock extends BotaniaWaterloggedBlock implements E
 		}
 
 		if (hourglass.lock) {
-			if (!player.level().isClientSide && hand == InteractionHand.OFF_HAND) {
+			if (!player.level().isClientSide() && hand == InteractionHand.OFF_HAND) {
 				player.sendSystemMessage(Component.translatable("botaniamisc.hourglassLock"));
 			}
 			return InteractionResult.FAIL;
@@ -83,11 +90,11 @@ public class HoveringHourglassBlock extends BotaniaWaterloggedBlock implements E
 		if (hgStack.isEmpty() && HoveringHourglassBlockEntity.getStackItemTime(stack) > 0) {
 			hourglass.getItemHandler().setItem(0, stack.copy());
 			stack.setCount(0);
-			return InteractionResult.sidedSuccess(world.isClientSide());
+			return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 		} else if (!hgStack.isEmpty()) {
 			player.getInventory().placeItemBackInInventory(hgStack);
 			hourglass.getItemHandler().setItem(0, ItemStack.EMPTY);
-			return InteractionResult.sidedSuccess(world.isClientSide());
+			return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 		}
 
 		return InteractionResult.PASS;
@@ -111,19 +118,20 @@ public class HoveringHourglassBlock extends BotaniaWaterloggedBlock implements E
 	}
 
 	@Override
-	public void onRemove(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving) {
+	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
+		BlockState newState = world.getBlockState(pos);
 		if (!state.is(newState.getBlock())) {
 			if (world.getBlockEntity(pos) instanceof SimpleInventoryBlockEntity inventory) {
 				Containers.dropContents(world, pos, inventory.getItemHandler());
 			}
-			super.onRemove(state, world, pos, newState, isMoving);
+			super.affectNeighborsAfterRemoval(state, world, pos, isMoving);
 		}
 	}
 
 	@NotNull
 	@Override
 	public RenderShape getRenderShape(BlockState state) {
-		return RenderShape.ENTITYBLOCK_ANIMATED;
+		return RenderShape.MODEL;
 	}
 
 	@NotNull

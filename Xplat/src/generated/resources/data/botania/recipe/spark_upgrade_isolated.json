@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:spark_upgrade",
+  "ingredients": [
+    "botania:pixie_dust",
+    "#botania:manasteel_ingots",
+    "botania:rune_air"
+  ],
+  "result": {
+    "id": "botania:spark_upgrade_isolated"
+  }
+}

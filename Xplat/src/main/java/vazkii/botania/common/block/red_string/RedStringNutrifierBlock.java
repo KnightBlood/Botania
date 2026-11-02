@@ -31,14 +31,15 @@ import vazkii.botania.common.block.block_entity.red_string.RedStringNutrifierBlo
 
 public class RedStringNutrifierBlock extends RedStringBlock implements BonemealableBlock {
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public RedStringNutrifierBlock(BlockBehaviour.Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.FACING, Direction.DOWN));
 	}
 
 	@Override
-	public boolean isValidBonemealTarget(@NotNull LevelReader world, @NotNull BlockPos pos, @NotNull BlockState state, boolean isClient) {
-		return world.getBlockEntity(pos) instanceof RedStringNutrifierBlockEntity be && be.canGrow(world, isClient);
+	public boolean isValidBonemealTarget(@NotNull LevelReader world, @NotNull BlockPos pos, @NotNull BlockState state) {
+		return world.getBlockEntity(pos) instanceof RedStringNutrifierBlockEntity be && be.canGrow(world, world.isClientSide());
 	}
 
 	@Override

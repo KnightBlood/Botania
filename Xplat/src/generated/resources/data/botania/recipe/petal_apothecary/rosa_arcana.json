@@ -1,0 +1,16 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/purple",
+    "#botania:petals/purple",
+    "#botania:petals/lime",
+    "botania:rune_mana"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:rosa_arcana"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

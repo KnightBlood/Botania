@@ -1,0 +1,9 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:healing",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:glistering_melon_slice",
+    "minecraft:potato"
+  ]
+}

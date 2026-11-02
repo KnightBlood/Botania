@@ -12,18 +12,17 @@ import com.google.common.collect.ImmutableMap;
 
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.common.lib.LibBlockNames;
 
@@ -93,7 +92,7 @@ public class ContributorList {
 				String flowerName = LEGACY_FLOWER_NAMES.getOrDefault(rawName, rawName);
 
 				var item = StreamSupport.stream(BuiltInRegistries.ITEM.getTagOrEmpty(BotaniaTags.Items.CONTRIBUTOR_HEADFLOWERS).spliterator(), false)
-						.filter(h -> h.is(resKey -> resKey.location().getPath().equals(flowerName)))
+						.filter(h -> h.is(resKey -> resKey.identifier().getPath().equals(flowerName)))
 						.findFirst()
 						.map(Holder::value)
 						.orElse(Items.POPPY);
@@ -106,13 +105,12 @@ public class ContributorList {
 
 	private static ItemStack configureStack(Item item) {
 		ItemStack stack = new ItemStack(item);
-		Map<Enchantment, Integer> ench = new HashMap<>();
-		ench.put(Enchantments.UNBREAKING, 1);
-		BuiltInRegistries.ENCHANTMENT.getOptional(new ResourceLocation("charm", "tinted")).ifPresent(e -> ench.put(e, 1));
-		EnchantmentHelper.setEnchantments(ench, stack);
+		// 26.1: enchantments are data-driven and cannot be resolved statically (or on both logical
+		// sides) here, so keep the shimmer via a glint override instead of a real enchantment.
+		stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
 
-		stack.getTag().putBoolean(TAG_HEADFLOWER, true);
-		stack.getTag().putString("charm_glint", DyeColor.YELLOW.getSerializedName());
+		ItemNBTHelper.setBoolean(stack, TAG_HEADFLOWER, true);
+		ItemNBTHelper.setString(stack, "charm_glint", DyeColor.YELLOW.getSerializedName());
 		return stack;
 	}
 

@@ -8,12 +8,12 @@
  */
 package vazkii.botania.common.world;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.*;
@@ -32,13 +32,13 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class SkyblockChunkGenerator extends NoiseBasedChunkGenerator {
 	// [VanillaCopy] NoiseBasedChunkGenerator's codec, but calls our constructor
-	public static final Codec<SkyblockChunkGenerator> CODEC = RecordCodecBuilder.create(
+	public static final MapCodec<SkyblockChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(
 			(instance) -> instance.group(
 					BiomeSource.CODEC.fieldOf("biome_source").forGetter((gen) -> gen.biomeSource),
 					NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(NoiseBasedChunkGenerator::generatorSettings))
 					.apply(instance, instance.stable(SkyblockChunkGenerator::new)));
 
-	public static void submitRegistration(BiConsumer<Codec<? extends ChunkGenerator>, ResourceLocation> consumer) {
+	public static void submitRegistration(BiConsumer<MapCodec<? extends ChunkGenerator>, Identifier> consumer) {
 		consumer.accept(SkyblockChunkGenerator.CODEC, prefix("skyblock"));
 	}
 
@@ -52,22 +52,21 @@ public class SkyblockChunkGenerator extends NoiseBasedChunkGenerator {
 
 	@NotNull
 	@Override
-	protected Codec<? extends ChunkGenerator> codec() {
+	protected MapCodec<? extends ChunkGenerator> codec() {
 		return CODEC;
 	}
 
 	@Override
-	public void buildSurface(@NotNull ChunkAccess chunkAccess, @NotNull WorldGenerationContext context,
-			@NotNull RandomState randomState, @NotNull StructureManager structureManager,
-			@NotNull BiomeManager biomeManager, @NotNull Registry<Biome> biomes, @NotNull Blender blender) {}
+	public void buildSurface(@NotNull WorldGenRegion region, @NotNull StructureManager structureManager,
+			@NotNull RandomState randomState, @NotNull ChunkAccess chunkAccess) {}
 
 	@Override
 	public void applyCarvers(@NotNull WorldGenRegion worldGenRegion, long seed, @NotNull RandomState randomState,
 			@NotNull BiomeManager biomeManager, @NotNull StructureManager structureManager,
-			@NotNull ChunkAccess chunkAccess, GenerationStep.@NotNull Carving carving) {}
+			@NotNull ChunkAccess chunkAccess) {}
 
 	@Override
-	public @NotNull CompletableFuture<ChunkAccess> fillFromNoise(@NotNull Executor executor, @NotNull Blender blender,
+	public @NotNull CompletableFuture<ChunkAccess> fillFromNoise(@NotNull Blender blender,
 			@NotNull RandomState randomState, @NotNull StructureManager structureManager, @NotNull ChunkAccess chunk) {
 		return CompletableFuture.completedFuture(chunk);
 	}
@@ -86,7 +85,7 @@ public class SkyblockChunkGenerator extends NoiseBasedChunkGenerator {
 	public int getBaseHeightInEquivalentNoiseWorld(int x, int z, Heightmap.Types heightmap, WorldGenLevel level) {
 		RandomState randomState = RandomState.create(
 				generatorSettings().value(),
-				level.registryAccess().registryOrThrow(Registries.NOISE).asLookup(),
+				level.registryAccess().lookupOrThrow(Registries.NOISE),
 				level.getSeed());
 		return super.getBaseHeight(x, z, heightmap, level, randomState);
 	}

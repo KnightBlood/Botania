@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -57,13 +59,14 @@ public class PinkWitherEntity extends WitherBoss {
 	}
 
 	@Override
-	protected void dropCustomDeathLoot(DamageSource source, int lootingMultiplier, boolean allowDrops) {}
+	protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean allowDrops) {}
 
 	@Override
-	public void customServerAiStep() {
+	protected void customServerAiStep(ServerLevel level) {
 		if (tickCount % 20 == 0) {
 			heal(1.0F);
 		}
+		super.customServerAiStep(level);
 	}
 
 	@Override

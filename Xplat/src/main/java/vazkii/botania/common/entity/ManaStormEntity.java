@@ -10,11 +10,17 @@ package vazkii.botania.common.entity;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +53,11 @@ public class ManaStormEntity extends Entity implements TraceableEntity {
 		super(type, level);
 	}
 
+	@NotNull @Override
+	public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+		return false;
+	}
+
 	public void setOwner(@Nullable Entity owner, @Nullable UUID ownerUUID) {
 		if (owner != null) {
 			this.ownerUUID = owner.getUUID();
@@ -70,7 +81,7 @@ public class ManaStormEntity extends Entity implements TraceableEntity {
 	}
 
 	@Override
-	protected void defineSynchedData() {}
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {}
 
 	@Override
 	public void tick() {
@@ -79,7 +90,7 @@ public class ManaStormEntity extends Entity implements TraceableEntity {
 
 		int diffTime = Math.max(1, 30 - (int) (liveTime / 45f));
 		if (burstsFired < TOTAL_BURSTS && liveTime % diffTime == 0) {
-			if (!level().isClientSide) {
+			if (!level().isClientSide()) {
 				spawnBurst();
 			}
 			burstsFired++;
@@ -95,14 +106,15 @@ public class ManaStormEntity extends Entity implements TraceableEntity {
 	}
 
 	private void spawnBurst() {
-		ManaBurstEntity burst = BotaniaEntities.MANA_BURST.create(level());
+		ManaBurstEntity burst = BotaniaEntities.MANA_BURST.create(level(), EntitySpawnReason.TRIGGERED);
 		if (burst == null) {
 			return;
 		}
 		Entity owner = getOwner();
 		burst.setOwner(owner);
 		if (owner == null && ownerUUID != null) {
-			((ProjectileAccessor) burst).botania_setOwnerUUID(ownerUUID);
+			// 26.1: Projectile stores its owner as an EntityReference now
+			((ProjectileAccessor) burst).botania_setOwnerRef(EntityReference.of(ownerUUID));
 		}
 		burst.setPos(getX(), getY(), getZ());
 
@@ -122,18 +134,18 @@ public class ManaStormEntity extends Entity implements TraceableEntity {
 	}
 
 	@Override
-	protected void readAdditionalSaveData(@NotNull CompoundTag cmp) {
-		liveTime = cmp.getInt(TAG_TIME);
-		burstColor = cmp.getInt(TAG_BURST_COLOR);
-		burstsFired = cmp.getInt(TAG_BURSTS_FIRED);
-		deathTime = cmp.getInt(TAG_DEATH_TIME);
+	protected void readAdditionalSaveData(ValueInput input) {
+		liveTime = input.getIntOr(TAG_TIME, 0);
+		burstColor = input.getIntOr(TAG_BURST_COLOR, 0);
+		burstsFired = input.getIntOr(TAG_BURSTS_FIRED, 0);
+		deathTime = input.getIntOr(TAG_DEATH_TIME, 0);
 	}
 
 	@Override
-	protected void addAdditionalSaveData(@NotNull CompoundTag cmp) {
-		cmp.putInt(TAG_TIME, liveTime);
-		cmp.putInt(TAG_BURST_COLOR, burstColor);
-		cmp.putInt(TAG_BURSTS_FIRED, burstsFired);
-		cmp.putInt(TAG_DEATH_TIME, deathTime);
+	protected void addAdditionalSaveData(ValueOutput output) {
+		output.putInt(TAG_TIME, liveTime);
+		output.putInt(TAG_BURST_COLOR, burstColor);
+		output.putInt(TAG_BURSTS_FIRED, burstsFired);
+		output.putInt(TAG_DEATH_TIME, deathTime);
 	}
 }

@@ -13,11 +13,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -39,7 +40,7 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 // as those use less network bandwidth (~14 bytes), vs 26+ bytes here
 public record BotaniaEffectPacket(EffectType type, double x, double y, double z, int... args) implements BotaniaPacket {
 
-	public static final ResourceLocation ID = prefix("eff");
+	public static final Identifier ID = prefix("eff");
 	private static final int MAX_VARIABLE_ARGS = 128;
 
 	@Override
@@ -65,7 +66,7 @@ public record BotaniaEffectPacket(EffectType type, double x, double y, double z,
 	}
 
 	@Override
-	public ResourceLocation getFabricId() {
+	public Identifier getFabricId() {
 		return ID;
 	}
 
@@ -113,7 +114,7 @@ public record BotaniaEffectPacket(EffectType type, double x, double y, double z,
 							int g = (hex & 0xFF00) >> 8;
 							int b = hex & 0xFF;
 							for (int i = 0; i < 10; i++) {
-								BlockPos pos = BlockPos.containing(x, y, z).relative(Direction.getRandom(world.random));
+								BlockPos pos = BlockPos.containing(x, y, z).relative(Direction.getRandom(world.getRandom()));
 								SparkleParticleData data = SparkleParticleData.sparkle(0.6F + (float) Math.random() * 0.5F, r / 255F, g / 255F, b / 255F, 5);
 								world.addParticle(data, pos.getX() + (float) Math.random(), pos.getY() + (float) Math.random(), pos.getZ() + (float) Math.random(), 0, 0, 0);
 							}
@@ -138,13 +139,13 @@ public record BotaniaEffectPacket(EffectType type, double x, double y, double z,
 
 							for (int i = 0; i < p; i++) {
 								double m = 0.01;
-								double d0 = item.level().random.nextGaussian() * m;
-								double d1 = item.level().random.nextGaussian() * m;
-								double d2 = item.level().random.nextGaussian() * m;
+								double d0 = item.level().getRandom().nextGaussian() * m;
+								double d1 = item.level().getRandom().nextGaussian() * m;
+								double d2 = item.level().getRandom().nextGaussian() * m;
 								double d3 = 10.0D;
 								item.level().addParticle(ParticleTypes.POOF,
-										x + item.level().random.nextFloat() * item.getBbWidth() * 2.0F - item.getBbWidth() - d0 * d3, y + item.level().random.nextFloat() * item.getBbHeight() - d1 * d3,
-										z + item.level().random.nextFloat() * item.getBbWidth() * 2.0F - item.getBbWidth() - d2 * d3, d0, d1, d2);
+										x + item.level().getRandom().nextFloat() * item.getBbWidth() * 2.0F - item.getBbWidth() - d0 * d3, y + item.level().getRandom().nextFloat() * item.getBbHeight() - d1 * d3,
+										z + item.level().getRandom().nextFloat() * item.getBbWidth() * 2.0F - item.getBbWidth() - d2 * d3, d0, d1, d2);
 							}
 						}
 						case SPARK_NET_INDICATOR -> {
@@ -194,10 +195,10 @@ public record BotaniaEffectPacket(EffectType type, double x, double y, double z,
 							float r = ((color >> 16) & 0xFF) / 255.0F;
 							float g = ((color >> 8) & 0xFF) / 255.0F;
 							float b = (color & 0xFF) / 255.0F;
-							if (world.random.nextFloat() < 0.25) {
-								r += 0.2F * (float) world.random.nextGaussian();
-								g += 0.2F * (float) world.random.nextGaussian();
-								b += 0.2F * (float) world.random.nextGaussian();
+							if (world.getRandom().nextFloat() < 0.25) {
+								r += 0.2F * (float) world.getRandom().nextGaussian();
+								g += 0.2F * (float) world.getRandom().nextGaussian();
+								b += 0.2F * (float) world.getRandom().nextGaussian();
 							}
 							float size = 0.125F + 0.125F * (float) Math.random();
 

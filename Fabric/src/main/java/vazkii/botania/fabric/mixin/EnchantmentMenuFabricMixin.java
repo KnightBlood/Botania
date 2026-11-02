@@ -26,7 +26,9 @@ import vazkii.botania.common.block.PylonBlock;
 public class EnchantmentMenuFabricMixin {
 	@SuppressWarnings("target")
 	@ModifyVariable(
-		method = "method_17411(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
+		// 1.20.1 targeted the intermediary name method_17411 (the bookshelf-power lambda in slotsChanged);
+		// 26.1 uses the lambda's direct name, which kept the same (ItemStack, Level, BlockPos)V descriptor
+		method = "lambda$slotsChanged$0(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
 		at = @At(value = "STORE", ordinal = 0),
 		ordinal = 0
 	)
@@ -34,13 +36,13 @@ public class EnchantmentMenuFabricMixin {
 		for (int x = -1; x <= 1; ++x) {
 			for (int z = -1; z <= 1; ++z) {
 				if ((x != 0 || z != 0) && level.isEmptyBlock(pos.offset(x, 0, z)) && level.isEmptyBlock(pos.offset(x, 1, z))) {
-					obj += getPylonValue(level.getBlockState(pos.offset(x * 2, 0, z * 2)), level, pos);
-					obj += getPylonValue(level.getBlockState(pos.offset(x * 2, 1, z * 2)), level, pos);
+					obj += (int) getPylonValue(level.getBlockState(pos.offset(x * 2, 0, z * 2)), level, pos);
+					obj += (int) getPylonValue(level.getBlockState(pos.offset(x * 2, 1, z * 2)), level, pos);
 					if (x != 0 && z != 0) {
-						obj += getPylonValue(level.getBlockState(pos.offset(x * 2, 0, z)), level, pos);
-						obj += getPylonValue(level.getBlockState(pos.offset(x * 2, 1, z)), level, pos);
-						obj += getPylonValue(level.getBlockState(pos.offset(x, 0, z * 2)), level, pos);
-						obj += getPylonValue(level.getBlockState(pos.offset(x, 1, z * 2)), level, pos);
+						obj += (int) getPylonValue(level.getBlockState(pos.offset(x * 2, 0, z)), level, pos);
+						obj += (int) getPylonValue(level.getBlockState(pos.offset(x * 2, 1, z)), level, pos);
+						obj += (int) getPylonValue(level.getBlockState(pos.offset(x, 0, z * 2)), level, pos);
+						obj += (int) getPylonValue(level.getBlockState(pos.offset(x, 1, z * 2)), level, pos);
 					}
 				}
 			}

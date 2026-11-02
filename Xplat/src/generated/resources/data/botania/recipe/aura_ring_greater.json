@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "#botania:terrasteel_ingots",
+    "botania:aura_ring"
+  ],
+  "result": {
+    "id": "botania:aura_ring_greater"
+  }
+}

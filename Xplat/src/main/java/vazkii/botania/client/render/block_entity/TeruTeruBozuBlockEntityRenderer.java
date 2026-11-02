@@ -11,10 +11,8 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -28,10 +26,10 @@ import vazkii.botania.common.helper.VecHelper;
 
 import java.util.Random;
 
-public class TeruTeruBozuBlockEntityRenderer implements BlockEntityRenderer<TeruTeruBozuBlockEntity> {
+public class TeruTeruBozuBlockEntityRenderer extends BotaniaBlockEntityRenderer<TeruTeruBozuBlockEntity> {
 
-	private static final ResourceLocation texture = new ResourceLocation(ResourcesLib.MODEL_TERU_TERU_BOZU);
-	private static final ResourceLocation textureHalloween = new ResourceLocation(ResourcesLib.MODEL_TERU_TERU_BOZU_HALLOWEEN);
+	private static final Identifier texture = Identifier.parse(ResourcesLib.MODEL_TERU_TERU_BOZU);
+	private static final Identifier textureHalloween = Identifier.parse(ResourcesLib.MODEL_TERU_TERU_BOZU_HALLOWEEN);
 	private final TeruTeruBozuModel model;
 
 	public TeruTeruBozuBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
@@ -39,7 +37,7 @@ public class TeruTeruBozuBlockEntityRenderer implements BlockEntityRenderer<Teru
 	}
 
 	@Override
-	public void render(@Nullable TeruTeruBozuBlockEntity tileentity, float partialTicks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@Nullable TeruTeruBozuBlockEntity tileentity, float partialTicks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		ms.pushPose();
 		ms.mulPose(VecHelper.rotateX(180));
 		double time = ClientTickHandler.ticksInGame + partialTicks;
@@ -57,7 +55,7 @@ public class TeruTeruBozuBlockEntityRenderer implements BlockEntityRenderer<Teru
 		}
 
 		VertexConsumer buffer = buffers.getBuffer(model.renderType(ClientProxy.dootDoot ? textureHalloween : texture));
-		model.renderToBuffer(ms, buffer, light, overlay, 1, 1, 1, 1);
+		model.renderToBuffer(ms, buffer, light, overlay, -1);
 		ms.popPose();
 	}
 

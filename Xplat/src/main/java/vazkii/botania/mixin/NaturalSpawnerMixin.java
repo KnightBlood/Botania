@@ -47,9 +47,39 @@ public class NaturalSpawnerMixin {
 		}
 	}
 
-	// Jump over entity.checkSpawnRules(pos, reason) and entity.checkSpawnObstruction(pos) under Bloodlust
-	@Inject(at = @At(value = "RETURN", ordinal = 1), cancellable = true, method = "isValidPositionForMob")
-	private static void bloodthirstOverride(ServerLevel world, Mob entity, double p_234974_2_, CallbackInfoReturnable<Boolean> cir) {
+	// Jump over entity.checkSpawnRules(pos, reason) and entity.checkSpawnObstruction(pos) under Bloodlust.
+	// The two platforms patch isValidPositionForMob differently (verified via javap):
+	//  - NeoForge replaces the checkSpawnRules && checkSpawnObstruction pair with a single
+	//    call to EventHooks.checkSpawnPosition;
+	//  - Fabric/vanilla keeps both Mob method calls and a single return instruction,
+	//    so the old RETURN ordinal = 1 no longer resolves there either.
+	// Each callback therefore targets its own platform's call site with require = 0 so
+	// the absent one is silently skipped.
+	@Inject(
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/neoforged/neoforge/event/EventHooks;checkSpawnPosition(Lnet/minecraft/world/entity/Mob;Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/entity/EntitySpawnReason;)Z"
+		),
+		cancellable = true,
+		require = 0,
+		method = "isValidPositionForMob"
+	)
+	private static void bloodthirstOverrideNeoForge(ServerLevel world, Mob entity, double p_234974_2_, CallbackInfoReturnable<Boolean> cir) {
+		if (BloodthirstMobEffect.overrideSpawn(world, entity.blockPosition(), entity.getType().getCategory())) {
+			cir.setReturnValue(true);
+		}
+	}
+
+	@Inject(
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/world/entity/Mob;checkSpawnRules(Lnet/minecraft/world/entity/EntitySpawnReason;)Z"
+		),
+		cancellable = true,
+		require = 0,
+		method = "isValidPositionForMob"
+	)
+	private static void bloodthirstOverrideVanilla(ServerLevel world, Mob entity, double p_234974_2_, CallbackInfoReturnable<Boolean> cir) {
 		if (BloodthirstMobEffect.overrideSpawn(world, entity.blockPosition(), entity.getType().getCategory())) {
 			cir.setReturnValue(true);
 		}

@@ -2,72 +2,93 @@
   "parent": "botania:default",
   "spawnedMobs": [
     {
-      "type": "minecraft:enderman",
+      "data": {
+        "type": "minecraft:enderman",
+        "weight": 30
+      },
       "weight": 30
     },
     {
-      "type": "minecraft:creeper",
-      "effectsToApply": [
-        {
-          "duration": 100,
-          "effect": "minecraft:fire_resistance"
-        },
-        {
-          "duration": 100,
-          "effect": "minecraft:regeneration"
-        }
-      ],
+      "data": {
+        "type": "minecraft:creeper",
+        "effectsToApply": [
+          {
+            "duration": 100,
+            "effect": "minecraft:fire_resistance"
+          },
+          {
+            "duration": 100,
+            "effect": "minecraft:regeneration"
+          }
+        ],
+        "weight": 99
+      },
       "weight": 99
     },
     {
-      "type": "minecraft:creeper",
-      "effectsToApply": [
-        {
-          "duration": 100,
-          "effect": "minecraft:fire_resistance"
+      "data": {
+        "type": "minecraft:creeper",
+        "effectsToApply": [
+          {
+            "duration": 100,
+            "effect": "minecraft:fire_resistance"
+          },
+          {
+            "duration": 100,
+            "effect": "minecraft:regeneration"
+          }
+        ],
+        "nbt": {
+          "powered": 1
         },
-        {
-          "duration": 100,
-          "effect": "minecraft:regeneration"
-        }
-      ],
-      "nbt": {
-        "powered": 1
+        "weight": 1
       },
       "weight": 1
     },
     {
-      "type": "minecraft:blaze",
-      "effectsToApply": [
-        {
-          "effect": "minecraft:regeneration"
-        }
-      ],
+      "data": {
+        "type": "minecraft:blaze",
+        "effectsToApply": [
+          {
+            "effect": "minecraft:regeneration"
+          }
+        ],
+        "weight": 300
+      },
       "weight": 300
     },
     {
-      "type": "minecraft:wither_skeleton",
-      "effectsToApply": [
-        {
-          "effect": "minecraft:regeneration"
-        }
-      ],
-      "equipmentTable": "botania:equipment/loonium/skeleton_fortress",
+      "data": {
+        "type": "minecraft:wither_skeleton",
+        "effectsToApply": [
+          {
+            "effect": "minecraft:regeneration"
+          }
+        ],
+        "equipmentTable": "botania:equipment/loonium/skeleton_fortress",
+        "weight": 450
+      },
       "weight": 450
     },
     {
-      "type": "minecraft:skeleton",
-      "equipmentTable": "botania:equipment/loonium/skeleton_fortress",
+      "data": {
+        "type": "minecraft:skeleton",
+        "equipmentTable": "botania:equipment/loonium/skeleton_fortress",
+        "weight": 50
+      },
       "weight": 50
     },
     {
-      "type": "minecraft:zombified_piglin",
-      "effectsToApply": [
-        {
-          "effect": "minecraft:regeneration"
-        }
-      ],
-      "equipmentTable": "botania:equipment/loonium/zombie_fortress",
+      "data": {
+        "type": "minecraft:zombified_piglin",
+        "effectsToApply": [
+          {
+            "effect": "minecraft:regeneration"
+          }
+        ],
+        "equipmentTable": "botania:equipment/loonium/zombie_fortress",
+        "weight": 400
+      },
       "weight": 400
     }
   ]

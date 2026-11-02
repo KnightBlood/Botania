@@ -10,17 +10,23 @@ package vazkii.botania.common.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
@@ -49,8 +55,8 @@ public class ManaPoolMinecartEntity extends AbstractMinecart {
 	}
 
 	@Override
-	protected void defineSynchedData() {
-		super.defineSynchedData();
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {
+		super.defineSynchedData(entityData);
 		entityData.define(MANA, 0);
 	}
 
@@ -60,21 +66,14 @@ public class ManaPoolMinecartEntity extends AbstractMinecart {
 		return BotaniaBlocks.manaPool.defaultBlockState();
 	}
 
-	@NotNull
-	@Override
-	public AbstractMinecart.Type getMinecartType() {
-		return Type.RIDEABLE;
-	}
-
 	@Override
 	protected boolean canAddPassenger(Entity passenger) {
 		return false;
 	}
 
 	@Override
-	protected void applyNaturalSlowdown() {
-		float f = 0.98F;
-		this.setDeltaMovement(getDeltaMovement().multiply(f, 0, f));
+	protected Vec3 applyNaturalSlowdown(Vec3 movement) {
+		return movement.multiply(0.98F, 0.0, 0.98F);
 	}
 
 	@NotNull
@@ -92,7 +91,7 @@ public class ManaPoolMinecartEntity extends AbstractMinecart {
 	public void tick() {
 		super.tick();
 
-		if (level().isClientSide) {
+		if (level().isClientSide()) {
 			double particleChance = 1F - (double) getMana() / (double) ManaPoolBlockEntity.MAX_MANA * 0.1;
 			int color = ManaPoolBlockEntity.PARTICLE_COLOR;
 			float red = (color >> 16 & 0xFF) / 255F;
@@ -109,16 +108,17 @@ public class ManaPoolMinecartEntity extends AbstractMinecart {
 	}
 
 	@Override
-	public void moveAlongTrack(BlockPos pos, BlockState state) {
-		super.moveAlongTrack(pos, state);
+	protected void moveAlongTrack(ServerLevel level) {
+		super.moveAlongTrack(level);
 
+		BlockPos pos = this.getCurrentBlockPosOrRailBelow();
 		for (Direction dir : Direction.Plane.HORIZONTAL) {
 			BlockPos pumpPos = pos.relative(dir);
-			BlockState pumpState = level().getBlockState(pumpPos);
+			BlockState pumpState = level.getBlockState(pumpPos);
 			if (pumpState.is(BotaniaBlocks.pump)
 					&& level().getBlockEntity(pumpPos) instanceof ManaPumpBlockEntity pump) {
 				BlockPos poolPos = pumpPos.relative(dir);
-				var receiver = XplatAbstractions.INSTANCE.findManaReceiver(level(), poolPos, dir.getOpposite());
+				var receiver = XplatAbstractions.INSTANCE.findManaReceiver(level, poolPos, dir.getOpposite());
 
 				if (receiver instanceof ManaPool pool) {
 					Direction pumpDir = pumpState.getValue(BlockStateProperties.HORIZONTAL_FACING);
@@ -169,15 +169,15 @@ public class ManaPoolMinecartEntity extends AbstractMinecart {
 	}
 
 	@Override
-	protected void addAdditionalSaveData(@NotNull CompoundTag cmp) {
-		super.addAdditionalSaveData(cmp);
-		cmp.putInt(TAG_MANA, getMana());
+	protected void addAdditionalSaveData(ValueOutput output) {
+		super.addAdditionalSaveData(output);
+		output.putInt(TAG_MANA, getMana());
 	}
 
 	@Override
-	protected void readAdditionalSaveData(CompoundTag cmp) {
-		super.readAdditionalSaveData(cmp);
-		setMana(cmp.getInt(TAG_MANA));
+	protected void readAdditionalSaveData(ValueInput input) {
+		super.readAdditionalSaveData(input);
+		setMana(input.getIntOr(TAG_MANA, 0));
 	}
 
 	@Override

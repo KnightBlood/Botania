@@ -9,29 +9,31 @@
 package vazkii.botania.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.util.Unit;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import org.jetbrains.annotations.Nullable;
 
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.lib.ResourcesLib;
 import vazkii.botania.common.block.block_entity.BreweryBlockEntity;
 import vazkii.botania.common.helper.VecHelper;
 
-public class BotanicalBreweryModel extends Model {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(ResourcesLib.MODEL_BREWERY);
+public class BotanicalBreweryModel extends Model<Unit> {
+	private static final Identifier TEXTURE = Identifier.parse(ResourcesLib.MODEL_BREWERY);
 	final ModelPart top;
 	final ModelPart pole;
 	final ModelPart bottom;
@@ -39,7 +41,7 @@ public class BotanicalBreweryModel extends Model {
 	final ModelPart plate;
 
 	public BotanicalBreweryModel(ModelPart root) {
-		super(RenderType::entitySolid);
+		super(root, t -> RenderTypes.entitySolid(t));
 
 		top = root.getChild("top");
 		pole = root.getChild("pole");
@@ -125,14 +127,8 @@ public class BotanicalBreweryModel extends Model {
 
 			float s = 0.25F;
 			ms.scale(s, s, s);
-			mc.getItemRenderer().renderStatic(stack, ItemDisplayContext.GROUND,
-					light, overlay, ms, buffers, level, 0);
+			RenderHelper.renderItemStatic(stack, ItemDisplayContext.GROUND, false, ms, buffers, light, overlay, level, 0);
 			ms.popPose();
 		}
-	}
-
-	@Override
-	public void renderToBuffer(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float a) {
-		throw new UnsupportedOperationException("unimplemented, call using other render method");
 	}
 }

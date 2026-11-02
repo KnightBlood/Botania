@@ -8,11 +8,13 @@
  */
 package vazkii.botania.client.render;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
@@ -23,6 +25,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.brew.Brew;
 import vazkii.botania.api.brew.BrewItem;
@@ -40,23 +43,50 @@ import vazkii.botania.common.item.equipment.bauble.TaintedBloodPendantItem;
 import vazkii.botania.common.item.equipment.tool.terrasteel.TerraShattererItem;
 import vazkii.botania.common.item.lens.LensItem;
 import vazkii.botania.common.item.material.MysticalPetalItem;
-import vazkii.botania.mixin.client.MinecraftAccessor;
 import vazkii.botania.xplat.XplatAbstractions;
 
+import java.util.List;
 import java.util.Optional;
 
 public final class ColorHandler {
+	/**
+	 * 26.1 removed the old {@code BlockColor}/{@code ItemColor} SAM interfaces;
+	 * block tints are now data-driven {@code BlockTintSource}s and item tints come from
+	 * item model JSON. These functional interfaces preserve the old 1.20.1 handler
+	 * semantics; the platform registration layers adapt them to the new APIs.
+	 */
+	@FunctionalInterface
+	public interface BlockColorHandler {
+		int getColor(BlockState state, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos, int tintIndex);
+	}
+
+	@FunctionalInterface
+	public interface ItemColorHandler {
+		int getColor(ItemStack stack, int tintIndex);
+	}
+
 	public interface BlockHandlerConsumer {
-		void register(BlockColor handler, Block... blocks);
+		void register(BlockColorHandler handler, Block... blocks);
 	}
 
 	public interface ItemHandlerConsumer {
-		void register(ItemColor handler, ItemLike... items);
+		void register(ItemColorHandler handler, ItemLike... items);
+	}
+
+	/** Defensive equivalent of the removed {@code BlockColors.getColor}: looks up the
+	 * tint source for the given tint index and evaluates it. */
+	public static int getBlockColor(BlockState state, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos, int tintIndex) {
+		List<BlockTintSource> sources = Minecraft.getInstance().getBlockColors().getTintSources(state);
+		if (tintIndex < 0 || tintIndex >= sources.size()) {
+			return -1;
+		}
+		BlockTintSource source = sources.get(tintIndex);
+		return world != null && pos != null ? source.colorInWorld(state, world, pos) : source.color(state);
 	}
 
 	public static void submitBlocks(BlockHandlerConsumer blocks) {
 		// [VanillaCopy] BlockColors for vine
-		BlockColor vineColor = (state, world, pos, tint) -> world != null && pos != null ? BiomeColors.getAverageFoliageColor(world, pos) : FoliageColor.getDefaultColor();
+		BlockColorHandler vineColor = (state, world, pos, tint) -> world != null && pos != null ? BiomeColors.getAverageFoliageColor(world, pos) : FoliageColor.FOLIAGE_DEFAULT;
 		blocks.register(vineColor, BotaniaBlocks.solidVines);
 
 		// Pool
@@ -110,7 +140,7 @@ public final class ColorHandler {
 							if (camoState != null) {
 								return camoState.getBlock() instanceof PlatformBlock
 										? 0xFFFFFF
-										: Minecraft.getInstance().getBlockColors().getColor(camoState, world, pos, tintIndex);
+										: getBlockColor(camoState, world, pos, tintIndex);
 							}
 						}
 					}
@@ -127,7 +157,7 @@ public final class ColorHandler {
 				: -1,
 				BotaniaItems.twigWand, BotaniaItems.dreamwoodWand);
 
-		items.register((s, t) -> t == 0 ? Minecraft.getInstance().getBlockColors().getColor(((BlockItem) s.getItem()).getBlock().defaultBlockState(), null, null, t) : -1,
+		items.register((s, t) -> t == 0 ? getBlockColor(((BlockItem) s.getItem()).getBlock().defaultBlockState(), null, null, t) : -1,
 				BotaniaBlocks.petalBlockWhite, BotaniaBlocks.petalBlockOrange, BotaniaBlocks.petalBlockMagenta, BotaniaBlocks.petalBlockLightBlue,
 				BotaniaBlocks.petalBlockYellow, BotaniaBlocks.petalBlockLime, BotaniaBlocks.petalBlockPink, BotaniaBlocks.petalBlockGray,
 				BotaniaBlocks.petalBlockSilver, BotaniaBlocks.petalBlockCyan, BotaniaBlocks.petalBlockPurple, BotaniaBlocks.petalBlockBlue,
@@ -176,7 +206,8 @@ public final class ColorHandler {
 		items.register((s, t) -> {
 			ItemStack lens = ManaBlasterItem.getLens(s);
 			if (!lens.isEmpty() && t == 0) {
-				return ((MinecraftAccessor) Minecraft.getInstance()).getItemColors().getColor(lens, t);
+				// TODO 26.1: ItemColors was removed; lens tint delegation now lives in item model JSON.
+				return -1;
 			}
 
 			if (t == 2) {
@@ -203,7 +234,7 @@ public final class ColorHandler {
 
 		items.register((s, t) -> t == 1 && TerraShattererItem.isEnabled(s) ? Mth.hsvToRgb(0.375F, (float) Math.min(1F, Math.sin(Util.getMillis() / 200D) * 0.5 + 1F), 1F) : -1, BotaniaItems.terraPick);
 
-		ItemColor lensHandler = (s, t) -> t == 0 ? ((LensItem) s.getItem()).getLensColor(s, Minecraft.getInstance().level) : -1;
+		ItemColorHandler lensHandler = (s, t) -> t == 0 ? ((LensItem) s.getItem()).getLensColor(s, Minecraft.getInstance().level) : -1;
 		items.register(lensHandler, BotaniaItems.lensNormal, BotaniaItems.lensSpeed, BotaniaItems.lensPower, BotaniaItems.lensTime,
 				BotaniaItems.lensEfficiency, BotaniaItems.lensBounce, BotaniaItems.lensGravity, BotaniaItems.lensMine,
 				BotaniaItems.lensDamage, BotaniaItems.lensPhantom, BotaniaItems.lensMagnet, BotaniaItems.lensExplosive,

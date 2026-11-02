@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": "botania:dreamwood_planks_slab"
+  },
+  "pattern": [
+    "QQ"
+  ],
+  "result": {
+    "id": "botania:dreamwood_planks"
+  }
+}

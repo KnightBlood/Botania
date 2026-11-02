@@ -12,24 +12,26 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.model.Model;
+import net.minecraft.util.ARGB;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.util.Unit;
 
 /**
  * @author wiiv
  */
-public class CloakModel extends Model {
+public class CloakModel extends Model<Unit> {
 
 	private final ModelPart collar;
 	private final ModelPart sideL;
 	private final ModelPart sideR;
 
 	public CloakModel(ModelPart root) {
-		super(RenderType::entityCutout);
+		super(root, t -> RenderTypes.entityCutout(t));
 
 		collar = root.getChild("collar");
 		sideL = root.getChild("sideL");
@@ -52,10 +54,9 @@ public class CloakModel extends Model {
 		return mesh;
 	}
 
-	@Override
-	public void renderToBuffer(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float a) {
-		collar.render(ms, buffer, light, overlay, r, g, b, a);
-		sideL.render(ms, buffer, light, overlay, r, g, b, a);
-		sideR.render(ms, buffer, light, overlay, r, g, b, a);
+	public void render(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float a) {
+		collar.render(ms, buffer, light, overlay, ARGB.colorFromFloat(a, r, g, b));
+		sideL.render(ms, buffer, light, overlay, ARGB.colorFromFloat(a, r, g, b));
+		sideR.render(ms, buffer, light, overlay, ARGB.colorFromFloat(a, r, g, b));
 	}
 }

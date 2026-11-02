@@ -6,9 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.random.Weight;
-import net.minecraft.util.random.WeightedEntry;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.random.Weighted;
 import net.minecraft.world.entity.EntityType;
 
 import org.jetbrains.annotations.Nullable;
@@ -16,14 +15,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public class LooniumMobSpawnData extends WeightedEntry.IntrusiveBase {
+public class LooniumMobSpawnData {
 	public static final Codec<LooniumMobSpawnData> CODEC = RecordCodecBuilder.create(
 			instance -> instance.group(
 					BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("type").forGetter(msd -> msd.type),
-					Weight.CODEC.fieldOf("weight").forGetter(IntrusiveBase::getWeight),
+					Codec.INT.fieldOf("weight").forGetter(msd -> msd.weight),
 					Codec.BOOL.optionalFieldOf("spawnAsBaby").forGetter(msd -> Optional.ofNullable(msd.spawnAsBaby)),
 					CompoundTag.CODEC.optionalFieldOf("nbt").forGetter(msd -> Optional.ofNullable(msd.nbt)),
-					ResourceLocation.CODEC.optionalFieldOf("equipmentTable")
+					Identifier.CODEC.optionalFieldOf("equipmentTable")
 							.forGetter(msd -> Optional.ofNullable(msd.equipmentTable)),
 					Codec.list(LooniumMobEffectToApply.CODEC)
 							.optionalFieldOf("effectsToApply")
@@ -35,18 +34,19 @@ public class LooniumMobSpawnData extends WeightedEntry.IntrusiveBase {
 	);
 
 	public final EntityType<?> type;
+	public final int weight;
 	public final Boolean spawnAsBaby;
 	public final CompoundTag nbt;
-	public final ResourceLocation equipmentTable;
+	public final Identifier equipmentTable;
 	public final List<LooniumMobEffectToApply> effectsToApply;
 	public final List<LooniumMobAttributeModifier> attributeModifiers;
 
-	private LooniumMobSpawnData(EntityType<?> type, Weight weight, Boolean spawnAsBaby, @Nullable CompoundTag nbt,
-			@Nullable ResourceLocation equipmentTable,
+	private LooniumMobSpawnData(EntityType<?> type, int weight, Boolean spawnAsBaby, @Nullable CompoundTag nbt,
+			@Nullable Identifier equipmentTable,
 			@Nullable List<LooniumMobEffectToApply> effectsToApply,
 			@Nullable List<LooniumMobAttributeModifier> attributeModifiers) {
-		super(weight);
 		this.type = type;
+		this.weight = weight;
 		this.spawnAsBaby = spawnAsBaby;
 		this.nbt = nbt != null ? nbt.copy() : null;
 		this.equipmentTable = equipmentTable;
@@ -73,10 +73,10 @@ public class LooniumMobSpawnData extends WeightedEntry.IntrusiveBase {
 	// Codecs don't support setting null as intentional default value for optional fields, so we do this.
 	// (blame com.mojang.datafixers.util.Either::getLeft using Optional::of instead Optional.ofNullable)
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-	private static LooniumMobSpawnData create(EntityType<?> type, Weight weight,
+	private static LooniumMobSpawnData create(EntityType<?> type, int weight,
 			Optional<Boolean> spawnAsBaby,
 			Optional<CompoundTag> nbt,
-			Optional<ResourceLocation> equipmentTable,
+			Optional<Identifier> equipmentTable,
 			Optional<List<LooniumMobEffectToApply>> effectsToApply,
 			Optional<List<LooniumMobAttributeModifier>> attributeModifiers) {
 		return new LooniumMobSpawnData(type, weight,
@@ -92,7 +92,7 @@ public class LooniumMobSpawnData extends WeightedEntry.IntrusiveBase {
 		private final int weight;
 		private @Nullable Boolean spawnAsBaby;
 		private @Nullable CompoundTag nbt;
-		private @Nullable ResourceLocation equipmentTable;
+		private @Nullable Identifier equipmentTable;
 		private @Nullable List<LooniumMobEffectToApply> effectsToApply;
 		private @Nullable List<LooniumMobAttributeModifier> attributeModifiers;
 
@@ -130,7 +130,7 @@ public class LooniumMobSpawnData extends WeightedEntry.IntrusiveBase {
 		/**
 		 * A loot table to define equipment to apply to the mob after it spawned.
 		 */
-		public Builder equipmentTable(ResourceLocation equipmentTable) {
+		public Builder equipmentTable(Identifier equipmentTable) {
 			this.equipmentTable = equipmentTable;
 			return this;
 		}
@@ -154,8 +154,12 @@ public class LooniumMobSpawnData extends WeightedEntry.IntrusiveBase {
 		}
 
 		public LooniumMobSpawnData build() {
-			return new LooniumMobSpawnData(type, Weight.of(weight), spawnAsBaby, nbt, equipmentTable,
+			return new LooniumMobSpawnData(type, weight, spawnAsBaby, nbt, equipmentTable,
 					effectsToApply, attributeModifiers);
+		}
+
+		public Weighted<LooniumMobSpawnData> weighted() {
+			return new Weighted<>(build(), weight);
 		}
 	}
 }

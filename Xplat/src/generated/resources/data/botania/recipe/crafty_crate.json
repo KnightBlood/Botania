@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "minecraft:crafting_table",
+    "W": "botania:dreamwood_planks"
+  },
+  "pattern": [
+    "WCW",
+    "W W",
+    "W W"
+  ],
+  "result": {
+    "id": "botania:crafty_crate"
+  }
+}

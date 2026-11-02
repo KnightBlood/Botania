@@ -1,0 +1,12 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    "botania:livingwood"
+  ],
+  "output": [
+    {
+      "count": 1,
+      "id": "botania:dreamwood"
+    }
+  ]
+}

@@ -8,53 +8,57 @@
  */
 package vazkii.botania.common.crafting.recipe;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.PlacementInfo;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
-import org.jetbrains.annotations.NotNull;
+/**
+ * A shaped crafting recipe that only matches when all the potions in the crafting grid are water
+ * potions.
+ */
+public class WaterBottleMatchingRecipe implements CraftingRecipe {
+	public static final MapCodec<WaterBottleMatchingRecipe> CODEC = ShapedRecipe.MAP_CODEC.xmap(
+			WaterBottleMatchingRecipe::new, recipe -> recipe.delegate);
 
-public class WaterBottleMatchingRecipe extends ShapedRecipe {
-	public static final RecipeSerializer<WaterBottleMatchingRecipe> SERIALIZER = new Serializer();
+	public static final StreamCodec<RegistryFriendlyByteBuf, WaterBottleMatchingRecipe> STREAM_CODEC = ShapedRecipe.STREAM_CODEC.map(
+			WaterBottleMatchingRecipe::new, recipe -> recipe.delegate);
 
-	public WaterBottleMatchingRecipe(ResourceLocation id, String group, CraftingBookCategory category, int width, int height, NonNullList<Ingredient> recipeItems, ItemStack result) {
-		super(id, group, category, width, height, NonNullList.of(Ingredient.EMPTY, recipeItems.stream().map(i -> {
-			if (i.test(new ItemStack(Items.POTION))) {
-				return Ingredient.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER));
-			}
-			return i;
-		}).toArray(Ingredient[]::new)), result);
+	public static final RecipeSerializer<WaterBottleMatchingRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
+
+	private final ShapedRecipe delegate;
+
+	public WaterBottleMatchingRecipe(ShapedRecipe delegate) {
+		this.delegate = delegate;
 	}
 
-	public WaterBottleMatchingRecipe(ShapedRecipe recipe) {
-		this(recipe.getId(), recipe.getGroup(), recipe.category(), recipe.getWidth(), recipe.getHeight(),
-				recipe.getIngredients(),
-				// XXX: Hacky, but compose should always be a vanilla shaped recipe which doesn't do anything with the
-				// RegistryAccess
-				recipe.getResultItem(RegistryAccess.EMPTY));
+	public static WaterBottleMatchingRecipe wrap(Recipe<?> recipe) {
+		return new WaterBottleMatchingRecipe((ShapedRecipe) recipe);
 	}
 
 	@Override
-	public boolean matches(@NotNull CraftingContainer craftingContainer, @NotNull Level level) {
-		if (!super.matches(craftingContainer, level)) {
+	public boolean matches(CraftingInput input, Level level) {
+		if (!delegate.matches(input, level)) {
 			return false;
 		}
-		for (int i = 0; i < craftingContainer.getContainerSize(); i++) {
-			var item = craftingContainer.getItem(i);
-			if (item.is(Items.POTION) && !(PotionUtils.getPotion(item) == Potions.WATER)) {
+		for (int i = 0; i < input.size(); i++) {
+			var item = input.getItem(i);
+			if (item.is(Items.POTION) && !item.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.WATER)) {
 				return false;
 			}
 		}
@@ -62,24 +66,37 @@ public class WaterBottleMatchingRecipe extends ShapedRecipe {
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public ItemStack assemble(CraftingInput input) {
+		return delegate.assemble(input);
+	}
+
+	@Override
+	public RecipeSerializer<? extends CraftingRecipe> getSerializer() {
 		return SERIALIZER;
 	}
 
-	private static class Serializer implements RecipeSerializer<WaterBottleMatchingRecipe> {
-		@Override
-		public WaterBottleMatchingRecipe fromJson(@NotNull ResourceLocation recipeId, @NotNull JsonObject json) {
-			return new WaterBottleMatchingRecipe(SHAPED_RECIPE.fromJson(recipeId, json));
-		}
+	@Override
+	public CraftingBookCategory category() {
+		return delegate.category();
+	}
 
-		@Override
-		public WaterBottleMatchingRecipe fromNetwork(@NotNull ResourceLocation recipeId, @NotNull FriendlyByteBuf buffer) {
-			return new WaterBottleMatchingRecipe(SHAPED_RECIPE.fromNetwork(recipeId, buffer));
-		}
+	@Override
+	public NonNullList<ItemStack> getRemainingItems(CraftingInput input) {
+		return delegate.getRemainingItems(input);
+	}
 
-		@Override
-		public void toNetwork(@NotNull FriendlyByteBuf buffer, @NotNull WaterBottleMatchingRecipe recipe) {
-			SHAPED_RECIPE.toNetwork(buffer, recipe);
-		}
+	@Override
+	public String group() {
+		return delegate.group();
+	}
+
+	@Override
+	public boolean showNotification() {
+		return delegate.showNotification();
+	}
+
+	@Override
+	public PlacementInfo placementInfo() {
+		return delegate.placementInfo();
 	}
 }

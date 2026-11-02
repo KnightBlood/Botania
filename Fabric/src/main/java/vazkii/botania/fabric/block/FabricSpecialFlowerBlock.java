@@ -9,7 +9,9 @@
 package vazkii.botania.fabric.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,7 +24,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -30,10 +31,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.api.block_entity.FunctionalFlowerBlockEntity;
 import vazkii.botania.api.block_entity.SpecialFlowerBlockEntity;
 import vazkii.botania.common.block.BotaniaBlock;
 import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.block.FloatingSpecialFlowerBlock;
 
 import java.util.function.Supplier;
 
@@ -44,11 +45,11 @@ public class FabricSpecialFlowerBlock extends FlowerBlock implements EntityBlock
 	private final Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType;
 	private final boolean hasComparatorOutput;
 
-	public FabricSpecialFlowerBlock(MobEffect stewEffect, int stewDuration, Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType) {
+	public FabricSpecialFlowerBlock(Holder<MobEffect> stewEffect, int stewDuration, Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType) {
 		this(stewEffect, stewDuration, props, blockEntityType, false);
 	}
 
-	public FabricSpecialFlowerBlock(MobEffect stewEffect, int stewDuration, Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType, boolean hasComparatorOutput) {
+	public FabricSpecialFlowerBlock(Holder<MobEffect> stewEffect, int stewDuration, Properties props, Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> blockEntityType, boolean hasComparatorOutput) {
 		super(stewEffect, stewDuration, props);
 		this.blockEntityType = blockEntityType;
 		this.hasComparatorOutput = hasComparatorOutput;
@@ -57,7 +58,7 @@ public class FabricSpecialFlowerBlock extends FlowerBlock implements EntityBlock
 	@NotNull
 	@Override
 	public VoxelShape getShape(BlockState state, @NotNull BlockGetter world, @NotNull BlockPos pos, CollisionContext ctx) {
-		Vec3 shift = state.getOffset(world, pos);
+		Vec3 shift = state.getOffset(pos);
 		return SHAPE.move(shift.x, shift.y, shift.z);
 	}
 
@@ -94,16 +95,16 @@ public class FabricSpecialFlowerBlock extends FlowerBlock implements EntityBlock
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-		if (hasComparatorOutput && !newState.hasAnalogOutputSignal()) {
-			level.updateNeighbourForOutputSignal(pos, newState.getBlock());
+	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+		super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+		if (hasComparatorOutput) {
+			level.updateNeighbourForOutputSignal(pos, state.getBlock());
 		}
-		super.onRemove(state, level, pos, newState, movedByPiston);
 	}
 
 	@Override
 	public void animateTick(BlockState state, Level world, BlockPos pos, RandomSource rand) {
-		redstoneParticlesIfPowered(state, world, pos, rand);
+		FloatingSpecialFlowerBlock.redstoneParticlesIfPowered(state, world, pos, rand);
 	}
 
 	@Override
@@ -112,21 +113,7 @@ public class FabricSpecialFlowerBlock extends FlowerBlock implements EntityBlock
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState bs, Level level, BlockPos pos) {
+	protected int getAnalogOutputSignal(BlockState bs, Level level, BlockPos pos, Direction side) {
 		return level.getBlockEntity(pos) instanceof SpecialFlowerBlockEntity flower ? flower.getComparatorSignal() : 0;
-	}
-
-	public static void redstoneParticlesIfPowered(BlockState state, Level world, BlockPos pos, RandomSource rand) {
-		if (world.getBlockEntity(pos) instanceof FunctionalFlowerBlockEntity flower
-				&& rand.nextBoolean() && flower.acceptsRedstone() && flower.redstoneSignal > 0) {
-			VoxelShape shape = state.getShape(world, pos);
-			if (!shape.isEmpty()) {
-				AABB localBox = shape.bounds();
-				double x = pos.getX() + localBox.minX + rand.nextDouble() * (localBox.maxX - localBox.minX);
-				double y = pos.getY() + localBox.minY + rand.nextDouble() * (localBox.maxY - localBox.minY);
-				double z = pos.getZ() + localBox.minZ + rand.nextDouble() * (localBox.maxZ - localBox.minZ);
-				world.addParticle(DustParticleOptions.REDSTONE, x, y, z, 0, 0, 0);
-			}
-		}
 	}
 }

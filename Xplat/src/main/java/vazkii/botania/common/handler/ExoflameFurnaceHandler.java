@@ -9,8 +9,11 @@
 package vazkii.botania.common.handler;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
@@ -31,8 +34,8 @@ public class ExoflameFurnaceHandler {
 		}
 		try {
 			var qc = ((AbstractFurnaceBlockEntityAccessor) furnace).getQuickCheck();
-			var currentRecipe = qc.getRecipeFor(furnace, furnace.getLevel());
-			return currentRecipe.isPresent() && ExoflameFurnaceHandler.canSmeltRecipe(furnace, currentRecipe.get());
+			var currentRecipe = qc.getRecipeFor(new SingleRecipeInput(furnace.getItem(0)), (ServerLevel) furnace.getLevel());
+			return currentRecipe.isPresent() && ExoflameFurnaceHandler.canSmeltRecipe(furnace, currentRecipe.get().value());
 		} catch (Throwable t) {
 			BotaniaAPI.LOGGER.error("Failed to determine if furnace TE can smelt", t);
 			return false;
@@ -53,7 +56,7 @@ public class ExoflameFurnaceHandler {
 
 		@Override
 		public int getBurnTime() {
-			return ((AbstractFurnaceBlockEntityAccessor) furnace).getLitTime();
+			return ((AbstractFurnaceBlockEntityAccessor) furnace).getLitTimeRemaining();
 		}
 
 		@Override
@@ -63,15 +66,15 @@ public class ExoflameFurnaceHandler {
 				BlockPos pos = furnace.getBlockPos();
 				world.setBlockAndUpdate(pos, world.getBlockState(pos).setValue(BlockStateProperties.LIT, true));
 			}
-			int burnTime = ((AbstractFurnaceBlockEntityAccessor) furnace).getLitTime();
-			((AbstractFurnaceBlockEntityAccessor) furnace).setLitTime(burnTime + 200);
+			int burnTime = ((AbstractFurnaceBlockEntityAccessor) furnace).getLitTimeRemaining();
+			((AbstractFurnaceBlockEntityAccessor) furnace).setLitTimeRemaining(burnTime + 200);
 		}
 
 		@Override
 		public void boostCookTime() {
-			int cookTime = ((AbstractFurnaceBlockEntityAccessor) furnace).getCookingProgress();
+			int cookTime = ((AbstractFurnaceBlockEntityAccessor) furnace).getCookingTimer();
 			int cookTimeTotal = ((AbstractFurnaceBlockEntityAccessor) furnace).getCookingTotalTime();
-			((AbstractFurnaceBlockEntityAccessor) furnace).setCookingProgress(Math.min(cookTimeTotal - 1, cookTime + 1));
+			((AbstractFurnaceBlockEntityAccessor) furnace).setCookingTimer(Math.min(cookTimeTotal - 1, cookTime + 1));
 		}
 	}
 }

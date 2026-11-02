@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.level.ServerLevelAccessor;
 
@@ -32,8 +32,8 @@ public class SpawnPlacementsMixin {
 	// However, certain mobs (e.g. slimes) use the predicate for actual logic (e.g. slimechunks),
 	// and we jump over that in Bloodthirst as well.
 	@Inject(at = @At("RETURN"), cancellable = true, method = "checkSpawnRules")
-	private static <T extends Entity> void bloodthirstOverride(EntityType<T> type, ServerLevelAccessor world, MobSpawnType reason, BlockPos position, RandomSource random, CallbackInfoReturnable<Boolean> cir) {
-		if (reason == MobSpawnType.NATURAL && BloodthirstMobEffect.overrideSpawn(world, position, type.getCategory())) {
+	private static <T extends Entity> void bloodthirstOverride(EntityType<T> type, ServerLevelAccessor world, EntitySpawnReason reason, BlockPos position, RandomSource random, CallbackInfoReturnable<Boolean> cir) {
+		if (reason == EntitySpawnReason.NATURAL && BloodthirstMobEffect.overrideSpawn(world, position, type.getCategory())) {
 			cir.setReturnValue(true);
 		}
 	}

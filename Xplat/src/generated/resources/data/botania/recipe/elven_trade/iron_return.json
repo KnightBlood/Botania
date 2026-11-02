@@ -1,0 +1,12 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    "minecraft:iron_ingot"
+  ],
+  "output": [
+    {
+      "count": 1,
+      "id": "minecraft:iron_ingot"
+    }
+  ]
+}

@@ -16,13 +16,14 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.AbstractCauldronBlock;
 import net.minecraft.world.level.block.BucketPickup;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
@@ -44,13 +45,13 @@ public class ExtrapolatedBucketItem extends Item {
 	// [VanillaCopy] BucketItem, only the empty cases
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand interactionHand) {
+	public InteractionResult use(Level level, Player player, @NotNull InteractionHand interactionHand) {
 		ItemStack itemStack = player.getItemInHand(interactionHand);
 		BlockHitResult blockHitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
 		if (blockHitResult.getType() == HitResult.Type.MISS) {
-			return InteractionResultHolder.pass(itemStack);
+			return InteractionResult.PASS;
 		} else if (blockHitResult.getType() != HitResult.Type.BLOCK) {
-			return InteractionResultHolder.pass(itemStack);
+			return InteractionResult.PASS;
 		} else {
 			BlockPos blockPos = blockHitResult.getBlockPos();
 			Direction direction = blockHitResult.getDirection();
@@ -59,7 +60,7 @@ public class ExtrapolatedBucketItem extends Item {
 				BlockState blockState;
 				blockState = level.getBlockState(blockPos);
 				if (blockState.getBlock() instanceof BucketPickup bucketPickup) {
-					ItemStack itemStack2 = bucketPickup.pickupBlock(level, blockPos, blockState);
+					ItemStack itemStack2 = bucketPickup.pickupBlock(player, level, blockPos, blockState);
 					if (!itemStack2.isEmpty()) {
 						player.awardStat(Stats.ITEM_USED.get(this));
 						bucketPickup.getPickupSound().ifPresent((soundEvent) -> {
@@ -69,15 +70,16 @@ public class ExtrapolatedBucketItem extends Item {
 						spawnParticles(level, blockPos);
 						level.gameEvent(player, GameEvent.FLUID_PICKUP, blockPos);
 						ItemStack itemStack3 = itemStack; // Botania: don't overwrite ourselves
-						if (!level.isClientSide) {
+						if (!level.isClientSide()) {
 							CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer) player, itemStack2);
 						}
 
-						return InteractionResultHolder.sidedSuccess(itemStack3, level.isClientSide());
+						return level.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(itemStack3) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(itemStack3);
 					}
 				} else if (blockState.getBlock() instanceof AbstractCauldronBlock cauldronBlock) {
+					// 26.1: dispatcher lookup takes the ItemStack being used
 					CauldronInteraction interaction = ((AbstractCauldronBlockAccessor) cauldronBlock)
-							.botania_getInteractions().get(Items.BUCKET);
+							.botania_getInteractions().get(itemStack);
 					if (interaction != null) {
 						// pretend the cauldron is full, as otherwise the interaction might not empty it
 						BlockState fullState = blockState.hasProperty(LayeredCauldronBlock.LEVEL)
@@ -92,12 +94,12 @@ public class ExtrapolatedBucketItem extends Item {
 							// don't replace with a filled bucket
 							player.setItemInHand(interactionHand, itemStack);
 						}
-						return new InteractionResultHolder<>(result, itemStack);
+						return result instanceof InteractionResult.Success success ? success.heldItemTransformedTo(itemStack) : result;
 					}
 				}
 
 			}
-			return InteractionResultHolder.fail(itemStack);
+			return InteractionResult.FAIL;
 		}
 	}
 

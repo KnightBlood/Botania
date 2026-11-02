@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,8 +25,9 @@ public class OrechidEmiRecipe extends BotaniaEmiRecipe {
 	private final EmiIngredient orechid;
 	protected final OrechidRecipe recipe;
 
-	public OrechidEmiRecipe(EmiRecipeCategory category, OrechidRecipe recipe, EmiIngredient orechid) {
-		super(category, recipe);
+	public OrechidEmiRecipe(EmiRecipeCategory category, RecipeHolder<? extends OrechidRecipe> holder, EmiIngredient orechid) {
+		super(category, holder);
+		OrechidRecipe recipe = holder.value();
 		try {
 			this.input = recipe.getInput().getDisplayed().stream()
 					.map(s -> EmiIngredient.of(Ingredient.of(s.getBlock()), 1)).toList();
@@ -55,7 +57,7 @@ public class OrechidEmiRecipe extends BotaniaEmiRecipe {
 
 	@Override
 	public void addWidgets(WidgetHolder widgets) {
-		PureDaisyEmiRecipe.addPureDaisyWidgets(widgets, this, input.get(0), orechid, output.get(0));
+		PureDaisyEmiRecipe.addPureDaisyWidgets(widgets, this, input.get(0), orechid, input.get(0));
 
 		final Double chance = getChance(recipe);
 		if (chance != null) {

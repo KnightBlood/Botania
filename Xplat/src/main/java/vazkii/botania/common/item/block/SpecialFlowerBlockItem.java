@@ -10,15 +10,21 @@ package vazkii.botania.common.item.block;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.item.component.TypedEntityData;
+import net.minecraft.world.item.component.TooltipDisplay;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -27,6 +33,7 @@ import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.xplat.BotaniaConfig;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class SpecialFlowerBlockItem extends BlockItem {
 
@@ -35,18 +42,18 @@ public class SpecialFlowerBlockItem extends BlockItem {
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, Level world, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+	public void appendHoverText(@NotNull ItemStack stack, Item.TooltipContext context, TooltipDisplay display, @NotNull Consumer<Component> builder, @NotNull TooltipFlag flag) {
 		// Prevent crash when tooltips queried before configs load
 		if (BotaniaConfig.client() != null) {
 			if (stack.is(BotaniaTags.Items.GENERATING_SPECIAL_FLOWERS)
 					|| stack.is(BotaniaTags.Items.GENERATING_FLOATING_FLOWERS)) {
-				tooltip.add(Component.translatable("botania.flowerType.generating").withStyle(ChatFormatting.ITALIC, ChatFormatting.BLUE));
+				builder.accept(Component.translatable("botania.flowerType.generating").withStyle(ChatFormatting.ITALIC, ChatFormatting.BLUE));
 			} else if (stack.is(BotaniaTags.Items.FUNCTIONAL_SPECIAL_FLOWERS)
 					|| stack.is(BotaniaTags.Items.FUNCTIONAL_FLOATING_FLOWERS)) {
-				tooltip.add(Component.translatable("botania.flowerType.functional").withStyle(ChatFormatting.ITALIC, ChatFormatting.BLUE));
+				builder.accept(Component.translatable("botania.flowerType.functional").withStyle(ChatFormatting.ITALIC, ChatFormatting.BLUE));
 			} else if (stack.is(BotaniaTags.Items.MISC_SPECIAL_FLOWERS)
 					|| stack.is(BotaniaTags.Items.MISC_FLOATING_FLOWERS)) {
-				tooltip.add(Component.translatable("botania.flowerType.misc").withStyle(ChatFormatting.ITALIC, ChatFormatting.BLUE));
+				builder.accept(Component.translatable("botania.flowerType.misc").withStyle(ChatFormatting.ITALIC, ChatFormatting.BLUE));
 			}
 
 			if (BotaniaConfig.client().referencesEnabled()) {
@@ -56,7 +63,7 @@ public class SpecialFlowerBlockItem extends BlockItem {
 				}
 				MutableComponent lore = Component.translatable(key);
 				if (!lore.getString().equals(key)) {
-					tooltip.add(lore.withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
+					builder.accept(lore.withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
 				}
 			}
 		}
@@ -64,15 +71,15 @@ public class SpecialFlowerBlockItem extends BlockItem {
 
 	@Override
 	public boolean isBarVisible(ItemStack stack) {
-		CompoundTag tag = stack.getTagElement("BlockEntityTag");
+		CompoundTag tag = getBlockEntityTag(stack);
 		return tag != null && tag.contains(HydroangeasBlockEntity.TAG_PASSIVE_DECAY_TICKS);
 	}
 
 	@Override
 	public int getBarWidth(ItemStack stack) {
-		CompoundTag tag = stack.getTagElement("BlockEntityTag");
+		CompoundTag tag = getBlockEntityTag(stack);
 		if (tag != null) {
-			float frac = 1 - tag.getInt(HydroangeasBlockEntity.TAG_PASSIVE_DECAY_TICKS) / (float) HydroangeasBlockEntity.DECAY_TIME;
+			float frac = 1 - tag.getIntOr(HydroangeasBlockEntity.TAG_PASSIVE_DECAY_TICKS, 0) / (float) HydroangeasBlockEntity.DECAY_TIME;
 			return Math.round(13F * frac);
 		}
 		return 0;
@@ -80,11 +87,16 @@ public class SpecialFlowerBlockItem extends BlockItem {
 
 	@Override
 	public int getBarColor(ItemStack stack) {
-		CompoundTag tag = stack.getTagElement("BlockEntityTag");
+		CompoundTag tag = getBlockEntityTag(stack);
 		if (tag != null) {
-			float frac = 1 - tag.getInt(HydroangeasBlockEntity.TAG_PASSIVE_DECAY_TICKS) / (float) HydroangeasBlockEntity.DECAY_TIME;
+			float frac = 1 - tag.getIntOr(HydroangeasBlockEntity.TAG_PASSIVE_DECAY_TICKS, 0) / (float) HydroangeasBlockEntity.DECAY_TIME;
 			return Mth.hsvToRgb(frac / 3.0F, 1.0F, 1.0F);
 		}
 		return 0;
+	}
+
+	private static @Nullable CompoundTag getBlockEntityTag(ItemStack stack) {
+		TypedEntityData<BlockEntityType<?>> data = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+		return data == null ? null : data.copyTagWithoutId();
 	}
 }

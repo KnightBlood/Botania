@@ -8,63 +8,36 @@
  */
 package vazkii.botania.client.model;
 
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
-
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class DelegatedModel implements BakedModel {
-	protected final BakedModel originalModel;
+/**
+ * Base class for Botania's block state model wrappers. In MC 26.1 {@code BakedModel} was replaced by
+ * {@link BlockStateModel}, which only exposes the geometry collection methods.
+ */
+public class DelegatedModel implements BlockStateModel {
+	protected final BlockStateModel originalModel;
 
-	public DelegatedModel(BakedModel originalModel) {
+	public DelegatedModel(BlockStateModel originalModel) {
 		this.originalModel = originalModel;
 	}
 
 	@Override
-	public boolean useAmbientOcclusion() {
-		return originalModel.useAmbientOcclusion();
+	public void collectParts(RandomSource random, List<BlockStateModelPart> output) {
+		originalModel.collectParts(random, output);
 	}
 
 	@Override
-	public boolean isGui3d() {
-		return originalModel.isGui3d();
+	public Material.Baked particleMaterial() {
+		return originalModel.particleMaterial();
 	}
 
 	@Override
-	public boolean usesBlockLight() {
-		return originalModel.usesBlockLight();
-	}
-
-	@Override
-	public boolean isCustomRenderer() {
-		return originalModel.isCustomRenderer();
-	}
-
-	@Override
-	public TextureAtlasSprite getParticleIcon() {
-		return originalModel.getParticleIcon();
-	}
-
-	@Override
-	public ItemTransforms getTransforms() {
-		return originalModel.getTransforms();
-	}
-
-	@Override
-	public ItemOverrides getOverrides() {
-		return originalModel.getOverrides();
-	}
-
-	@Override
-	public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
-		return null;
+	public int materialFlags() {
+		return originalModel.materialFlags();
 	}
 }

@@ -1,0 +1,25 @@
+{
+  "parent": "botania:main/mana_pool_pickup",
+  "criteria": {
+    "code_triggered": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.botania:baubleWear.desc"
+    },
+    "icon": {
+      "id": "botania:mana_ring"
+    },
+    "title": {
+      "translate": "advancement.botania:baubleWear"
+    }
+  },
+  "requirements": [
+    [
+      "code_triggered"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

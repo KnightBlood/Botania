@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:white_pavement",
+  "result": {
+    "id": "botania:white_pavement_stairs"
+  }
+}

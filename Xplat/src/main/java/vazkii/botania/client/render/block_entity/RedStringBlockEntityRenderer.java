@@ -12,8 +12,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,7 +27,7 @@ import vazkii.botania.common.item.WandOfTheForestItem;
 
 import java.util.Random;
 
-public class RedStringBlockEntityRenderer<T extends RedStringBlockEntity> implements BlockEntityRenderer<T> {
+public class RedStringBlockEntityRenderer<T extends RedStringBlockEntity> extends BotaniaBlockEntityRenderer<T> {
 	// 0 -> none, 10 -> full
 	private static int transparency = 0;
 
@@ -46,7 +44,7 @@ public class RedStringBlockEntityRenderer<T extends RedStringBlockEntity> implem
 	public RedStringBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {}
 
 	@Override
-	public void render(RedStringBlockEntity tile, float partialTicks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(RedStringBlockEntity tile, float partialTicks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		if (transparency <= 0) {
 			return;
 		}
@@ -110,12 +108,11 @@ public class RedStringBlockEntityRenderer<T extends RedStringBlockEntity> implem
 		int r = (color >> 16) & 0xFF;
 		int g = (color >> 8) & 0xFF;
 		int b = color & 0xFF;
-		buffer.vertex(ms.last().pose(), x, y, z).color(r, g, b, a);
+		buffer.addVertex(ms.last().pose(), x, y, z).setColor(r, g, b, a);
 		switch (dir.getAxis().getPlane()) {
-			case HORIZONTAL -> buffer.normal(ms.last().normal(), 0, 1, 0);
-			case VERTICAL -> buffer.normal(ms.last().normal(), 1, 0, 0);
+			case HORIZONTAL -> buffer.setNormal(ms.last(), 0, 1, 0);
+			case VERTICAL -> buffer.setNormal(ms.last(), 1, 0, 0);
 		}
-		buffer.endVertex();
 	}
 
 	private static int killNonZero(int diff) {

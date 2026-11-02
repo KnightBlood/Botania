@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "botania:manaweave_cloth",
+    "S": "minecraft:sunflower"
+  },
+  "pattern": [
+    "C",
+    "C",
+    "S"
+  ],
+  "result": {
+    "id": "botania:teru_teru_bozu"
+  }
+}

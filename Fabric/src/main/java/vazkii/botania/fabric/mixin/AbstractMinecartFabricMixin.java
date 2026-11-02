@@ -9,7 +9,8 @@
 package vazkii.botania.fabric.mixin;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,12 +24,15 @@ import vazkii.botania.common.block.SpectralRailBlock;
 @Mixin(AbstractMinecart.class)
 public class AbstractMinecartFabricMixin {
 	@Inject(at = @At("HEAD"), method = "moveAlongTrack")
-	private void handleOnRail(BlockPos pos, BlockState state, CallbackInfo ci) {
+	private void handleOnRail(ServerLevel level, CallbackInfo ci) {
+		AbstractMinecart self = (AbstractMinecart) (Object) this;
+		// 26.1: moveAlongTrack no longer receives the rail pos/state; fetch them like
+		// NewMinecartBehavior.moveAlongTrack does.
+		BlockPos pos = self.getCurrentBlockPosOrRailBelow();
+		BlockState state = level.getBlockState(pos);
 		if (state.is(BotaniaBlocks.ghostRail)) {
-			AbstractMinecart self = (AbstractMinecart) (Object) this;
 			((SpectralRailBlock) BotaniaBlocks.ghostRail).onMinecartPass(state, self.level(), pos, self);
 		}
-
 	}
 
 }

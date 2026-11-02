@@ -11,6 +11,8 @@ package vazkii.botania.common.item.equipment.armor.manaweave;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.Item.Properties;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +22,7 @@ import vazkii.botania.api.mana.ManaDiscountArmor;
 public class ManaweaveHelmItem extends ManaweaveArmorItem implements ManaDiscountArmor, ManaProficiencyArmor {
 
 	public ManaweaveHelmItem(Properties props) {
-		super(Type.HELMET, props);
+		super(ArmorType.HELMET, props);
 	}
 
 	@Override

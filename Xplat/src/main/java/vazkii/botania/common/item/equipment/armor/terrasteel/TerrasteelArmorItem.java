@@ -9,20 +9,23 @@
 package vazkii.botania.common.item.equipment.armor.terrasteel;
 
 import com.google.common.base.Suppliers;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.Item.Properties;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -33,12 +36,12 @@ import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.equipment.armor.manasteel.ManasteelArmorItem;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 public class TerrasteelArmorItem extends ManasteelArmorItem {
 
-	public TerrasteelArmorItem(Type type, Properties props) {
+	public TerrasteelArmorItem(ArmorType type, Properties props) {
 		super(type, BotaniaAPI.instance().getTerrasteelArmorMaterial(), props);
 	}
 
@@ -47,18 +50,14 @@ public class TerrasteelArmorItem extends ManasteelArmorItem {
 		return ResourcesLib.MODEL_TERRASTEEL_NEW;
 	}
 
-	@NotNull
-	@Override
-	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot) {
-		Multimap<Attribute, AttributeModifier> ret = super.getDefaultAttributeModifiers(slot);
-		if (slot == getType().getSlot()) {
-			UUID uuid = new UUID(BuiltInRegistries.ITEM.getKey(this).hashCode() + slot.toString().hashCode(), 0);
-			ret = HashMultimap.create(ret);
-			int reduction = getMaterial().getDefenseForType(getType());
-			ret.put(Attributes.KNOCKBACK_RESISTANCE,
-					new AttributeModifier(uuid, "Terrasteel modifier " + type, (double) reduction / 20, AttributeModifier.Operation.ADDITION));
-		}
-		return ret;
+	@SoftImplement("IItemExtension")
+	public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+		ItemAttributeModifiers base = stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+		int reduction = BotaniaAPI.instance().getTerrasteelArmorMaterial().defense().getOrDefault(type, 0);
+		Identifier modId = Identifier.parse("botania:terrasteel_" + type.getSlot().name().toLowerCase(Locale.ROOT));
+		return base.withModifierAdded(Attributes.KNOCKBACK_RESISTANCE,
+				new AttributeModifier(modId, (double) reduction / 20, AttributeModifier.Operation.ADD_VALUE),
+				EquipmentSlotGroup.bySlot(type.getSlot()));
 	}
 
 	private static final Supplier<ItemStack[]> armorSet = Suppliers.memoize(() -> new ItemStack[] {

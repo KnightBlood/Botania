@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "#c:wooden_chests",
+    "G": "minecraft:gold_ingot",
+    "M": "#botania:manasteel_ingots"
+  },
+  "pattern": [
+    " M ",
+    "MCM",
+    " G "
+  ],
+  "result": {
+    "id": "botania:bauble_box"
+  }
+}

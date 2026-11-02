@@ -15,7 +15,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.block.Block;
 
@@ -43,7 +43,7 @@ public class FloatingFlowerModelProvider implements DataProvider {
 	public CompletableFuture<?> run(CachedOutput cache) {
 		List<Tuple<String, JsonElement>> jsons = new ArrayList<>();
 		for (Block b : BuiltInRegistries.BLOCK) {
-			ResourceLocation id = BuiltInRegistries.BLOCK.getKey(b);
+			Identifier id = BuiltInRegistries.BLOCK.getKey(b);
 			if (LibMisc.MOD_ID.equals(id.getNamespace()) && b instanceof FloatingFlowerBlock) {
 				String name = id.getPath();
 				String nonFloat;
@@ -56,6 +56,10 @@ public class FloatingFlowerModelProvider implements DataProvider {
 				JsonObject obj = new JsonObject();
 				obj.addProperty("parent", "minecraft:block/block");
 				obj.addProperty("loader", ClientXplatAbstractions.FLOATING_FLOWER_MODEL_LOADER_ID.toString());
+				// Fabric dispatches model JSON loaders through "fabric:type" instead of "loader";
+				// NeoForge's parser returns on "loader" without looking at other keys, so the two
+				// keys coexist in the same generated file.
+				obj.addProperty("fabric:type", ClientXplatAbstractions.FLOATING_FLOWER_MODEL_LOADER_ID.toString());
 				JsonObject flower = new JsonObject();
 				flower.addProperty("parent", ResourcesLib.PREFIX_MOD + "block/" + nonFloat);
 				obj.add("flower", flower);

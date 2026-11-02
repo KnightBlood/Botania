@@ -10,7 +10,7 @@ package vazkii.botania.network.clientbound;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import vazkii.botania.common.item.rod.SkiesRodItem;
 import vazkii.botania.network.BotaniaPacket;
@@ -18,7 +18,7 @@ import vazkii.botania.network.BotaniaPacket;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public record AvatarSkiesRodPacket(boolean elytra) implements BotaniaPacket {
-	public static final ResourceLocation ID = prefix("atr");
+	public static final Identifier ID = prefix("atr");
 
 	@Override
 	public void encode(FriendlyByteBuf buf) {
@@ -26,7 +26,7 @@ public record AvatarSkiesRodPacket(boolean elytra) implements BotaniaPacket {
 	}
 
 	@Override
-	public ResourceLocation getFabricId() {
+	public Identifier getFabricId() {
 		return ID;
 	}
 

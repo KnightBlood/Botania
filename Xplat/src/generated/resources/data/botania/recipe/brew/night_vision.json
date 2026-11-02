@@ -1,0 +1,9 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:night_vision",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:spider_eye",
+    "minecraft:golden_carrot"
+  ]
+}

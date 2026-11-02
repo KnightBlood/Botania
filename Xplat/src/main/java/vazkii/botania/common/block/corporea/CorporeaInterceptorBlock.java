@@ -28,6 +28,7 @@ import vazkii.botania.common.block.block_entity.corporea.CorporeaInterceptorBloc
 
 public class CorporeaInterceptorBlock extends BotaniaBlock implements EntityBlock {
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public CorporeaInterceptorBlock(BlockBehaviour.Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.POWERED, false));

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:corporea_brick",
+  "result": {
+    "id": "botania:corporea_brick_stairs"
+  }
+}

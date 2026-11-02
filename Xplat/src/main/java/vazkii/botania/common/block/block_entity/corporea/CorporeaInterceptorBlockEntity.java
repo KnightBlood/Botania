@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.api.corporea.CorporeaInterceptor;
 import vazkii.botania.api.corporea.CorporeaNode;
@@ -79,7 +80,7 @@ public class CorporeaInterceptorBlockEntity extends BaseCorporeaBlockEntity impl
 		List<ItemStack> filter = new ArrayList<>();
 
 		for (Direction dir : Direction.values()) {
-			List<ItemFrame> frames = level.getEntitiesOfClass(ItemFrame.class, new AABB(worldPosition.relative(dir), worldPosition.relative(dir).offset(1, 1, 1)));
+			List<ItemFrame> frames = level.getEntitiesOfClass(ItemFrame.class, new AABB(Vec3.atLowerCornerOf(worldPosition.relative(dir)), Vec3.atLowerCornerOf(worldPosition.relative(dir).offset(1, 1, 1))));
 			for (ItemFrame frame : frames) {
 				Direction orientation = frame.getDirection();
 				if (orientation == dir) {

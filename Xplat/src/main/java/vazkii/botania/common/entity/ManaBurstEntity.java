@@ -10,6 +10,8 @@ package vazkii.botania.common.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -19,7 +21,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -29,6 +31,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -112,7 +116,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 	}
 
 	@Override
-	protected void defineSynchedData() {
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {
 		entityData.define(COLOR, 0);
 		entityData.define(MANA, 0);
 		entityData.define(START_MANA, 0);
@@ -132,6 +136,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 		return new Vec3(mx, my, mz);
 	}
 
+	@SuppressWarnings("this-escape") // same pattern as 1.20.1; overridable setters called from ctor
 	public ManaBurstEntity(Level level, BlockPos pos, float rotX, float rotY, boolean fake) {
 		this(BotaniaEntities.MANA_BURST, level);
 
@@ -139,7 +144,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 
 		setBurstSourceCoords(pos);
 		// spawn slightly lower than the exact center to ensure hitting pools at default horizontal spreader alignment
-		moveTo(pos.getX() + 0.5, pos.getY() + (0.5 - 1.0 / 1024), pos.getZ() + 0.5, 0, 0);
+		snapTo(pos.getX() + 0.5, pos.getY() + (0.5 - 1.0 / 1024), pos.getZ() + 0.5, 0, 0);
 		/* NB: this looks backwards but it's right. spreaders take rotX/rotY to respectively mean
 		* "rotation *parallel* to the X and Y axes", while vanilla's methods take XRot/YRot
 		* to respectively mean "rotation *around* the X and Y axes".
@@ -150,8 +155,10 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 		setDeltaMovement(calculateBurstVelocity(getXRot(), getYRot()));
 	}
 
+	@SuppressWarnings("this-escape") // same pattern as 1.20.1; overridable setters called from ctor
 	public ManaBurstEntity(Player player) {
-		super(BotaniaEntities.MANA_BURST, player, player.level());
+		super(BotaniaEntities.MANA_BURST, player.level());
+		setOwner(player);
 
 		setBurstSourceCoords(NO_SOURCE);
 		setRot(player.getYRot() + 180, -player.getXRot());
@@ -161,7 +168,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 	@Override
 	public void tick() {
 		setTicksExisted(getTicksExisted() + 1);
-		if ((!level().isClientSide || fake)
+		if ((!level().isClientSide() || fake)
 				&& !hasLeftSource()
 				&& (!blockPosition().equals(getBurstSourceBlockPos()) || !isBurstSourceDimension(level()))) {
 			// XXX: Should this check by bounding box instead of simply blockPosition()?
@@ -211,7 +218,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 	}
 
 	@Override
-	public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> fluid, double mag) {
+	public boolean isPushedByFluid() {
 		return false;
 	}
 
@@ -240,137 +247,113 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 	}
 
 	@Override
-	public boolean canChangeDimensions() {
+	public boolean canUsePortal(boolean allowOffworld) {
 		return !fake;
 	}
 
 	@Override
-	public void addAdditionalSaveData(CompoundTag tag) {
-		super.addAdditionalSaveData(tag);
+	public void addAdditionalSaveData(ValueOutput output) {
+		super.addAdditionalSaveData(output);
 		if (fake) {
 			var msg = String.format("Fake bursts should never be saved at any time! Source pos %s, owner %s",
 					getBurstSourceBlockPos(), getOwner());
 			throw new IllegalStateException(msg);
 		}
-		tag.putInt(TAG_TICKS_EXISTED, getTicksExisted());
-		tag.putInt(TAG_COLOR, getColor());
-		tag.putInt(TAG_MANA, getMana());
-		tag.putInt(TAG_STARTING_MANA, getStartingMana());
-		tag.putInt(TAG_MIN_MANA_LOSS, getMinManaLoss());
-		tag.putFloat(TAG_TICK_MANA_LOSS, getManaLossPerTick());
-		tag.putFloat(TAG_GRAVITY, getBurstGravity());
+		output.putInt(TAG_TICKS_EXISTED, getTicksExisted());
+		output.putInt(TAG_COLOR, getColor());
+		output.putInt(TAG_MANA, getMana());
+		output.putInt(TAG_STARTING_MANA, getStartingMana());
+		output.putInt(TAG_MIN_MANA_LOSS, getMinManaLoss());
+		output.putFloat(TAG_TICK_MANA_LOSS, getManaLossPerTick());
+		output.putFloat(TAG_GRAVITY, getBurstGravity());
 
-		ItemStack stack = getSourceLens();
-		CompoundTag lensCmp = new CompoundTag();
-		if (!stack.isEmpty()) {
-			lensCmp = stack.save(lensCmp);
-		}
-		tag.put(TAG_LENS_STACK, lensCmp);
+		output.store(TAG_LENS_STACK, ItemStack.OPTIONAL_CODEC, getSourceLens());
 
 		Optional<GlobalPos> sourcePos = getBurstSource();
 		BlockPos coords = sourcePos.map(GlobalPos::pos).orElse(NO_SOURCE);
-		tag.putInt(TAG_SPREADER_X, coords.getX());
-		tag.putInt(TAG_SPREADER_Y, coords.getY());
-		tag.putInt(TAG_SPREADER_Z, coords.getZ());
-		if (sourcePos.isPresent()) {
-			tag.putString(TAG_SPREADER_DIM, sourcePos.get().dimension().location().toString());
-		}
+		output.putInt(TAG_SPREADER_X, coords.getX());
+		output.putInt(TAG_SPREADER_Y, coords.getY());
+		output.putInt(TAG_SPREADER_Z, coords.getZ());
+		sourcePos.ifPresent(pos -> output.putString(TAG_SPREADER_DIM, pos.dimension().identifier().toString()));
 
 		if (lastCollision != null) {
-			tag.putInt(TAG_LAST_COLLISION_X, lastCollision.getX());
-			tag.putInt(TAG_LAST_COLLISION_Y, lastCollision.getY());
-			tag.putInt(TAG_LAST_COLLISION_Z, lastCollision.getZ());
+			output.putInt(TAG_LAST_COLLISION_X, lastCollision.getX());
+			output.putInt(TAG_LAST_COLLISION_Y, lastCollision.getY());
+			output.putInt(TAG_LAST_COLLISION_Z, lastCollision.getZ());
 		}
 
 		UUID identity = getShooterUUID();
 		boolean hasShooter = identity != null;
-		tag.putBoolean(TAG_HAS_SHOOTER, hasShooter);
+		output.putBoolean(TAG_HAS_SHOOTER, hasShooter);
 		if (hasShooter) {
-			tag.putUUID(TAG_SHOOTER, identity);
+			output.store(TAG_SHOOTER, UUIDUtil.CODEC, identity);
 		}
-		tag.putBoolean(TAG_WARPED, warped);
-		tag.putInt(TAG_ORBIT_TIME, orbitTime);
-		tag.putBoolean(TAG_TRIPPED, tripped);
-		if (magnetizePos != null) {
-			tag.put(TAG_MAGNETIZE_POS, BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, magnetizePos).get().orThrow());
-		}
-		tag.putBoolean(TAG_LEFT_SOURCE, hasLeftSource());
+		output.putBoolean(TAG_WARPED, warped);
+		output.putInt(TAG_ORBIT_TIME, orbitTime);
+		output.putBoolean(TAG_TRIPPED, tripped);
+		output.storeNullable(TAG_MAGNETIZE_POS, BlockPos.CODEC, magnetizePos);
+		output.putBoolean(TAG_LEFT_SOURCE, hasLeftSource());
 
-		var alreadyCollidedAt = new ListTag();
+		ValueOutput.TypedOutputList<BlockPos> collided = output.list(TAG_ALREADY_COLLIDED_AT, BlockPos.CODEC);
 		for (BlockPos pos : this.alreadyCollidedAt) {
-			alreadyCollidedAt.add(BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, pos).get().orThrow());
+			collided.add(pos);
 		}
-		tag.put(TAG_ALREADY_COLLIDED_AT, alreadyCollidedAt);
 	}
 
 	@Override
-	public void readAdditionalSaveData(CompoundTag cmp) {
-		super.readAdditionalSaveData(cmp);
-		setTicksExisted(cmp.getInt(TAG_TICKS_EXISTED));
-		setColor(cmp.getInt(TAG_COLOR));
-		setMana(cmp.getInt(TAG_MANA));
-		setStartingMana(cmp.getInt(TAG_STARTING_MANA));
-		setMinManaLoss(cmp.getInt(TAG_MIN_MANA_LOSS));
-		setManaLossPerTick(cmp.getFloat(TAG_TICK_MANA_LOSS));
-		setGravity(cmp.getFloat(TAG_GRAVITY));
+	public void readAdditionalSaveData(ValueInput input) {
+		super.readAdditionalSaveData(input);
+		setTicksExisted(input.getIntOr(TAG_TICKS_EXISTED, 0));
+		setColor(input.getIntOr(TAG_COLOR, 0));
+		setMana(input.getIntOr(TAG_MANA, 0));
+		setStartingMana(input.getIntOr(TAG_STARTING_MANA, 0));
+		setMinManaLoss(input.getIntOr(TAG_MIN_MANA_LOSS, 0));
+		setManaLossPerTick(input.getFloatOr(TAG_TICK_MANA_LOSS, 0.0F));
+		setGravity(input.getFloatOr(TAG_GRAVITY, 0.0F));
 
-		CompoundTag lensCmp = cmp.getCompound(TAG_LENS_STACK);
-		ItemStack stack = ItemStack.of(lensCmp);
-		if (!stack.isEmpty()) {
-			setSourceLens(stack);
-		} else {
-			setSourceLens(ItemStack.EMPTY);
-		}
+		setSourceLens(input.read(TAG_LENS_STACK, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY));
 
-		int x = cmp.getInt(TAG_SPREADER_X);
-		int y = cmp.getInt(TAG_SPREADER_Y);
-		int z = cmp.getInt(TAG_SPREADER_Z);
+		int x = input.getIntOr(TAG_SPREADER_X, 0);
+		int y = input.getIntOr(TAG_SPREADER_Y, 0);
+		int z = input.getIntOr(TAG_SPREADER_Z, 0);
 		BlockPos sourceCoords = new BlockPos(x, y, z);
 		if (NO_SOURCE.equals(sourceCoords)) {
 			setBurstSource(null);
 		} else {
-			ResourceLocation dim = cmp.contains(TAG_SPREADER_DIM) ? ResourceLocation.tryParse(cmp.getString(TAG_SPREADER_DIM)) : null;
+			Identifier dim = input.getString(TAG_SPREADER_DIM).map(Identifier::tryParse).orElse(null);
 			setBurstSource(GlobalPos.of(dim != null ? ResourceKey.create(Registries.DIMENSION, dim) : level().dimension(), sourceCoords));
 		}
 
-		if (cmp.contains(TAG_LAST_COLLISION_X)) {
-			x = cmp.getInt(TAG_LAST_COLLISION_X);
-			y = cmp.getInt(TAG_LAST_COLLISION_Y);
-			z = cmp.getInt(TAG_LAST_COLLISION_Z);
+		if (input.getInt(TAG_LAST_COLLISION_X).isPresent()) {
+			x = input.getIntOr(TAG_LAST_COLLISION_X, 0);
+			y = input.getIntOr(TAG_LAST_COLLISION_Y, 0);
+			z = input.getIntOr(TAG_LAST_COLLISION_Z, 0);
 			lastCollision = new BlockPos(x, y, z);
 		}
 
 		// Reread Motion because Entity.load clamps it to +/-10
-		ListTag motion = cmp.getList("Motion", Tag.TAG_DOUBLE);
-		setDeltaMovement(motion.getDouble(0), motion.getDouble(1), motion.getDouble(2));
+		input.read("Motion", Vec3.CODEC).ifPresent(this::setDeltaMovement);
 
-		boolean hasShooter = cmp.getBoolean(TAG_HAS_SHOOTER);
-		if (hasShooter) {
-			UUID serializedUuid = cmp.getUUID(TAG_SHOOTER);
-			UUID identity = getShooterUUID();
-			if (!serializedUuid.equals(identity)) {
-				setShooterUUID(serializedUuid);
-			}
+		if (input.getBooleanOr(TAG_HAS_SHOOTER, false)) {
+			input.read(TAG_SHOOTER, UUIDUtil.CODEC).ifPresent(serializedUuid -> {
+				if (!serializedUuid.equals(getShooterUUID())) {
+					setShooterUUID(serializedUuid);
+				}
+			});
 		}
-		warped = cmp.getBoolean(TAG_WARPED);
-		orbitTime = cmp.getInt(TAG_ORBIT_TIME);
-		tripped = cmp.getBoolean(TAG_TRIPPED);
-		if (cmp.contains(TAG_MAGNETIZE_POS)) {
-			magnetizePos = BlockPos.CODEC.parse(NbtOps.INSTANCE, cmp.get(TAG_MAGNETIZE_POS)).get().orThrow();
-		} else {
-			magnetizePos = null;
-		}
-		entityData.set(LEFT_SOURCE_POS, cmp.getBoolean(TAG_LEFT_SOURCE));
+		warped = input.getBooleanOr(TAG_WARPED, false);
+		orbitTime = input.getIntOr(TAG_ORBIT_TIME, 0);
+		tripped = input.getBooleanOr(TAG_TRIPPED, false);
+		magnetizePos = input.read(TAG_MAGNETIZE_POS, BlockPos.CODEC).orElse(null);
+		entityData.set(LEFT_SOURCE_POS, input.getBooleanOr(TAG_LEFT_SOURCE, false));
 
 		this.alreadyCollidedAt.clear();
-		for (var tag : cmp.getList(TAG_ALREADY_COLLIDED_AT, Tag.TAG_INT_ARRAY)) {
-			var pos = BlockPos.CODEC.parse(NbtOps.INSTANCE, tag).result();
-			pos.ifPresent(this.alreadyCollidedAt::add);
-		}
+		input.listOrEmpty(TAG_ALREADY_COLLIDED_AT, BlockPos.CODEC).forEach(this.alreadyCollidedAt::add);
 	}
 
+
 	public void particles() {
-		if (!isAlive() || !level().isClientSide) {
+		if (!isAlive() || !level().isClientSide()) {
 			return;
 		}
 
@@ -395,7 +378,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 
 			if (!noParticles && shouldDoFakeParticles()) {
 				SparkleParticleData data = SparkleParticleData.fake(0.4F * size, r, g, b, 1);
-				level().addParticle(data, true, getX(), getY(), getZ(), 0, 0, 0);
+				level().addParticle(data, true, false, getX(), getY(), getZ(), 0, 0, 0);
 			}
 		} else {
 			Player player = Proxy.INSTANCE.getClientPlayer();
@@ -527,7 +510,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 		var receiver = XplatAbstractions.INSTANCE.findManaReceiver(level(), collidePos, state, tile, hit.getDirection());
 		collidedTile = receiver;
 
-		if (!fake && !noParticles && !level().isClientSide) {
+		if (!fake && !noParticles && !level().isClientSide()) {
 			if (receiver != null && receiver.canReceiveManaFromBursts() && onReceiverImpact(receiver)) {
 				if (tile instanceof ThrottledPacket throttledPacket) {
 					throttledPacket.markDispatchable();
@@ -578,7 +561,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 		if (shouldKill && isAlive()) {
 			if (fake) {
 				discard();
-			} else if (!this.level().isClientSide) {
+			} else if (!this.level().isClientSide()) {
 				this.level().broadcastEntityEvent(this, EntityEvent.DEATH);
 				discard();
 			}
@@ -599,7 +582,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 		}
 
 		if (receiver instanceof ManaCollector collector) {
-			mana *= collector.getManaYieldMultiplier(this);
+			mana = (int) (mana * collector.getManaYieldMultiplier(this));
 		}
 
 		if (mana > 0) {
@@ -639,7 +622,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 	}
 
 	@Override
-	public float getGravity() {
+	protected double getDefaultGravity() {
 		return getBurstGravity();
 	}
 
@@ -877,7 +860,7 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 
 	public record PositionProperties(BlockPos coords, BlockState state) {
 		public static PositionProperties fromEntity(Entity entity) {
-			return new PositionProperties(entity.blockPosition(), entity.getFeetBlockState());
+			return new PositionProperties(entity.blockPosition(), entity.level().getBlockState(entity.blockPosition()));
 		}
 
 		public boolean coordsEqual(PositionProperties props) {

@@ -10,13 +10,14 @@ package vazkii.botania.common.item.relic;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.NotNull;
@@ -43,26 +44,27 @@ public class KeyOfTheKingsLawItem extends RelicItem {
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		setCharging(stack, true);
 		return ItemUtils.startUsingInstantly(world, player, hand);
 	}
 
 	@Override
-	public void releaseUsing(ItemStack stack, Level world, LivingEntity living, int time) {
+	public boolean releaseUsing(ItemStack stack, Level world, LivingEntity living, int time) {
 		int spawned = getWeaponsSpawned(stack);
 		if (spawned == 20) {
 			setCharging(stack, false);
 			setWeaponsSpawned(stack, 0);
 		}
+		return true;
 	}
 
 	@Override
 	public void onUseTick(Level world, LivingEntity living, ItemStack stack, int count) {
 		int spawned = getWeaponsSpawned(stack);
 
-		if (count != getUseDuration(stack) && spawned < 20 && !world.isClientSide && (!(living instanceof Player player) || ManaItemHandler.instance().requestManaExact(stack, player, 150, true))) {
+		if (count != getUseDuration(stack, living) && spawned < 20 && !world.isClientSide() && (!(living instanceof Player player) || ManaItemHandler.instance().requestManaExact(stack, player, 150, true))) {
 			Vec3 look = living.getLookAngle().multiply(1, 0, 1);
 
 			double playerRot = Math.toRadians(living.getYRot() + 90);
@@ -77,7 +79,7 @@ public class KeyOfTheKingsLawItem extends RelicItem {
 
 			Vec3 pl = look.add(VecHelper.fromEntityCenter(living)).add(0, 1.6, div * 0.1);
 
-			var rand = world.random;
+			var rand = world.getRandom();
 			Vec3 axis = look.normalize().cross(new Vec3(-1, 0, -1)).normalize();
 
 			double rot = mod * Math.PI / 4 - Math.PI / 2;
@@ -97,19 +99,19 @@ public class KeyOfTheKingsLawItem extends RelicItem {
 			weapon.setRotation(Mth.wrapDegrees(-living.getYRot() + 180));
 
 			world.addFreshEntity(weapon);
-			weapon.playSound(BotaniaSounds.babylonSpawn, 1F, 1F + world.random.nextFloat() * 3F);
+			weapon.playSound(BotaniaSounds.babylonSpawn, 1F, 1F + world.getRandom().nextFloat() * 3F);
 			setWeaponsSpawned(stack, spawned + 1);
 		}
 	}
 
 	@NotNull
 	@Override
-	public UseAnim getUseAnimation(ItemStack stack) {
-		return UseAnim.BOW;
+	public ItemUseAnimation getUseAnimation(ItemStack stack) {
+		return ItemUseAnimation.BOW;
 	}
 
 	@Override
-	public int getUseDuration(ItemStack stack) {
+	public int getUseDuration(ItemStack stack, LivingEntity user) {
 		return 72000;
 	}
 
@@ -133,3 +135,4 @@ public class KeyOfTheKingsLawItem extends RelicItem {
 		return new RelicImpl(stack, prefix("challenge/king_key"));
 	}
 }
+

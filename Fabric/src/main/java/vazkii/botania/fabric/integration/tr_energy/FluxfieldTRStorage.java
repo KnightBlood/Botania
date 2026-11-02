@@ -30,7 +30,7 @@ public class FluxfieldTRStorage extends SimpleEnergyStorage {
 			EnergyStorage storage = EnergyStorage.SIDED.find(level, neighbor, level.getBlockState(neighbor), be, e.getOpposite());
 			if (storage != null && storage.supportsInsertion()) {
 				try (Transaction transaction = Transaction.openOuter()) {
-					energy -= storage.insert(energy, transaction);
+					energy -= (int) storage.insert(energy, transaction);
 					transaction.commit();
 					if (energy <= 0) {
 						return 0;

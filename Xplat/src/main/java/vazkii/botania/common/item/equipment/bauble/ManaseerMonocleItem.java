@@ -12,7 +12,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -26,6 +26,9 @@ import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.TooltipDisplay;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ComparatorBlock;
 import net.minecraft.world.level.block.RepeaterBlock;
@@ -47,18 +50,20 @@ import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.common.proxy.Proxy;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ManaseerMonocleItem extends BaubleItem implements CosmeticBauble {
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public ManaseerMonocleItem(Properties props) {
 		super(props);
 		Proxy.INSTANCE.runOnClient(() -> () -> AccessoryRenderRegistry.register(this, new Renderer()));
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> tooltip, TooltipFlag flags) {
-		tooltip.add(Component.translatable("botaniamisc.cosmeticBauble").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
-		super.appendHoverText(stack, world, tooltip, flags);
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
+		builder.accept(Component.translatable("botaniamisc.cosmeticBauble").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
+		super.appendHoverText(stack, context, display, builder, flags);
 	}
 
 	public static class Renderer implements AccessoryRenderer {
@@ -67,8 +72,8 @@ public class ManaseerMonocleItem extends BaubleItem implements CosmeticBauble {
 			bipedModel.head.translateAndRotate(ms);
 			ms.translate(0.15, -0.2, -0.25);
 			ms.scale(0.3F, -0.3F, -0.3F);
-			Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE,
-					light, OverlayTexture.NO_OVERLAY, ms, buffers, living.level(), living.getId());
+			RenderHelper.renderItemStatic(stack, ItemDisplayContext.NONE, false,
+					ms, buffers, light, OverlayTexture.NO_OVERLAY, living.level(), living.getId());
 		}
 	}
 
@@ -77,7 +82,7 @@ public class ManaseerMonocleItem extends BaubleItem implements CosmeticBauble {
 		private static final int MAX_CONTENTS_ROWS = 3;
 		public static final int TEXT_ROW_HEIGHT = 12;
 
-		public static void render(GuiGraphics gui, Player player) {
+		public static void render(GuiGraphicsExtractor gui, Player player) {
 			Minecraft mc = Minecraft.getInstance();
 			HitResult hitResult = mc.hitResult;
 			if (hitResult instanceof BlockHitResult bhr && bhr.getType() == HitResult.Type.BLOCK) {
@@ -87,13 +92,13 @@ public class ManaseerMonocleItem extends BaubleItem implements CosmeticBauble {
 			}
 		}
 
-		private static void renderEntityInfo(GuiGraphics gui, EntityHitResult hitResult, Minecraft mc) {
+		private static void renderEntityInfo(GuiGraphicsExtractor gui, EntityHitResult hitResult, Minecraft mc) {
 			Entity entity = hitResult.getEntity();
 
 			if (entity instanceof ItemFrame frame && !frame.getItem().isEmpty()) {
 				ItemStack frameItem = frame.getItem();
 				List<ItemStack> contentItems = FilterHelper.getFilterStacks(frameItem);
-				if (contentItems.isEmpty() || contentItems.size() == 1 && ItemStack.isSameItemSameTags(frameItem, contentItems.get(0))) {
+				if (contentItems.isEmpty() || contentItems.size() == 1 && ItemStack.isSameItemSameComponents(frameItem, contentItems.get(0))) {
 					return;
 				}
 
@@ -102,8 +107,8 @@ public class ManaseerMonocleItem extends BaubleItem implements CosmeticBauble {
 				int maxWidth = mc.getWindow().getGuiScaledWidth() - x - 30;
 
 				MutableComponent itemName = Component.empty().append(frameItem.getHoverName())
-						.withStyle(frameItem.getRarity().color);
-				if (frameItem.hasCustomHoverName()) {
+						.withStyle(frameItem.getRarity().color());
+				if (frameItem.getCustomName() != null) {
 					itemName.withStyle(ChatFormatting.ITALIC);
 				}
 				MutableComponent text = Component.translatable("botaniamisc.monocle.frame.contains", itemName);
@@ -117,11 +122,11 @@ public class ManaseerMonocleItem extends BaubleItem implements CosmeticBauble {
 						(contentItems.size() - 1) / MAX_CONTENTS_COLUMNS + 1) * 18;
 				RenderHelper.renderHUDBox(gui, x - 4, y - 4,
 						x + Math.max(textWidth, contentsWidth) + 24, y + textYOffset + contentsHeight + 20);
-				gui.renderItem(frameItem, x, y);
+				gui.item(frameItem, x, y);
 
 				int textRow = 0;
 				for (var line : lines) {
-					gui.drawString(mc.font, line, x + 20, y + TEXT_ROW_HEIGHT * textRow + 4, 0xFFFFFF);
+					gui.text(mc.font, line, x + 20, y + TEXT_ROW_HEIGHT * textRow + 4, 0xFFFFFF);
 					textRow++;
 				}
 
@@ -135,20 +140,20 @@ public class ManaseerMonocleItem extends BaubleItem implements CosmeticBauble {
 						}
 					}
 
-					gui.renderItem(contentItem, x + 18 * column, y + 18 * row + textYOffset);
-					gui.renderItemDecorations(mc.font, contentItem, x + 18 * column, y + 18 * row + textYOffset);
+					gui.item(contentItem, x + 18 * column, y + 18 * row + textYOffset);
+					gui.itemDecorations(mc.font, contentItem, x + 18 * column, y + 18 * row + textYOffset);
 				}
 
 				if (row > MAX_CONTENTS_ROWS) {
 					MutableComponent remainingItemsHint = Component.translatable(
 							"botaniamisc.monocle.frame.additional_stacks",
 							contentItems.size() - MAX_CONTENTS_COLUMNS * MAX_CONTENTS_ROWS);
-					gui.drawString(mc.font, remainingItemsHint, x + 24, y + 18 * row + 6 + textYOffset, 0xFFFFFF);
+					gui.text(mc.font, remainingItemsHint, x + 24, y + 18 * row + 6 + textYOffset, 0xFFFFFF);
 				}
 			}
 		}
 
-		private static void renderBlockInfo(GuiGraphics gui, BlockHitResult hitResult, Minecraft mc, Level level) {
+		private static void renderBlockInfo(GuiGraphicsExtractor gui, BlockHitResult hitResult, Minecraft mc, Level level) {
 			BlockPos pos = hitResult.getBlockPos();
 			BlockState state = level.getBlockState(pos);
 
@@ -177,8 +182,8 @@ public class ManaseerMonocleItem extends BaubleItem implements CosmeticBauble {
 
 			int textWidth = mc.font.width(text.getVisualOrderText());
 			RenderHelper.renderHUDBox(gui, x - 4, y - 4, x + textWidth + 24, y + 20);
-			gui.renderItem(dispStack, x, y);
-			gui.drawString(mc.font, text, x + 20, y + 4, 0xFFFFFF);
+			gui.item(dispStack, x, y);
+			gui.text(mc.font, text, x + 20, y + 4, 0xFFFFFF);
 		}
 
 	}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": "botania:mana_string",
+    "S": "minecraft:string"
+  },
+  "pattern": [
+    "S S",
+    " M ",
+    "S S"
+  ],
+  "result": {
+    "id": "minecraft:cobweb"
+  }
+}

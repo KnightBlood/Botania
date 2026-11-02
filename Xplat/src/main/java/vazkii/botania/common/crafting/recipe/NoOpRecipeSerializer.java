@@ -1,33 +1,40 @@
 package vazkii.botania.common.crafting.recipe;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 import java.util.function.Function;
 
-// Serializer for dynamic recipes that don't have a json/network representation
-// The recipe type fully identifies the recipe
-public class NoOpRecipeSerializer<T extends Recipe<?>> implements RecipeSerializer<T> {
-	private final Function<ResourceLocation, T> constructor;
+/**
+ * Serializer for dynamic recipes that don't have a json/network representation.
+ * The recipe type fully identifies the recipe.
+ * <p>
+ * In MC 26.1 {@link RecipeSerializer} is a record, so this cannot be a serializer itself anymore.
+ * Use {@link #create(Function)} to obtain one instead.
+ */
+public final class NoOpRecipeSerializer {
+	private static final Identifier PLACEHOLDER_ID = Identifier.parse("botania:dynamic_recipe");
 
-	public NoOpRecipeSerializer(Function<ResourceLocation, T> constructor) {
-		this.constructor = constructor;
+	private NoOpRecipeSerializer() {
 	}
 
-	@Override
-	public T fromJson(ResourceLocation recipeId, JsonObject serializedRecipe) {
-		return this.constructor.apply(recipeId);
-	}
+	public static <T extends Recipe<?>> RecipeSerializer<T> create(Function<Identifier, T> constructor) {
+		MapCodec<T> codec = MapCodec.unit(() -> constructor.apply(PLACEHOLDER_ID));
+		StreamCodec<RegistryFriendlyByteBuf, T> streamCodec = new StreamCodec<>() {
+			@Override
+			public T decode(RegistryFriendlyByteBuf buffer) {
+				return constructor.apply(PLACEHOLDER_ID);
+			}
 
-	@Override
-	public T fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-		return this.constructor.apply(recipeId);
+			@Override
+			public void encode(RegistryFriendlyByteBuf buffer, T recipe) {
+			}
+		};
+		return new RecipeSerializer<>(codec, streamCodec);
 	}
-
-	@Override
-	public void toNetwork(FriendlyByteBuf buffer, T recipe) {}
 }

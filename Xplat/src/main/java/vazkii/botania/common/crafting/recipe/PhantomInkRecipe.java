@@ -9,13 +9,15 @@
 package vazkii.botania.common.crafting.recipe;
 
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -23,24 +25,24 @@ import vazkii.botania.api.item.PhantomInkable;
 import vazkii.botania.common.item.BotaniaItems;
 
 public class PhantomInkRecipe extends CustomRecipe {
-	public static final NoOpRecipeSerializer<PhantomInkRecipe> SERIALIZER = new NoOpRecipeSerializer<>(PhantomInkRecipe::new);
+	public static final RecipeSerializer<PhantomInkRecipe> SERIALIZER = NoOpRecipeSerializer.create(PhantomInkRecipe::new);
 
-	public PhantomInkRecipe(ResourceLocation id) {
-		super(id, CraftingBookCategory.EQUIPMENT);
+	public PhantomInkRecipe(Identifier id) {
+		// MC 26.1: CustomRecipe no-arg constructor
 	}
 
 	@Override
-	public boolean matches(@NotNull CraftingContainer var1, @NotNull Level var2) {
+	public boolean matches(@NotNull CraftingInput var1, @NotNull Level var2) {
 		boolean foundInk = false;
 		boolean foundItem = false;
 
-		for (int i = 0; i < var1.getContainerSize(); i++) {
+		for (int i = 0; i < var1.size(); i++) {
 			ItemStack stack = var1.getItem(i);
 			if (!stack.isEmpty()) {
 				if (stack.is(BotaniaItems.phantomInk) && !foundInk) {
 					foundInk = true;
 				} else if (!foundItem) {
-					if (stack.getItem() instanceof PhantomInkable && !stack.getItem().hasCraftingRemainingItem()) {
+					if (stack.getItem() instanceof PhantomInkable && stack.getItem().getCraftingRemainder() == null) {
 						foundItem = true;
 					} else {
 						return false;
@@ -56,10 +58,10 @@ public class PhantomInkRecipe extends CustomRecipe {
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registries) {
+	public ItemStack assemble(@NotNull CraftingInput inv) {
 		ItemStack item = ItemStack.EMPTY;
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (!stack.isEmpty() && stack.getItem() instanceof PhantomInkable && item.isEmpty()) {
 				item = stack;
@@ -72,14 +74,10 @@ public class PhantomInkRecipe extends CustomRecipe {
 		return copy;
 	}
 
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height >= 2;
-	}
 
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends CustomRecipe> getSerializer() {
 		return SERIALIZER;
 	}
 }

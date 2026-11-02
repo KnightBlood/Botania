@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -36,7 +37,7 @@ public class FloralObedienceStickItem extends Item {
 		Level world = ctx.getLevel();
 		BlockPos pos = ctx.getClickedPos();
 		return applyStick(world, pos)
-				? InteractionResult.sidedSuccess(world.isClientSide())
+				? (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER)
 				: InteractionResult.PASS;
 	}
 

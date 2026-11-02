@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": "botania:ender_air_bottle",
+    "D": "#botania:dragonstone_gems",
+    "I": "#botania:elementium_ingots",
+    "T": "botania:terra_sword"
+  },
+  "pattern": [
+    "  I",
+    "AD ",
+    "TA "
+  ],
+  "result": {
+    "id": "botania:star_sword"
+  }
+}

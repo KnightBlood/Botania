@@ -9,32 +9,51 @@
 package vazkii.botania.client.model;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.client.renderer.item.ItemModel;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.world.entity.ItemOwner;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4fc;
 
-import vazkii.botania.client.core.proxy.ClientProxy;
 import vazkii.botania.client.render.block_entity.TinyPotatoBlockEntityRenderer;
 
-public class TinyPotatoModel extends DelegatedModel {
-	public TinyPotatoModel(BakedModel originalModel) {
-		super(originalModel);
-	}
+/**
+ * Item model for the Tiny Potato. Named potatoes render as their own model, which used to be
+ * expressed through {@code ItemOverrides}; in 26.1 the switch has to happen while updating the
+ * item render state instead.
+ */
+public class TinyPotatoModel implements ItemModel {
+	public static final TinyPotatoModel INSTANCE = new TinyPotatoModel();
 
 	@Override
-	public ItemOverrides getOverrides() {
-		return new ItemOverrides() {
-			@Override
-			public BakedModel resolve(@NotNull BakedModel model, @NotNull ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity livingEntity, int seed) {
-				if (stack.hasCustomHoverName() || ClientProxy.dootDoot) {
-					return TinyPotatoBlockEntityRenderer.getModelFromDisplayName(stack.getHoverName());
-				}
-				return originalModel;
-			}
-		};
+	public void update(ItemStackRenderState output, ItemStack stack, ItemModelResolver resolver,
+			ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
+		output.appendModelIdentityElement(this);
+		TinyPotatoBlockEntityRenderer.updateTinyPotatoRenderState(output, stack, resolver, displayContext, level, owner, seed);
 	}
+
+	public static class Unbaked implements ItemModel.Unbaked {
+		public static final Unbaked INSTANCE = new Unbaked();
+
+		@Override
+		public ItemModel bake(net.minecraft.client.renderer.item.ItemModel.BakingContext context, Matrix4fc transformation) {
+			return TinyPotatoModel.INSTANCE;
+		}
+
+		@Override
+		public void resolveDependencies(ResolvableModel.Resolver resolver) {
+		}
+
+		@Override
+		public com.mojang.serialization.MapCodec<? extends ItemModel.Unbaked> type() {
+			return MAP_CODEC;
+		}
+	}
+
+	public static final com.mojang.serialization.MapCodec<Unbaked> MAP_CODEC = com.mojang.serialization.MapCodec.unit(Unbaked.INSTANCE);
 }

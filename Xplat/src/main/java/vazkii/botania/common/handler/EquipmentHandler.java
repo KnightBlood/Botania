@@ -68,7 +68,6 @@ public abstract class EquipmentHandler {
 		private final Map<Player, ItemStack[]> map = new WeakHashMap<>();
 
 		public void onPlayerTick(Player player) {
-			player.level().getProfiler().push("botania:tick_wearables");
 
 			ItemStack[] oldStacks = map.computeIfAbsent(player, p -> {
 				ItemStack[] array = new ItemStack[9];
@@ -99,7 +98,6 @@ public abstract class EquipmentHandler {
 					((BaubleItem) current.getItem()).onWornTick(current, player);
 				}
 			}
-			player.level().getProfiler().pop();
 		}
 
 		@Override

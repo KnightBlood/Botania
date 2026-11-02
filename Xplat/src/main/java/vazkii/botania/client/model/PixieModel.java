@@ -8,37 +8,25 @@
  */
 package vazkii.botania.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 
-import vazkii.botania.client.core.helper.RenderHelper;
-import vazkii.botania.common.entity.PixieEntity;
+import vazkii.botania.client.render.entity.PixieRenderState;
 
-public class PixieModel extends EntityModel<PixieEntity> {
+public class PixieModel extends EntityModel<PixieRenderState> {
 	private final ModelPart body;
 	private final ModelPart leftWingT;
 	private final ModelPart leftWingB;
 	private final ModelPart rightWingT;
 	private final ModelPart rightWingB;
 
-	private static boolean evil = false;
-
-	private static RenderType pixieLayer(ResourceLocation texture) {
-		return evil ? RenderHelper.getDopplegangerLayer(texture)
-				: RenderType.entityCutoutNoCull(texture);
-	}
-
 	public PixieModel(ModelPart root) {
-		super(PixieModel::pixieLayer);
+		super(root, t -> RenderTypes.entityCutout(t));
 
 		body = root.getChild("body");
 		leftWingT = root.getChild("leftWingT");
@@ -67,18 +55,9 @@ public class PixieModel extends EntityModel<PixieEntity> {
 	}
 
 	@Override
-	public void renderToBuffer(PoseStack ms, VertexConsumer buffer, int light, int overlay, float red, float green, float blue, float alpha) {
-		body.render(ms, buffer, light, overlay);
-
-		leftWingT.render(ms, buffer, light, overlay);
-		leftWingB.render(ms, buffer, light, overlay);
-		rightWingT.render(ms, buffer, light, overlay);
-		rightWingB.render(ms, buffer, light, overlay);
-	}
-
-	@Override
-	public void setupAnim(PixieEntity entity, float f, float f1, float f2, float f3, float f4) {
-		evil = entity.getPixieType() == 1;
+	public void setupAnim(PixieRenderState state) {
+		super.setupAnim(state);
+		float f2 = state.ageInTicks;
 		rightWingT.yRot = -(Mth.cos(f2 * 1.7F) * (float) Math.PI * 0.5F);
 		leftWingT.yRot = Mth.cos(f2 * 1.7F) * (float) Math.PI * 0.5F;
 		rightWingB.yRot = -(Mth.cos(f2 * 1.7F) * (float) Math.PI * 0.25F);

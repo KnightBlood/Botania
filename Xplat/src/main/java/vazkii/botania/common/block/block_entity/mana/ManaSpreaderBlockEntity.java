@@ -11,9 +11,10 @@ package vazkii.botania.common.block.block_entity.mana;
 import com.google.common.base.Predicates;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.SimpleContainer;
@@ -247,7 +248,7 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 			self.tryShootBurst();
 		}
 
-		if (self.receiverLastTick != self.receiver && !level.isClientSide) {
+		if (self.receiverLastTick != self.receiver && !level.isClientSide()) {
 			self.requestsClientUpdate = true;
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(self);
 		}
@@ -260,7 +261,7 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 	public void writePacketNBT(CompoundTag cmp) {
 		super.writePacketNBT(cmp);
 
-		cmp.putUUID(TAG_UUID, getIdentifier());
+		cmp.putIntArray(TAG_UUID, UUIDUtil.uuidToIntArray(getIdentifier()));
 
 		cmp.putInt(TAG_MANA, mana);
 		cmp.putFloat(TAG_ROTATION_X, rotationX);
@@ -299,52 +300,52 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 		String tagUuidMostDeprecated = "uuidMost";
 		String tagUuidLeastDeprecated = "uuidLeast";
 
-		if (cmp.hasUUID(TAG_UUID)) {
-			identity = cmp.getUUID(TAG_UUID);
+		if (cmp.contains(TAG_UUID)) {
+			identity = cmp.getIntArray(TAG_UUID).map(UUIDUtil::uuidFromIntArray).orElse(null);
 		} else if (cmp.contains(tagUuidLeastDeprecated) && cmp.contains(tagUuidMostDeprecated)) { // legacy world compat
-			long most = cmp.getLong(tagUuidMostDeprecated);
-			long least = cmp.getLong(tagUuidLeastDeprecated);
+			long most = cmp.getLongOr(tagUuidMostDeprecated, 0L);
+			long least = cmp.getLongOr(tagUuidLeastDeprecated, 0L);
 			if (identity == null || most != identity.getMostSignificantBits() || least != identity.getLeastSignificantBits()) {
 				this.identity = new UUID(most, least);
 			}
 		}
 
-		mana = cmp.getInt(TAG_MANA);
-		rotationX = cmp.getFloat(TAG_ROTATION_X);
-		rotationY = cmp.getFloat(TAG_ROTATION_Y);
-		requestsClientUpdate = cmp.getBoolean(TAG_REQUEST_UPDATE);
+		mana = cmp.getIntOr(TAG_MANA, 0);
+		rotationX = cmp.getFloatOr(TAG_ROTATION_X, 0.0F);
+		rotationY = cmp.getFloatOr(TAG_ROTATION_Y, 0.0F);
+		requestsClientUpdate = cmp.getBooleanOr(TAG_REQUEST_UPDATE, false);
 
 		if (cmp.contains(TAG_INPUT_KEY)) {
-			inputKey = cmp.getString(TAG_INPUT_KEY);
+			inputKey = cmp.getStringOr(TAG_INPUT_KEY, "");
 		}
 		if (cmp.contains(TAG_OUTPUT_KEY)) {
-			inputKey = cmp.getString(TAG_OUTPUT_KEY);
+			inputKey = cmp.getStringOr(TAG_OUTPUT_KEY, "");
 		}
 
-		mapmakerOverride = cmp.getBoolean(TAG_MAPMAKER_OVERRIDE);
-		mmForcedColor = cmp.getInt(TAG_FORCED_COLOR);
-		mmForcedManaPayload = cmp.getInt(TAG_FORCED_MANA_PAYLOAD);
-		mmForcedTicksBeforeManaLoss = cmp.getInt(TAG_FORCED_TICKS_BEFORE_MANA_LOSS);
-		mmForcedManaLossPerTick = cmp.getFloat(TAG_FORCED_MANA_LOSS_PER_TICK);
-		mmForcedGravity = cmp.getFloat(TAG_FORCED_GRAVITY);
-		mmForcedVelocityMultiplier = cmp.getFloat(TAG_FORCED_VELOCITY_MULTIPLIER);
+		mapmakerOverride = cmp.getBooleanOr(TAG_MAPMAKER_OVERRIDE, false);
+		mmForcedColor = cmp.getIntOr(TAG_FORCED_COLOR, 0);
+		mmForcedManaPayload = cmp.getIntOr(TAG_FORCED_MANA_PAYLOAD, 0);
+		mmForcedTicksBeforeManaLoss = cmp.getIntOr(TAG_FORCED_TICKS_BEFORE_MANA_LOSS, 0);
+		mmForcedManaLossPerTick = cmp.getFloatOr(TAG_FORCED_MANA_LOSS_PER_TICK, 0.0F);
+		mmForcedGravity = cmp.getFloatOr(TAG_FORCED_GRAVITY, 0.0F);
+		mmForcedVelocityMultiplier = cmp.getFloatOr(TAG_FORCED_VELOCITY_MULTIPLIER, 0.0F);
 
 		if (cmp.contains(TAG_PADDING_COLOR)) {
-			paddingColor = cmp.getInt(TAG_PADDING_COLOR) == -1 ? null : DyeColor.byId(cmp.getInt(TAG_PADDING_COLOR));
+			paddingColor = cmp.getIntOr(TAG_PADDING_COLOR, 0) == -1 ? null : DyeColor.byId(cmp.getIntOr(TAG_PADDING_COLOR, 0));
 		}
 		if (cmp.contains(TAG_CAN_SHOOT_BURST)) {
-			canShootBurst = cmp.getBoolean(TAG_CAN_SHOOT_BURST);
+			canShootBurst = cmp.getBooleanOr(TAG_CAN_SHOOT_BURST, false);
 		}
 
-		pingbackTicks = cmp.getInt(TAG_PINGBACK_TICKS);
-		lastPingbackX = cmp.getDouble(TAG_LAST_PINGBACK_X);
-		lastPingbackY = cmp.getDouble(TAG_LAST_PINGBACK_Y);
-		lastPingbackZ = cmp.getDouble(TAG_LAST_PINGBACK_Z);
+		pingbackTicks = cmp.getIntOr(TAG_PINGBACK_TICKS, 0);
+		lastPingbackX = cmp.getDoubleOr(TAG_LAST_PINGBACK_X, 0.0);
+		lastPingbackY = cmp.getDoubleOr(TAG_LAST_PINGBACK_Y, 0.0);
+		lastPingbackZ = cmp.getDoubleOr(TAG_LAST_PINGBACK_Z, 0.0);
 
 		if (requestsClientUpdate && level != null) {
-			int x = cmp.getInt(TAG_FORCE_CLIENT_BINDING_X);
-			int y = cmp.getInt(TAG_FORCE_CLIENT_BINDING_Y);
-			int z = cmp.getInt(TAG_FORCE_CLIENT_BINDING_Z);
+			int x = cmp.getIntOr(TAG_FORCE_CLIENT_BINDING_X, 0);
+			int y = cmp.getIntOr(TAG_FORCE_CLIENT_BINDING_Y, 0);
+			int z = cmp.getIntOr(TAG_FORCE_CLIENT_BINDING_Z, 0);
 			if (y != Integer.MIN_VALUE) {
 				var pos = new BlockPos(x, y, z);
 				receiver = XplatAbstractions.INSTANCE.findManaReceiver(level, pos, null);
@@ -353,7 +354,7 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 			}
 		}
 
-		if (level != null && level.isClientSide) {
+		if (level != null && level.isClientSide()) {
 			hasReceivedInitialPacket = true;
 		}
 	}
@@ -388,7 +389,7 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 		} else {
 			BlockHitResult bpos = LexicaBotaniaItem.doRayTrace(level, player, ClipContext.Fluid.NONE);
-			if (!level.isClientSide) {
+			if (!level.isClientSide()) {
 				double x = bpos.getLocation().x - getBlockPos().getX() - 0.5;
 				double y = bpos.getLocation().y - getBlockPos().getY() - 0.5;
 				double z = bpos.getLocation().z - getBlockPos().getZ() - 0.5;
@@ -415,7 +416,7 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 	}
 
 	private boolean needsNewBurstSimulation() {
-		if (level.isClientSide && !hasReceivedInitialPacket) {
+		if (level.isClientSide() && !hasReceivedInitialPacket) {
 			return false;
 		}
 
@@ -439,7 +440,7 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 			if (canShootBurst && (redstone || receiver.canReceiveManaFromBursts() && !receiver.isFull())) {
 				ManaBurstEntity burst = getBurst(false);
 				if (burst != null) {
-					if (!level.isClientSide) {
+					if (!level.isClientSide()) {
 						this.receiveMana(-burst.getStartingMana());
 						burst.setShooterUUID(getIdentifier());
 						level.addFreshEntity(burst);
@@ -545,7 +546,7 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 		}
 
 		@Override
-		public void renderHUD(GuiGraphics gui, Minecraft mc) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc) {
 			String spreaderName = new ItemStack(spreader.getBlockState().getBlock()).getHoverName().getString();
 
 			ItemStack lensStack = spreader.getItemHandler().getItem(0);
@@ -602,7 +603,7 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 	public void setChanged() {
 		super.setChanged();
 		if (level != null) {
-			if (!level.isClientSide) {
+			if (!level.isClientSide()) {
 				checkForReceiver();
 				VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 			}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "minecraft:crafting_table",
+    "I": "#botania:manasteel_ingots",
+    "P": "botania:mana_pearl"
+  },
+  "pattern": [
+    " P ",
+    "ICI",
+    " I "
+  ],
+  "result": {
+    "id": "botania:crafting_halo"
+  }
+}

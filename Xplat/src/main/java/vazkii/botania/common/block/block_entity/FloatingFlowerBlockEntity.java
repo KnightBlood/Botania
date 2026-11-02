@@ -52,8 +52,8 @@ public class FloatingFlowerBlockEntity extends BotaniaBlockEntity implements Flo
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
 		FloatingFlower.IslandType oldType = floatingData.getIslandType();
-		floatingData.readNBT(cmp.getCompound(TAG_FLOATING_DATA));
-		if (oldType != floatingData.getIslandType() && level != null && level.isClientSide) {
+		floatingData.readNBT(cmp.getCompoundOrEmpty(TAG_FLOATING_DATA));
+		if (oldType != floatingData.getIslandType() && level != null && level.isClientSide()) {
 			level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 0);
 		}
 	}

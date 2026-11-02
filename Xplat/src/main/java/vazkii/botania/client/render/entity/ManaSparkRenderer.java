@@ -8,9 +8,15 @@
  */
 package vazkii.botania.client.render.entity;
 
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.Minecraft;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.inventory.InventoryMenu;
 
 import vazkii.botania.common.entity.ManaSparkEntity;
@@ -27,11 +33,11 @@ public class ManaSparkRenderer extends BaseSparkRenderer<ManaSparkEntity> {
 
 	public ManaSparkRenderer(EntityRendererProvider.Context ctx) {
 		super(ctx);
-		var atlas = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
-		this.dispersiveIcon = Objects.requireNonNull(atlas.apply(prefix("item/spark_upgrade_rune_dispersive")));
-		this.dominantIcon = Objects.requireNonNull(atlas.apply(prefix("item/spark_upgrade_rune_dominant")));
-		this.recessiveIcon = Objects.requireNonNull(atlas.apply(prefix("item/spark_upgrade_rune_recessive")));
-		this.isolatedIcon = Objects.requireNonNull(atlas.apply(prefix("item/spark_upgrade_rune_isolated")));
+		var atlas = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
+		this.dispersiveIcon = Objects.requireNonNull(atlas.getSprite(prefix("item/spark_upgrade_rune_dispersive")));
+		this.dominantIcon = Objects.requireNonNull(atlas.getSprite(prefix("item/spark_upgrade_rune_dominant")));
+		this.recessiveIcon = Objects.requireNonNull(atlas.getSprite(prefix("item/spark_upgrade_rune_recessive")));
+		this.isolatedIcon = Objects.requireNonNull(atlas.getSprite(prefix("item/spark_upgrade_rune_isolated")));
 	}
 
 	@Override

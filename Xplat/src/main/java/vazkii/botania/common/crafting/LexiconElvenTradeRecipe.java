@@ -9,7 +9,7 @@
 package vazkii.botania.common.crafting;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class LexiconElvenTradeRecipe implements ElvenTradeRecipe {
-	private final ResourceLocation id;
+	private final Identifier id;
 
-	LexiconElvenTradeRecipe(ResourceLocation id) {
+	LexiconElvenTradeRecipe(Identifier id) {
 		this.id = id;
 	}
 
@@ -39,27 +39,24 @@ public class LexiconElvenTradeRecipe implements ElvenTradeRecipe {
 	}
 
 	@NotNull
-	@Override
-	public NonNullList<Ingredient> getIngredients() {
+		public NonNullList<Ingredient> getIngredients() {
 		return NonNullList.withSize(1, Ingredient.of(BotaniaItems.lexicon));
 	}
 
 	@NotNull
-	@Override
-	public ItemStack getToastSymbol() {
+		public ItemStack getToastSymbol() {
 		return new ItemStack(BotaniaBlocks.alfPortal);
 	}
 
 	@NotNull
-	@Override
-	public ResourceLocation getId() {
+		public Identifier getId() {
 		return id;
 	}
 
 	@Override
 	public List<ItemStack> getOutputs() {
 		ItemStack stack = new ItemStack(BotaniaItems.lexicon);
-		stack.getOrCreateTag().putBoolean(LexicaBotaniaItem.TAG_ELVEN_UNLOCK, true);
+		ItemNBTHelper.setBoolean(stack, LexicaBotaniaItem.TAG_ELVEN_UNLOCK, true);
 		return Collections.singletonList(stack);
 	}
 
@@ -76,7 +73,7 @@ public class LexiconElvenTradeRecipe implements ElvenTradeRecipe {
 	@Override
 	public List<ItemStack> getOutputs(List<ItemStack> inputs) {
 		ItemStack stack = inputs.get(0).copy();
-		stack.getOrCreateTag().putBoolean(LexicaBotaniaItem.TAG_ELVEN_UNLOCK, true);
+		ItemNBTHelper.setBoolean(stack, LexicaBotaniaItem.TAG_ELVEN_UNLOCK, true);
 		return Collections.singletonList(stack);
 	}
 
@@ -86,3 +83,4 @@ public class LexiconElvenTradeRecipe implements ElvenTradeRecipe {
 		return BotaniaRecipeTypes.LEXICON_ELVEN_TRADE_SERIALIZER;
 	}
 }
+

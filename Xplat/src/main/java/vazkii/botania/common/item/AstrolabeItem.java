@@ -13,12 +13,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -49,6 +49,8 @@ import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 public class AstrolabeItem extends Item {
 
@@ -70,7 +72,7 @@ public class AstrolabeItem extends Item {
 		if (player != null && player.isSecondaryUseActive()) {
 			if (setBlock(stack, state)) {
 				displayRemainderCounter(player, stack);
-				return InteractionResult.sidedSuccess(player.level().isClientSide());
+				return (player.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 			}
 		} else if (player != null) {
 			boolean did = placeAllBlocks(stack, player, ctx.getHand());
@@ -86,21 +88,21 @@ public class AstrolabeItem extends Item {
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level worldIn, Player playerIn, @NotNull InteractionHand hand) {
 		ItemStack stack = playerIn.getItemInHand(hand);
 		if (playerIn.isSecondaryUseActive()) {
 			playerIn.playSound(BotaniaSounds.astrolabeConfigure, 1F, 1F);
-			if (!worldIn.isClientSide) {
+			if (!worldIn.isClientSide()) {
 				int size = getSize(stack);
 				int newSize = size == 11 ? 3 : size + 2;
 				setSize(stack, newSize);
 				ItemsRemainingRenderHandler.send(playerIn, stack, 0, Component.literal(newSize + "x" + newSize));
 			}
 
-			return InteractionResultHolder.sidedSuccess(stack, worldIn.isClientSide());
+			return worldIn.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(stack) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(stack);
 		}
 
-		return InteractionResultHolder.pass(stack);
+		return InteractionResult.PASS;
 	}
 
 	public boolean placeAllBlocks(ItemStack requester, Player player, InteractionHand hand) {
@@ -266,7 +268,7 @@ public class AstrolabeItem extends Item {
 	public void displayRemainderCounter(Player player, ItemStack stack) {
 		Block block = getBlock(stack, player.level().holderLookup(Registries.BLOCK));
 		int count = ShiftingCrustRodItem.getInventoryItemCount(player, stack, block.asItem());
-		if (!player.level().isClientSide) {
+		if (!player.level().isClientSide()) {
 			ItemsRemainingRenderHandler.send(player, new ItemStack(block), count);
 		}
 	}
@@ -297,18 +299,21 @@ public class AstrolabeItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flags) {
-		if (level == null) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
+		// 26.1: Item.TooltipContext no longer carries a Level; the block registry lookup is all we need here.
+		HolderLookup.Provider registries = context.registries();
+		if (registries == null) {
 			return;
 		}
 
-		Block block = getBlock(stack, level.holderLookup(Registries.BLOCK));
+		Block block = getBlock(stack, registries.lookupOrThrow(Registries.BLOCK));
 		int size = getSize(stack);
 
-		tip.add(Component.literal(size + " x " + size));
+		builder.accept(Component.literal(size + " x " + size));
 		if (block != Blocks.AIR) {
-			tip.add(new ItemStack(block).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
+			builder.accept(new ItemStack(block).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
 		}
 	}
 
 }
+

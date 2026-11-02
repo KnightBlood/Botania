@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "#botania:elementium_ingots",
+    "L": "botania:lens_normal",
+    "W": "#minecraft:wool"
+  },
+  "pattern": [
+    " E ",
+    "WLW",
+    " E "
+  ],
+  "result": {
+    "id": "botania:lens_paint"
+  }
+}

@@ -11,6 +11,7 @@ package vazkii.botania.common.block.block_entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 
 import vazkii.botania.api.block.Bound;
@@ -91,25 +92,19 @@ public class CellularBlockEntity extends BotaniaBlockEntity {
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
-		generation = cmp.getInt(TAG_GENERATION);
-		ticked = cmp.getBoolean(TAG_TICKED);
+		generation = cmp.getIntOr(TAG_GENERATION, 0);
+		ticked = cmp.getBooleanOr(TAG_TICKED, false);
 		if (ticked) {
 			flowerCoords = new BlockPos(
-					cmp.getInt(TAG_FLOWER_X),
-					cmp.getInt(TAG_FLOWER_Y),
-					cmp.getInt(TAG_FLOWER_Z)
+					cmp.getIntOr(TAG_FLOWER_X, 0),
+					cmp.getIntOr(TAG_FLOWER_Y, 0),
+					cmp.getIntOr(TAG_FLOWER_Z, 0)
 			);
 			validCoords = new BlockPos(
-					cmp.getInt(TAG_VALID_X),
-					cmp.getInt(TAG_VALID_Y),
-					cmp.getInt(TAG_VALID_Z)
+					cmp.getIntOr(TAG_VALID_X, 0),
+					cmp.getIntOr(TAG_VALID_Y, 0),
+					cmp.getIntOr(TAG_VALID_Z, 0)
 			);
 		}
-	}
-
-	@Override
-	public boolean onlyOpCanSetNbt() {
-		// targeting Create here, sorry about any instances of https://xkcd.com/1172/
-		return true;
 	}
 }

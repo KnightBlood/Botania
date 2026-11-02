@@ -10,31 +10,34 @@ package vazkii.botania.common.crafting.recipe;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.BotaniaItems;
 
 public class SpellbindingClothRecipe extends CustomRecipe {
-	public static final NoOpRecipeSerializer<SpellbindingClothRecipe> SERIALIZER = new NoOpRecipeSerializer<>(SpellbindingClothRecipe::new);
+	public static final RecipeSerializer<SpellbindingClothRecipe> SERIALIZER = NoOpRecipeSerializer.create(SpellbindingClothRecipe::new);
 
-	public SpellbindingClothRecipe(ResourceLocation id) {
-		super(id, CraftingBookCategory.EQUIPMENT);
+	public SpellbindingClothRecipe(Identifier id) {
+		// MC 26.1: CustomRecipe no-arg constructor
 	}
 
 	@Override
-	public boolean matches(@NotNull CraftingContainer inv, @NotNull Level world) {
+	public boolean matches(@NotNull CraftingInput inv, @NotNull Level world) {
 		boolean foundCloth = false;
 		boolean foundEnchanted = false;
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (!stack.isEmpty()) {
 				if (stack.isEnchanted() && !foundEnchanted) {
@@ -52,9 +55,9 @@ public class SpellbindingClothRecipe extends CustomRecipe {
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registries) {
+	public ItemStack assemble(@NotNull CraftingInput inv) {
 		ItemStack stackToDisenchant = ItemStack.EMPTY;
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (!stack.isEmpty() && stack.isEnchanted() && !stack.is(BotaniaItems.spellCloth)) {
 				stackToDisenchant = stack.copyWithCount(1);
@@ -66,25 +69,21 @@ public class SpellbindingClothRecipe extends CustomRecipe {
 			return ItemStack.EMPTY;
 		}
 
-		stackToDisenchant.removeTagKey("Enchantments"); // Remove enchantments
-		stackToDisenchant.removeTagKey("RepairCost");
+		ItemNBTHelper.removeEntry(stackToDisenchant, "Enchantments"); // Remove enchantments
+		ItemNBTHelper.removeEntry(stackToDisenchant, "RepairCost");
 		return stackToDisenchant;
 	}
 
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height >= 2;
-	}
 
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends CustomRecipe> getSerializer() {
 		return SERIALIZER;
 	}
 
 	@NotNull
 	@Override
-	public NonNullList<ItemStack> getRemainingItems(@NotNull CraftingContainer inv) {
+	public NonNullList<ItemStack> getRemainingItems(CraftingInput inv) {
 		return RecipeUtils.getRemainingItemsSub(inv, s -> {
 			if (s.is(BotaniaItems.spellCloth)) {
 				ItemStack copy = s.copyWithCount(1);

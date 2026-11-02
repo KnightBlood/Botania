@@ -20,6 +20,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -73,7 +74,7 @@ public class GrassSeedsItem extends Item implements FloatingFlowerVariant {
 		BlockState state = world.getBlockState(pos);
 
 		if (state.is(BotaniaTags.Blocks.PASTURE_SEED_REPLACEABLE) && state != stateForType(type)) {
-			if (!world.isClientSide) {
+			if (!world.isClientSide()) {
 				BlockSwapper swapper = addBlockSwapper(world, pos, type);
 				world.setBlockAndUpdate(pos, swapper.stateToSet);
 				stack.shrink(1);
@@ -82,7 +83,7 @@ public class GrassSeedsItem extends Item implements FloatingFlowerVariant {
 				spawnParticles(world, pos, extractR(color), extractG(color), extractB(color));
 			}
 
-			return InteractionResult.sidedSuccess(world.isClientSide());
+			return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 		}
 
 		return InteractionResult.PASS;
@@ -265,7 +266,7 @@ public class GrassSeedsItem extends Item implements FloatingFlowerVariant {
 			return state.is(BotaniaTags.Blocks.PASTURE_SEED_REPLACEABLE) && canBeGrass(pos, state);
 		}
 
-		// [VanillaCopy] net.minecraft.world.level.block.SpreadingSnowyDirtBlock#canBeGrass
+		// [VanillaCopy] net.minecraft.world.level.block.SpreadingSnowyBlock#canBeGrass
 		private boolean canBeGrass(BlockPos pos, BlockState state) {
 			BlockPos abovePos = pos.above();
 			BlockState aboveState = world.getBlockState(abovePos);
@@ -277,11 +278,11 @@ public class GrassSeedsItem extends Item implements FloatingFlowerVariant {
 				// full-height liquid, don't spread
 				return false;
 			}
-			int lightLevel = LightEngine.getLightBlockInto(world, state, pos, aboveState, abovePos, Direction.UP, aboveState.getLightBlock(world, abovePos));
-			return lightLevel < world.getMaxLightLevel();
+			int lightLevel = LightEngine.getLightBlockInto(state, aboveState, Direction.UP, aboveState.getLightDampening());
+			return lightLevel < 15;
 		}
 
-		// [VanillaCopy] net.minecraft.world.level.block.SpreadingSnowyDirtBlock#canPropagate
+		// [VanillaCopy] net.minecraft.world.level.block.SpreadingSnowyBlock#canPropagate
 		private boolean canPropagate(BlockPos pos) {
 			BlockPos abovePos = pos.above();
 			return canBeGrass(pos, stateToSet) && !world.getFluidState(abovePos).is(FluidTags.WATER);

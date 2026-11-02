@@ -1,0 +1,15 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    "#botania:mana_dusts",
+    "#botania:manasteel_ingots",
+    "#minecraft:wool_carpets",
+    "minecraft:feather",
+    "minecraft:string"
+  ],
+  "mana": 5200,
+  "output": {
+    "count": 2,
+    "id": "botania:rune_air"
+  }
+}

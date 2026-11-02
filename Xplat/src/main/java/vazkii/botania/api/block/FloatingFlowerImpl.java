@@ -39,7 +39,7 @@ public class FloatingFlowerImpl implements FloatingFlower {
 
 	@Override
 	public void readNBT(CompoundTag nbt) {
-		IslandType t = IslandType.ofType(nbt.getString("islandType"));
+		IslandType t = IslandType.ofType(nbt.getStringOr("islandType", ""));
 		if (t != null) {
 			setIslandType(t);
 		}

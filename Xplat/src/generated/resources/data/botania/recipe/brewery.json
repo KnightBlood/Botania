@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "botania:rune_mana",
+    "M": "#botania:manasteel_blocks",
+    "R": "botania:livingrock",
+    "S": "minecraft:brewing_stand"
+  },
+  "pattern": [
+    "RSR",
+    "RAR",
+    "RMR"
+  ],
+  "result": {
+    "id": "botania:brewery"
+  }
+}

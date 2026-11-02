@@ -27,6 +27,7 @@ import vazkii.botania.common.block.block_entity.red_string.RedStringComparatorBl
 
 public class RedStringComparatorBlock extends RedStringBlock {
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public RedStringComparatorBlock(BlockBehaviour.Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.FACING, Direction.DOWN));
@@ -38,7 +39,7 @@ public class RedStringComparatorBlock extends RedStringBlock {
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos) {
+	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
 		return world.getBlockEntity(pos) instanceof RedStringComparatorBlockEntity be ? be.getComparatorValue() : 0;
 	}
 

@@ -10,10 +10,13 @@ package vazkii.botania.network.clientbound;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.common.entity.GaiaGuardianEntity;
 import vazkii.botania.network.BotaniaPacket;
@@ -25,11 +28,22 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 public record SpawnGaiaGuardianPacket(ClientboundAddEntityPacket inner, int playerCount, boolean hardMode,
 		BlockPos source, UUID bossInfoId) implements BotaniaPacket {
 
-	public static final ResourceLocation ID = prefix("spg");
+	public static final Identifier ID = prefix("spg");
 
 	@Override
 	public void encode(FriendlyByteBuf buf) {
-		inner().write(buf);
+		ClientboundAddEntityPacket inner = inner();
+		buf.writeVarInt(inner.getId());
+		buf.writeUUID(inner.getUUID());
+		buf.writeVarInt(BuiltInRegistries.ENTITY_TYPE.getId(inner.getType()));
+		buf.writeDouble(inner.getX());
+		buf.writeDouble(inner.getY());
+		buf.writeDouble(inner.getZ());
+		Vec3.LP_STREAM_CODEC.encode(buf, inner.getMovement());
+		buf.writeByte(Mth.packDegrees(inner.getXRot()));
+		buf.writeByte(Mth.packDegrees(inner.getYRot()));
+		buf.writeByte(Mth.packDegrees(inner.getYHeadRot()));
+		buf.writeVarInt(inner.getData());
 		buf.writeVarInt(playerCount());
 		buf.writeBoolean(hardMode());
 		buf.writeBlockPos(source());
@@ -37,13 +51,26 @@ public record SpawnGaiaGuardianPacket(ClientboundAddEntityPacket inner, int play
 	}
 
 	@Override
-	public ResourceLocation getFabricId() {
+	public Identifier getFabricId() {
 		return ID;
 	}
 
 	public static SpawnGaiaGuardianPacket decode(FriendlyByteBuf buf) {
+		var inner = new ClientboundAddEntityPacket(
+				buf.readVarInt(),
+				buf.readUUID(),
+				buf.readDouble(),
+				buf.readDouble(),
+				buf.readDouble(),
+				Mth.unpackDegrees(buf.readByte()),
+				Mth.unpackDegrees(buf.readByte()),
+				BuiltInRegistries.ENTITY_TYPE.byId(buf.readVarInt()),
+				buf.readVarInt(),
+				Vec3.LP_STREAM_CODEC.decode(buf),
+				Mth.unpackDegrees(buf.readByte())
+		);
 		return new SpawnGaiaGuardianPacket(
-				new ClientboundAddEntityPacket(buf),
+				inner,
 				buf.readVarInt(),
 				buf.readBoolean(),
 				buf.readBlockPos(),

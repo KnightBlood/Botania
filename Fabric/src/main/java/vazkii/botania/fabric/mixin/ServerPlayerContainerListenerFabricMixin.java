@@ -14,7 +14,7 @@ import vazkii.botania.xplat.XplatAbstractions;
 
 @Mixin(targets = "net.minecraft.server.level.ServerPlayer$2")
 public class ServerPlayerContainerListenerFabricMixin {
-	@Inject(method = "slotChanged", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/critereon/InventoryChangeTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/item/ItemStack;)V"))
+	@Inject(method = "slotChanged", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/criterion/InventoryChangeTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/item/ItemStack;)V"))
 	public void onInventoryChanged(AbstractContainerMenu inventory, int slot, ItemStack stack, CallbackInfo ci) {
 		if (XplatAbstractions.instance().isRunningCategory(BotaniaSpeedrunCategories.OBTAIN_DREAMWOOD) &&
 				stack.is(BotaniaBlocks.dreamwood.asItem())) {

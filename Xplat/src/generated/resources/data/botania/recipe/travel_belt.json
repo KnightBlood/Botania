@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": "botania:rune_air",
+    "E": "botania:rune_earth",
+    "L": "minecraft:leather",
+    "S": "#botania:manasteel_ingots"
+  },
+  "pattern": [
+    "EL ",
+    "L L",
+    "SLA"
+  ],
+  "result": {
+    "id": "botania:travel_belt"
+  }
+}

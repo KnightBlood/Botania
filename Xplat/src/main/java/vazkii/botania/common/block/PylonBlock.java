@@ -70,7 +70,7 @@ public class PylonBlock extends BotaniaWaterloggedBlock implements EntityBlock {
 	@NotNull
 	@Override
 	public RenderShape getRenderShape(BlockState state) {
-		return RenderShape.ENTITYBLOCK_ANIMATED;
+		return RenderShape.MODEL;
 	}
 
 	@NotNull

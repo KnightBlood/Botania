@@ -8,16 +8,13 @@
  */
 package vazkii.botania.client.model.armor;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.decoration.ArmorStand;
 
-public class ArmorModel extends HumanoidModel<LivingEntity> {
+public class ArmorModel extends HumanoidModel<HumanoidRenderState> {
 	protected final EquipmentSlot slot;
 
 	public ArmorModel(ModelPart root, EquipmentSlot slot) {
@@ -25,67 +22,78 @@ public class ArmorModel extends HumanoidModel<LivingEntity> {
 		this.slot = slot;
 	}
 
-	// [VanillaCopy] ArmorStandArmorModel.setupAnim because armor stands are dumb
-	// This fixes the armor "breathing" and helmets always facing south on armor stands
 	@Override
-	public void setupAnim(LivingEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-		if (!(entity instanceof ArmorStand entityIn)) {
-			super.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-			return;
+	public void setupAnim(HumanoidRenderState state) {
+		super.setupAnim(state);
+
+		// [VanillaCopy] ArmorStandArmorModel.setupAnim because armor stands are dumb
+		// This fixes the armor "breathing" and helmets always facing south on armor stands
+		if (state instanceof ArmorStandRenderState stand) {
+			this.head.xRot = (float) (Math.PI / 180.0) * stand.headPose.x();
+			this.head.yRot = (float) (Math.PI / 180.0) * stand.headPose.y();
+			this.head.zRot = (float) (Math.PI / 180.0) * stand.headPose.z();
+			this.head.setPos(0.0F, 1.0F, 0.0F);
+			this.body.xRot = (float) (Math.PI / 180.0) * stand.bodyPose.x();
+			this.body.yRot = (float) (Math.PI / 180.0) * stand.bodyPose.y();
+			this.body.zRot = (float) (Math.PI / 180.0) * stand.bodyPose.z();
+			this.leftArm.xRot = (float) (Math.PI / 180.0) * stand.leftArmPose.x();
+			this.leftArm.yRot = (float) (Math.PI / 180.0) * stand.leftArmPose.y();
+			this.leftArm.zRot = (float) (Math.PI / 180.0) * stand.leftArmPose.z();
+			this.rightArm.xRot = (float) (Math.PI / 180.0) * stand.rightArmPose.x();
+			this.rightArm.yRot = (float) (Math.PI / 180.0) * stand.rightArmPose.y();
+			this.rightArm.zRot = (float) (Math.PI / 180.0) * stand.rightArmPose.z();
+			this.leftLeg.xRot = (float) (Math.PI / 180.0) * stand.leftLegPose.x();
+			this.leftLeg.yRot = (float) (Math.PI / 180.0) * stand.leftLegPose.y();
+			this.leftLeg.zRot = (float) (Math.PI / 180.0) * stand.leftLegPose.z();
+			this.leftLeg.setPos(1.9F, 11.0F, 0.0F);
+			this.rightLeg.xRot = (float) (Math.PI / 180.0) * stand.rightLegPose.x();
+			this.rightLeg.yRot = (float) (Math.PI / 180.0) * stand.rightLegPose.y();
+			this.rightLeg.zRot = (float) (Math.PI / 180.0) * stand.rightLegPose.z();
+			this.rightLeg.setPos(-1.9F, 11.0F, 0.0F);
+			copyPose(this.head, this.hat);
 		}
 
-		this.head.xRot = ((float) Math.PI / 180F) * entityIn.getHeadPose().getX();
-		this.head.yRot = ((float) Math.PI / 180F) * entityIn.getHeadPose().getY();
-		this.head.zRot = ((float) Math.PI / 180F) * entityIn.getHeadPose().getZ();
-		this.head.setPos(0.0F, 1.0F, 0.0F);
-		this.body.xRot = ((float) Math.PI / 180F) * entityIn.getBodyPose().getX();
-		this.body.yRot = ((float) Math.PI / 180F) * entityIn.getBodyPose().getY();
-		this.body.zRot = ((float) Math.PI / 180F) * entityIn.getBodyPose().getZ();
-		this.leftArm.xRot = ((float) Math.PI / 180F) * entityIn.getLeftArmPose().getX();
-		this.leftArm.yRot = ((float) Math.PI / 180F) * entityIn.getLeftArmPose().getY();
-		this.leftArm.zRot = ((float) Math.PI / 180F) * entityIn.getLeftArmPose().getZ();
-		this.rightArm.xRot = ((float) Math.PI / 180F) * entityIn.getRightArmPose().getX();
-		this.rightArm.yRot = ((float) Math.PI / 180F) * entityIn.getRightArmPose().getY();
-		this.rightArm.zRot = ((float) Math.PI / 180F) * entityIn.getRightArmPose().getZ();
-		this.leftLeg.xRot = ((float) Math.PI / 180F) * entityIn.getLeftLegPose().getX();
-		this.leftLeg.yRot = ((float) Math.PI / 180F) * entityIn.getLeftLegPose().getY();
-		this.leftLeg.zRot = ((float) Math.PI / 180F) * entityIn.getLeftLegPose().getZ();
-		this.leftLeg.setPos(1.9F, 11.0F, 0.0F);
-		this.rightLeg.xRot = ((float) Math.PI / 180F) * entityIn.getRightLegPose().getX();
-		this.rightLeg.yRot = ((float) Math.PI / 180F) * entityIn.getRightLegPose().getY();
-		this.rightLeg.zRot = ((float) Math.PI / 180F) * entityIn.getRightLegPose().getZ();
-		this.rightLeg.setPos(-1.9F, 11.0F, 0.0F);
-		this.hat.copyFrom(this.head);
+		setPartVisibility();
 	}
 
-	@Override
-	public void renderToBuffer(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float a) {
-		setPartVisibility(slot);
-		super.renderToBuffer(ms, buffer, light, overlay, r, g, b, a);
+	private static void copyPose(ModelPart from, ModelPart to) {
+		to.x = from.x;
+		to.y = from.y;
+		to.z = from.z;
+		to.xRot = from.xRot;
+		to.yRot = from.yRot;
+		to.zRot = from.zRot;
 	}
 
 	// [VanillaCopy] HumanoidArmorLayer
-	private void setPartVisibility(EquipmentSlot slot) {
-		setAllVisible(false);
+	private void setPartVisibility() {
+		this.head.visible = false;
+		this.hat.visible = false;
+		this.body.visible = false;
+		this.rightArm.visible = false;
+		this.leftArm.visible = false;
+		this.rightLeg.visible = false;
+		this.leftLeg.visible = false;
 		switch (slot) {
 			case HEAD -> {
-				head.visible = true;
-				hat.visible = true;
+				this.head.visible = true;
+				this.hat.visible = true;
 			}
 			case CHEST -> {
-				body.visible = true;
-				rightArm.visible = true;
-				leftArm.visible = true;
+				this.body.visible = true;
+				this.rightArm.visible = true;
+				this.leftArm.visible = true;
 			}
 			case LEGS -> {
-				body.visible = true;
-				rightLeg.visible = true;
-				leftLeg.visible = true;
+				this.body.visible = true;
+				this.rightLeg.visible = true;
+				this.leftLeg.visible = true;
 			}
 			case FEET -> {
-				rightLeg.visible = true;
-				leftLeg.visible = true;
+				this.rightLeg.visible = true;
+				this.leftLeg.visible = true;
 			}
+			default -> {}
 		}
 	}
 }

@@ -8,6 +8,12 @@
  */
 package vazkii.botania.common.internal_caps;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import vazkii.botania.common.helper.ItemNBTHelper;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
@@ -17,9 +23,22 @@ public class LooniumComponent extends SerializableComponent {
 	protected static final String TAG_TO_DROP = "toDrop";
 	protected static final String TAG_OVERRIDE_DROP = "overrideDrop";
 	protected static final String TAG_SLOW_DESPAWN = "slowDespawn";
+	public static final MapCodec<LooniumComponent> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			ItemStack.CODEC.optionalFieldOf(TAG_TO_DROP, ItemStack.EMPTY).forGetter(LooniumComponent::getDrop),
+			Codec.BOOL.optionalFieldOf(TAG_OVERRIDE_DROP, false).forGetter(LooniumComponent::isOverrideDrop),
+			Codec.BOOL.optionalFieldOf(TAG_SLOW_DESPAWN, false).forGetter(LooniumComponent::isSlowDespawn)
+	).apply(i, LooniumComponent::new));
 	private ItemStack toDrop = ItemStack.EMPTY;
 	private boolean overrideDrop;
 	private boolean slowDespawn;
+
+	public LooniumComponent() {}
+
+	private LooniumComponent(ItemStack toDrop, boolean overrideDrop, boolean slowDespawn) {
+		this.toDrop = toDrop;
+		this.overrideDrop = overrideDrop;
+		this.slowDespawn = slowDespawn;
+	}
 
 	public ItemStack getDrop() {
 		return toDrop;
@@ -60,25 +79,25 @@ public class LooniumComponent extends SerializableComponent {
 	}
 
 	@Override
-	public void readFromNbt(CompoundTag tag) {
+	public void readFromNbt(CompoundTag tag, HolderLookup.Provider registries) {
 		if (tag.contains(TAG_TO_DROP)) {
-			setDrop(ItemStack.of(tag.getCompound(TAG_TO_DROP)));
+			setDrop(ItemNBTHelper.deserializeStackNbt(tag.getCompoundOrEmpty(TAG_TO_DROP), registries));
 		} else {
 			setDrop(ItemStack.EMPTY);
 		}
 		if (tag.contains(TAG_OVERRIDE_DROP)) {
-			setOverrideDrop(tag.getBoolean(TAG_OVERRIDE_DROP));
+			setOverrideDrop(tag.getBooleanOr(TAG_OVERRIDE_DROP, false));
 		}
 		if (tag.contains(TAG_SLOW_DESPAWN)) {
-			setSlowDespawn(tag.getBoolean(TAG_SLOW_DESPAWN));
+			setSlowDespawn(tag.getBooleanOr(TAG_SLOW_DESPAWN, false));
 		}
 	}
 
 	@Override
-	public void writeToNbt(CompoundTag tag) {
+	public void writeToNbt(CompoundTag tag, HolderLookup.Provider registries) {
 		if (isOverrideDrop()) {
 			if (!getDrop().isEmpty()) {
-				tag.put(TAG_TO_DROP, getDrop().save(new CompoundTag()));
+				tag.put(TAG_TO_DROP, ItemNBTHelper.serializeStackNbt(getDrop(), registries));
 			}
 			tag.putBoolean(TAG_OVERRIDE_DROP, true);
 		}

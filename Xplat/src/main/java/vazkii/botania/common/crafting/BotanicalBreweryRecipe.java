@@ -15,14 +15,17 @@ import com.google.gson.JsonParseException;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.Container;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+
+import vazkii.botania.api.recipe.BotaniaRecipe;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -30,27 +33,33 @@ import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.brew.Brew;
 import vazkii.botania.api.brew.BrewContainer;
 import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.helper.IngredientHelper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 
 public class BotanicalBreweryRecipe implements vazkii.botania.api.recipe.BotanicalBreweryRecipe {
-	private final ResourceLocation id;
+	private Identifier id;
 	private final Brew brew;
 	private final NonNullList<Ingredient> inputs;
 
-	public BotanicalBreweryRecipe(ResourceLocation id, Brew brew, Ingredient... inputs) {
+	public BotanicalBreweryRecipe(Identifier id, Brew brew, Ingredient... inputs) {
 		this.id = id;
 		this.brew = brew;
-		this.inputs = NonNullList.of(Ingredient.EMPTY, inputs);
+		this.inputs = NonNullList.of(IngredientHelper.EMPTY, inputs);
 	}
 
 	@Override
-	public boolean matches(Container inv, @NotNull Level world) {
+	public boolean matches(RecipeInput inv, @NotNull Level world) {
 		List<Ingredient> inputsMissing = new ArrayList<>(inputs);
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (stack.isEmpty()) {
 				break;
@@ -81,26 +90,23 @@ public class BotanicalBreweryRecipe implements vazkii.botania.api.recipe.Botanic
 	}
 
 	@NotNull
-	@Override
-	public NonNullList<Ingredient> getIngredients() {
+		public NonNullList<Ingredient> getIngredients() {
 		return inputs;
 	}
 
 	@NotNull
-	@Override
-	public ItemStack getToastSymbol() {
+		public ItemStack getToastSymbol() {
 		return new ItemStack(BotaniaBlocks.brewery);
 	}
 
 	@NotNull
-	@Override
-	public ResourceLocation getId() {
+		public Identifier getId() {
 		return id;
 	}
 
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends BotaniaRecipe<RecipeInput>> getSerializer() {
 		return BotaniaRecipeTypes.BREW_SERIALIZER;
 	}
 
@@ -135,41 +141,23 @@ public class BotanicalBreweryRecipe implements vazkii.botania.api.recipe.Botanic
 				&& inputs.equals(brewRecipe.inputs);
 	}
 
-	public static class Serializer implements RecipeSerializer<BotanicalBreweryRecipe> {
-		@NotNull
-		@Override
-		public BotanicalBreweryRecipe fromJson(@NotNull ResourceLocation id, @NotNull JsonObject json) {
-			String brewStr = GsonHelper.getAsString(json, "brew");
-			ResourceLocation brewId = ResourceLocation.tryParse(brewStr);
-			Brew brew = BotaniaAPI.instance().getBrewRegistry().getOptional(brewId).orElseThrow(() -> new JsonParseException("Unknown brew " + brewStr));
+	public static final MapCodec<BotanicalBreweryRecipe> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			Identifier.CODEC.fieldOf("brew").forGetter(r -> BotaniaAPI.instance().getBrewRegistry().getKey(r.brew)),
+			IngredientHelper.CODEC.listOf().fieldOf("ingredients").forGetter(r -> r.inputs)
+	).apply(i, (brew, inputs) -> new BotanicalBreweryRecipe(RecipeSerializers.UNKNOWN_ID,
+			BotaniaAPI.instance().getBrewRegistry().getOptional(brew)
+					.orElseThrow(() -> new JsonParseException("Unknown brew " + brew)),
+			inputs.toArray(new Ingredient[0]))));
 
-			JsonArray ingrs = GsonHelper.getAsJsonArray(json, "ingredients");
-			List<Ingredient> inputs = new ArrayList<>();
-			for (JsonElement e : ingrs) {
-				inputs.add(Ingredient.fromJson(e));
-			}
-			return new BotanicalBreweryRecipe(id, brew, inputs.toArray(new Ingredient[0]));
-		}
+	public static final StreamCodec<RegistryFriendlyByteBuf, BotanicalBreweryRecipe> STREAM_CODEC = StreamCodec.composite(
+			Identifier.STREAM_CODEC, r -> BotaniaAPI.instance().getBrewRegistry().getKey(r.brew),
+			RecipeSerializers.ingredientList(), r -> r.inputs,
+			(brew, inputs) -> new BotanicalBreweryRecipe(RecipeSerializers.UNKNOWN_ID,
+					BotaniaAPI.instance().getBrewRegistry().getOptional(brew)
+							.orElseThrow(() -> new JsonParseException("Unknown brew " + brew)),
+					inputs.toArray(new Ingredient[0]))
+	);
 
-		@Override
-		public BotanicalBreweryRecipe fromNetwork(@NotNull ResourceLocation id, @NotNull FriendlyByteBuf buf) {
-			var brewId = buf.readResourceLocation();
-			Brew brew = BotaniaAPI.instance().getBrewRegistry().get(brewId);
-			Ingredient[] inputs = new Ingredient[buf.readVarInt()];
-			for (int i = 0; i < inputs.length; i++) {
-				inputs[i] = Ingredient.fromNetwork(buf);
-			}
-			return new BotanicalBreweryRecipe(id, brew, inputs);
-		}
+	public static final RecipeSerializer<BotanicalBreweryRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
 
-		@Override
-		public void toNetwork(@NotNull FriendlyByteBuf buf, @NotNull BotanicalBreweryRecipe recipe) {
-			var brewId = BotaniaAPI.instance().getBrewRegistry().getKey(recipe.getBrew());
-			buf.writeResourceLocation(brewId);
-			buf.writeVarInt(recipe.getIngredients().size());
-			for (Ingredient input : recipe.getIngredients()) {
-				input.toNetwork(buf);
-			}
-		}
-	}
 }

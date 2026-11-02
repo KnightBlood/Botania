@@ -18,9 +18,14 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.item.CosmeticBauble;
 import vazkii.botania.client.core.helper.RenderHelper;
@@ -57,6 +62,7 @@ public class CosmeticBaubleItem extends BaubleItem implements CosmeticBauble {
 
 	private final Variant variant;
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public CosmeticBaubleItem(Variant variant, Properties props) {
 		super(props);
 		this.variant = variant;
@@ -64,13 +70,13 @@ public class CosmeticBaubleItem extends BaubleItem implements CosmeticBauble {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> tooltip, TooltipFlag flags) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
 		if (variant == Variant.THINKING_HAND) {
-			tooltip.add(Component.translatable("botaniamisc.cosmeticThinking").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
+			builder.accept(Component.translatable("botaniamisc.cosmeticThinking").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
 		} else {
-			tooltip.add(Component.translatable("botaniamisc.cosmeticBauble").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
+			builder.accept(Component.translatable("botaniamisc.cosmeticBauble").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
 		}
-		super.appendHoverText(stack, world, tooltip, flags);
+		super.appendHoverText(stack, context, display, builder, flags);
 	}
 
 	public static class Renderer implements AccessoryRenderer {
@@ -184,7 +190,7 @@ public class CosmeticBaubleItem extends BaubleItem implements CosmeticBauble {
 						ms.translate(0, -0.3, -0.3);
 						ms.scale(0.7F, -0.7F, -0.7F);
 						int color = 0xFFFFFF | (178 << 24);
-						RenderHelper.renderItemCustomColor(living, stack, color, ms, buffers, light, OverlayTexture.NO_OVERLAY);
+						RenderHelper.renderItemCustomColor(living, stack, color, ms, buffers, light, OverlayTexture.NO_OVERLAY, null);
 					}
 					case GROUCHO_GLASSES -> {
 						ms.translate(0, -0.1, -0.3);
@@ -253,7 +259,7 @@ public class CosmeticBaubleItem extends BaubleItem implements CosmeticBauble {
 						ms.translate(-0.4, 0.1, -0.2);
 						ms.mulPose(VecHelper.rotateY(180F));
 						ms.scale(0.5F, -0.5F, -0.5F);
-						RenderHelper.renderItemCustomColor(living, stack, 0xFF00004C, ms, buffers, light, OverlayTexture.NO_OVERLAY);
+						RenderHelper.renderItemCustomColor(living, stack, 0xFF00004C, ms, buffers, light, OverlayTexture.NO_OVERLAY, null);
 					}
 					case FOUR_LEAF_CLOVER -> {
 						ms.translate(0.1, 0.1, -0.13);
@@ -278,8 +284,8 @@ public class CosmeticBaubleItem extends BaubleItem implements CosmeticBauble {
 		}
 
 		private static void renderItem(ItemStack stack, PoseStack ms, MultiBufferSource buffers, int light) {
-			Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE,
-					light, OverlayTexture.NO_OVERLAY, ms, buffers, Minecraft.getInstance().level, 0);
+			RenderHelper.renderItemStatic(stack, ItemDisplayContext.NONE, false,
+					ms, buffers, light, OverlayTexture.NO_OVERLAY, Minecraft.getInstance().level, 0);
 		}
 	}
 

@@ -8,17 +8,24 @@
  */
 package vazkii.botania.common.advancements;
 
-import vazkii.botania.mixin.CriteriaTriggersAccessor;
+import net.minecraft.advancements.CriterionTrigger;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 
 public class BotaniaCriteriaTriggers {
 	public static void init() {
-		CriteriaTriggersAccessor.botania_register(AlfheimPortalTrigger.INSTANCE);
-		CriteriaTriggersAccessor.botania_register(CorporeaRequestTrigger.INSTANCE);
-		CriteriaTriggersAccessor.botania_register(GaiaGuardianNoArmorTrigger.INSTANCE);
-		CriteriaTriggersAccessor.botania_register(RelicBindTrigger.INSTANCE);
-		CriteriaTriggersAccessor.botania_register(UseItemSuccessTrigger.INSTANCE);
-		CriteriaTriggersAccessor.botania_register(ManaBlasterTrigger.INSTANCE);
-		CriteriaTriggersAccessor.botania_register(LokiPlaceTrigger.INSTANCE);
-		CriteriaTriggersAccessor.botania_register(AlfheimPortalBreadTrigger.INSTANCE);
+		register(AlfheimPortalTrigger.ID, AlfheimPortalTrigger.INSTANCE);
+		register(CorporeaRequestTrigger.ID, CorporeaRequestTrigger.INSTANCE);
+		register(GaiaGuardianNoArmorTrigger.ID, GaiaGuardianNoArmorTrigger.INSTANCE);
+		register(RelicBindTrigger.ID, RelicBindTrigger.INSTANCE);
+		register(UseItemSuccessTrigger.ID, UseItemSuccessTrigger.INSTANCE);
+		register(ManaBlasterTrigger.ID, ManaBlasterTrigger.INSTANCE);
+		register(LokiPlaceTrigger.ID, LokiPlaceTrigger.INSTANCE);
+		register(AlfheimPortalBreadTrigger.ID, AlfheimPortalBreadTrigger.INSTANCE);
+	}
+
+	private static <T extends CriterionTrigger<?>> void register(Identifier id, T trigger) {
+		Registry.register(BuiltInRegistries.TRIGGER_TYPES, id, trigger);
 	}
 }

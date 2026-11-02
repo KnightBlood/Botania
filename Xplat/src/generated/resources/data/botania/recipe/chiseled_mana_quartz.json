@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:quartz_chiseled",
+  "key": {
+    "Q": "botania:mana_quartz_slab"
+  },
+  "pattern": [
+    "Q",
+    "Q"
+  ],
+  "result": {
+    "id": "botania:chiseled_mana_quartz"
+  }
+}

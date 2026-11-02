@@ -20,7 +20,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
@@ -28,6 +27,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -104,7 +105,7 @@ public class WandOfTheForestItem extends Item implements CustomCreativeTabConten
 		Direction.Axis axis = ManaEnchanterBlockEntity.canEnchanterExist(world, pos);
 
 		if (axis != null) {
-			if (!world.isClientSide) {
+			if (!world.isClientSide()) {
 				world.setBlockAndUpdate(pos, BotaniaBlocks.enchanter.defaultBlockState().setValue(BotaniaStateProperties.ENCHANTER_DIRECTION, axis));
 				world.playSound(null, pos, BotaniaSounds.enchanterForm, SoundSource.BLOCKS, 1F, 1F);
 				PlayerHelper.grantCriterion((ServerPlayer) ctx.getPlayer(), prefix("main/enchanter_make"), "code_triggered");
@@ -182,7 +183,7 @@ public class WandOfTheForestItem extends Item implements CustomCreativeTabConten
 				if (newState != state) {
 					world.setBlockAndUpdate(pos, newState);
 					ctx.getLevel().playSound(
-							ctx.getPlayer(), ctx.getClickedPos(), newState.getBlock().getSoundType(newState).getPlaceSound(),
+							ctx.getPlayer(), ctx.getClickedPos(), newState.getSoundType().getPlaceSound(),
 							SoundSource.BLOCKS, 1F, 1F
 					);
 					return InteractionResult.SUCCESS;
@@ -203,7 +204,7 @@ public class WandOfTheForestItem extends Item implements CustomCreativeTabConten
 				setBindingAttempt(stack, pos);
 			}
 
-			if (world.isClientSide) {
+			if (world.isClientSide()) {
 				player.playSound(BotaniaSounds.ding, 0.11F, 1F);
 			}
 
@@ -215,7 +216,7 @@ public class WandOfTheForestItem extends Item implements CustomCreativeTabConten
 			}
 		}
 
-		if (!world.isClientSide && getBindMode(stack) && tryCompletePistonRelayBinding(ctx)) {
+		if (!world.isClientSide() && getBindMode(stack) && tryCompletePistonRelayBinding(ctx)) {
 			return InteractionResult.SUCCESS;
 		}
 
@@ -397,15 +398,15 @@ public class WandOfTheForestItem extends Item implements CustomCreativeTabConten
 	}
 
 	public static void doParticleBeamWithOffset(Level world, BlockPos orig, BlockPos end) {
-		Vec3 origOffset = world.getBlockState(orig).getOffset(world, orig);
+		Vec3 origOffset = world.getBlockState(orig).getOffset(orig);
 		Vec3 vorig = new Vec3(orig.getX() + origOffset.x() + 0.5, orig.getY() + origOffset.y() + 0.5, orig.getZ() + origOffset.z() + 0.5);
-		Vec3 endOffset = world.getBlockState(end).getOffset(world, end);
+		Vec3 endOffset = world.getBlockState(end).getOffset(end);
 		Vec3 vend = new Vec3(end.getX() + endOffset.x() + 0.5, end.getY() + endOffset.y() + 0.5, end.getZ() + endOffset.z() + 0.5);
 		doParticleBeam(world, vorig, vend);
 	}
 
 	public static void doParticleBeam(Level world, Vec3 orig, Vec3 end) {
-		if (!world.isClientSide) {
+		if (!world.isClientSide()) {
 			return;
 		}
 
@@ -430,7 +431,7 @@ public class WandOfTheForestItem extends Item implements CustomCreativeTabConten
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
 		getBindingAttempt(stack).ifPresent(coords -> {
 			BlockEntity tile = world.getBlockEntity(coords);
 			if (!(tile instanceof WandBindable)) {
@@ -441,17 +442,17 @@ public class WandOfTheForestItem extends Item implements CustomCreativeTabConten
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		if (player.isSecondaryUseActive()) {
-			if (!world.isClientSide) {
+			if (!world.isClientSide()) {
 				setBindMode(stack, !getBindMode(stack));
 			} else {
 				player.playSound(BotaniaSounds.ding, 0.1F, 1F);
 			}
 		}
 
-		return InteractionResultHolder.success(stack);
+		return InteractionResult.SUCCESS.heldItemTransformedTo(stack);
 	}
 
 	@Override
@@ -555,3 +556,4 @@ public class WandOfTheForestItem extends Item implements CustomCreativeTabConten
 	}
 
 }
+

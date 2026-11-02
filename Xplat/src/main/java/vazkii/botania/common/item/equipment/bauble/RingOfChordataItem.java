@@ -32,10 +32,10 @@ public class RingOfChordataItem extends BaubleItem {
 
 	@Override
 	public void onWornTick(ItemStack stack, LivingEntity living) {
-		if (!(living instanceof Player player) || player.level().isClientSide) {
+		if (!(living instanceof Player player) || player.level().isClientSide()) {
 			return;
 		}
-		if (player.isInWaterOrBubble()) {
+		if (player.isInWater()) {
 			// only activate for one ring at a time
 			ItemStack result = EquipmentHandler.findOrEmpty(BotaniaItems.waterRing, living);
 			if (result != stack) {
@@ -67,7 +67,7 @@ public class RingOfChordataItem extends BaubleItem {
 
 	@Override
 	public void onEquipped(ItemStack stack, LivingEntity living) {
-		if (living instanceof Player player && player.isInWaterOrBubble()
+		if (living instanceof Player player && player.isInWater()
 				&& ManaItemHandler.instance().requestManaExact(stack, player, MANA_COST, false)) {
 			EntityHelper.addStaticEffect(living, MobEffects.CONDUIT_POWER, CONDUIT_POWER_AMPLIFIER);
 			if (!StoneOfTemperanceItem.hasTemperanceActive(player)) {

@@ -2,6 +2,7 @@ package vazkii.botania.client.model.armor;
 
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -43,16 +44,21 @@ public class ArmorModels {
 	@Nullable
 	public static ArmorModel get(ItemStack stack) {
 		Item item = stack.getItem();
-		if (item instanceof ManaweaveArmorItem armor) {
-			return manaweave.get(armor.getEquipmentSlot());
-		} else if (item instanceof ElementiumArmorItem armor) {
-			return elementium.get(armor.getEquipmentSlot());
-		} else if (item instanceof TerrasteelArmorItem armor) {
-			return terrasteel.get(armor.getEquipmentSlot());
-		} else if (item instanceof ManasteelArmorItem armor) { // manasteel must be last because the other types extend from it
-			return manasteel.get(armor.getEquipmentSlot());
+		if (item instanceof ManaweaveArmorItem) {
+			return manaweave.get(getSlot(stack));
+		} else if (item instanceof ElementiumArmorItem) {
+			return elementium.get(getSlot(stack));
+		} else if (item instanceof TerrasteelArmorItem) {
+			return terrasteel.get(getSlot(stack));
+		} else if (item instanceof ManasteelArmorItem) { // manasteel must be last because the other types extend from it
+			return manasteel.get(getSlot(stack));
 		}
 
 		return null;
+	}
+
+	private static EquipmentSlot getSlot(ItemStack stack) {
+		var equippable = stack.get(DataComponents.EQUIPPABLE);
+		return equippable == null ? EquipmentSlot.MAINHAND : equippable.slot();
 	}
 }

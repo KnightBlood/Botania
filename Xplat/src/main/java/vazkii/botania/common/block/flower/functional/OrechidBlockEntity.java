@@ -11,7 +11,6 @@ package vazkii.botania.common.block.flower.functional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
@@ -23,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.api.block_entity.FunctionalFlowerBlockEntity;
 import vazkii.botania.api.block_entity.RadiusDescriptor;
 import vazkii.botania.api.recipe.OrechidRecipe;
@@ -57,7 +57,7 @@ public class OrechidBlockEntity extends FunctionalFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide || redstoneSignal > 0 || !canOperate()) {
+		if (getLevel().isClientSide() || redstoneSignal > 0 || !canOperate()) {
 			return;
 		}
 
@@ -76,13 +76,12 @@ public class OrechidBlockEntity extends FunctionalFlowerBlockEntity {
 	@Nullable
 	private OrechidRecipe findMatchingRecipe(BlockPos coords) {
 		BlockState input = level.getBlockState(coords);
-		List<WeightedEntry.Wrapper<OrechidRecipe>> values = new ArrayList<>();
-		for (OrechidRecipe recipe : OrechidManager.getMatchingRecipes(getLevel().getRecipeManager(), getRecipeType(), input)) {
-			values.add(WeightedEntry.wrap(recipe, recipe.getWeight(getLevel(), coords)));
+		List<OrechidRecipe> values = new ArrayList<>();
+		for (OrechidRecipe recipe : OrechidManager.getMatchingRecipes(RecipeHelper.getRecipeManager(getLevel()), getRecipeType(), input)) {
+			values.add(recipe);
 		}
-		return WeightedRandom.getRandomItem(getLevel().random, values)
-				.map(WeightedEntry.Wrapper::getData)
-				.orElse(null);
+		return WeightedRandom.getRandomItem(getLevel().getRandom(), values,
+				recipe -> recipe.getWeight(getLevel(), coords)).orElse(null);
 	}
 
 	private void trySetRecipe(BlockPos coords, @Nullable OrechidRecipe recipe) {
@@ -90,7 +89,7 @@ public class OrechidBlockEntity extends FunctionalFlowerBlockEntity {
 			return;
 		}
 
-		BlockState state = recipe.getOutput(level, coords).pick(level.random);
+		BlockState state = recipe.getOutput(level, coords).pick(level.getRandom());
 		if (getLevel().setBlockAndUpdate(coords, state)) {
 			if (BotaniaConfig.common().blockBreakParticles()) {
 				getLevel().levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, coords, Block.getId(state));
@@ -101,12 +100,15 @@ public class OrechidBlockEntity extends FunctionalFlowerBlockEntity {
 
 			var serverLevel = (ServerLevel) this.level;
 			var server = serverLevel.getServer();
-			recipe.getSuccessFunction().get(server.getFunctions()).ifPresent(command -> {
-				var context = server.getFunctions().getGameLoopSender()
-						.withLevel(serverLevel)
-						.withPosition(Vec3.atBottomCenterOf(coords));
-				server.getFunctions().execute(command, context);
-			});
+			var successFunction = recipe.getSuccessFunction();
+			if (successFunction != null) {
+				successFunction.get(server.getFunctions()).ifPresent(command -> {
+					var context = server.getFunctions().getGameLoopSender()
+							.withLevel(serverLevel)
+							.withPosition(Vec3.atBottomCenterOf(coords));
+					server.getFunctions().execute(command, context);
+				});
+			}
 
 			sync();
 		}
@@ -126,7 +128,7 @@ public class OrechidBlockEntity extends FunctionalFlowerBlockEntity {
 		if (possibleCoords.isEmpty()) {
 			return null;
 		}
-		return possibleCoords.get(getLevel().random.nextInt(possibleCoords.size()));
+		return possibleCoords.get(getLevel().getRandom().nextInt(possibleCoords.size()));
 	}
 
 	public boolean canOperate() {
@@ -139,7 +141,7 @@ public class OrechidBlockEntity extends FunctionalFlowerBlockEntity {
 
 	public Predicate<BlockState> getReplaceMatcher() {
 		return state -> !OrechidManager.getMatchingRecipes(
-				this.getLevel().getRecipeManager(),
+				RecipeHelper.getRecipeManager(this.getLevel()),
 				this.getRecipeType(),
 				state
 		).isEmpty();

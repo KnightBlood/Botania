@@ -1,19 +1,16 @@
 package vazkii.botania.fabric.data;
 
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.TagsProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
 
 import vazkii.botania.common.block.BotaniaBlocks;
-import vazkii.botania.common.helper.ColorHelper;
 import vazkii.botania.common.item.relic.DiceOfFateItem;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.data.ItemTagProvider;
@@ -23,27 +20,29 @@ import java.util.concurrent.CompletableFuture;
 import static vazkii.botania.common.item.BotaniaItems.*;
 
 public class FabricItemTagProvider extends ItemTagProvider {
-	public static final TagKey<Item> QUARTZ_BLOCKS = itemTag(new ResourceLocation("c", "quartz_blocks"));
-	private static final TagKey<Item> MUSHROOMS = itemTag(new ResourceLocation("c", "mushrooms"));
-	private static final TagKey<Item> GLASS = itemTag(new ResourceLocation("c", "glass"));
-	private static final TagKey<Item> GLASS_ALT = itemTag(new ResourceLocation("c", "glass_blocks"));
-	private static final TagKey<Item> GLASS_PANE = itemTag(new ResourceLocation("c", "glass_pane"));
-	private static final TagKey<Item> GLASS_PANE_ALT = itemTag(new ResourceLocation("c", "glass_panes"));
-	public static final TagKey<Item> WOODEN_CHESTS = itemTag(new ResourceLocation("c", "wooden_chests"));
+	public static final TagKey<Item> QUARTZ_BLOCKS = itemTag(Identifier.fromNamespaceAndPath("c", "quartz_blocks"));
+	private static final TagKey<Item> MUSHROOMS = itemTag(Identifier.fromNamespaceAndPath("c", "mushrooms"));
+	private static final TagKey<Item> GLASS = itemTag(Identifier.fromNamespaceAndPath("c", "glass"));
+	private static final TagKey<Item> GLASS_ALT = itemTag(Identifier.fromNamespaceAndPath("c", "glass_blocks"));
+	private static final TagKey<Item> GLASS_PANE = itemTag(Identifier.fromNamespaceAndPath("c", "glass_pane"));
+	private static final TagKey<Item> GLASS_PANE_ALT = itemTag(Identifier.fromNamespaceAndPath("c", "glass_panes"));
+	public static final TagKey<Item> WOODEN_CHESTS = itemTag(Identifier.fromNamespaceAndPath("c", "wooden_chests"));
+	// 26.1: convention-tags no longer ship BOWS/SHEARS; keep the same "c" tags locally.
+	private static final TagKey<Item> BOWS = itemTag(Identifier.fromNamespaceAndPath("c", "bows"));
+	private static final TagKey<Item> SHEARS = itemTag(Identifier.fromNamespaceAndPath("c", "shears"));
 
-	private static TagKey<Item> itemTag(ResourceLocation location) {
+	private static TagKey<Item> itemTag(Identifier location) {
 		return TagKey.create(Registries.ITEM, location);
 	}
 
-	public FabricItemTagProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagsProvider.TagLookup<Block>> blockTagProvider) {
+	public FabricItemTagProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider, FabricBlockTagProvider blockTagProvider) {
 		super(packOutput, lookupProvider, blockTagProvider);
 	}
 
 	@Override
-	protected void addTags(HolderLookup.Provider provider) {
-		ColorHelper.supportedColors().forEach(color -> {
-			this.tag(MUSHROOMS).add(BotaniaBlocks.getMushroom(color).asItem());
-		});
+	public void addTags(HolderLookup.Provider provider) {
+		// The mushrooms loop that used to be here is redundant now that copy() maps the block tag's
+		// entries to items; keeping both wrote every mushroom twice.
 		this.copy(FabricBlockTagProvider.MUSHROOMS, MUSHROOMS);
 		this.copy(FabricBlockTagProvider.QUARTZ_BLOCKS, QUARTZ_BLOCKS);
 		this.copy(FabricBlockTagProvider.GLASS, GLASS);
@@ -60,8 +59,8 @@ public class FabricItemTagProvider extends ItemTagProvider {
 	}
 
 	private void generateToolTags() {
-		this.tag(ConventionalItemTags.BOWS).add(livingwoodBow, crystalBow);
-		this.tag(ConventionalItemTags.SHEARS).add(manasteelShears, elementiumShears);
+		this.tag(BOWS).add(livingwoodBow, crystalBow);
+		this.tag(SHEARS).add(manasteelShears, elementiumShears);
 	}
 
 	private void generateAccessoryTags() {
@@ -137,13 +136,13 @@ public class FabricItemTagProvider extends ItemTagProvider {
 	}
 
 	private void generateCompatTags() {
-		this.tag(itemTag(new ResourceLocation("modern_industrialization", "replicator_blacklist")))
+		this.tag(itemTag(Identifier.fromNamespaceAndPath("modern_industrialization", "replicator_blacklist")))
 				.add(DiceOfFateItem.RELIC_STACKS.get().stream().map(ItemStack::getItem).toArray(Item[]::new))
 				.add(dice, manaTablet, manaRing, manaRingGreater, blackerLotus, blackHoleTalisman, flowerBag,
 						spawnerMover, terraPick, BotaniaBlocks.terrasteelBlock.asItem());
 	}
 
 	private static TagKey<Item> accessory(String name) {
-		return itemTag(new ResourceLocation("trinkets", name));
+		return itemTag(Identifier.fromNamespaceAndPath("trinkets", name));
 	}
 }

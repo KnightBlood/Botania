@@ -20,7 +20,7 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +44,7 @@ public class BreweryRecipeCategory implements IRecipeCategory<BotanicalBreweryRe
 	private final Component localizedName;
 
 	public BreweryRecipeCategory(IGuiHelper guiHelper) {
-		ResourceLocation location = prefix("textures/gui/nei_brewery.png");
+		Identifier location = prefix("textures/gui/nei_brewery.png");
 		background = guiHelper.createDrawable(location, 28, 6, 131, 55);
 		localizedName = Component.translatable("botania.nei.brewery");
 		icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(BotaniaBlocks.brewery));

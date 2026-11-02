@@ -33,7 +33,8 @@ public class ResultSlotFabricMixin {
 	private Player player;
 
 	@Inject(
-		at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;onCraftedBy(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;I)V"),
+		// 26.1: onCraftedBy no longer takes a Level parameter
+		at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;onCraftedBy(Lnet/minecraft/world/entity/player/Player;I)V"),
 		method = "checkTakeAchievements"
 	)
 	private void onCraft(ItemStack stack, CallbackInfo ci) {

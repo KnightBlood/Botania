@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:dye",
+  "ingredients": [
+    "#botania:petals/light_gray"
+  ],
+  "result": {
+    "id": "minecraft:light_gray_dye"
+  }
+}

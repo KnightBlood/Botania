@@ -1,0 +1,43 @@
+{
+  "criteria": {
+    "has_alt_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#botania:mana_dusts"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:redstone_torch"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "botania:animated_torch"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_item",
+      "has_alt_item"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "botania:animated_torch"
+    ]
+  },
+  "sends_telemetry_event": true
+}

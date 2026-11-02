@@ -10,6 +10,7 @@ package vazkii.botania.api.block_entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * This object describes the Radius of a BlockEntity. It can either be
@@ -21,7 +22,7 @@ public sealed interface RadiusDescriptor permits RadiusDescriptor.Circle,RadiusD
 
 	record Rectangle(BlockPos subtileCoords, AABB aabb) implements RadiusDescriptor {
 		public static Rectangle square(BlockPos subtileCoords, int expand) {
-			return new Rectangle(subtileCoords, new AABB(subtileCoords.offset(-expand, 0, -expand), subtileCoords.offset(expand + 1, 0, expand + 1)));
+			return new Rectangle(subtileCoords, new AABB(Vec3.atLowerCornerOf(subtileCoords.offset(-expand, 0, -expand)), Vec3.atLowerCornerOf(subtileCoords.offset(expand + 1, 0, expand + 1))));
 		}
 	}
 }

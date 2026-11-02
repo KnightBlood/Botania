@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "botania:horn_grass",
+    "minecraft:snowball"
+  ],
+  "result": {
+    "id": "botania:horn_snow"
+  }
+}

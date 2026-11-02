@@ -9,7 +9,9 @@
 package vazkii.botania.common.block.flower.functional;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -22,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.api.block_entity.FunctionalFlowerBlockEntity;
 import vazkii.botania.api.block_entity.RadiusDescriptor;
@@ -55,7 +58,7 @@ public class LabelliaBlockEntity extends FunctionalFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (!level.isClientSide && redstoneSignal == 0 && getMana() >= COST) {
+		if (!level.isClientSide() && redstoneSignal == 0 && getMana() >= COST) {
 			BlockPos effPos = getEffectivePos();
 			BlockPos realPos = getBlockPos();
 			int x = effPos.getX();
@@ -63,15 +66,14 @@ public class LabelliaBlockEntity extends FunctionalFlowerBlockEntity {
 			int z = effPos.getZ();
 
 			for (ItemEntity nameTagEnt : level.getEntitiesOfClass(ItemEntity.class,
-					new AABB(realPos.offset(-PICKUP_RANGE, 0, -PICKUP_RANGE),
-							realPos.offset(PICKUP_RANGE + 1, 1, PICKUP_RANGE + 1)),
+					new AABB(Vec3.atLowerCornerOf(realPos.offset(-PICKUP_RANGE, 0, -PICKUP_RANGE)), Vec3.atLowerCornerOf(realPos.offset(PICKUP_RANGE + 1, 1, PICKUP_RANGE + 1))),
 					EntitySelector.ENTITY_STILL_ALIVE)) {
 				if (!DelayHelper.canInteractWith(this, nameTagEnt)) {
 					continue;
 				}
 
 				ItemStack nameTag = nameTagEnt.getItem();
-				if (nameTag.is(Items.NAME_TAG) && nameTag.hasCustomHoverName()) {
+				if (nameTag.is(Items.NAME_TAG) && nameTag.getCustomName() != null) {
 					AABB renameArea = new AABB(x - RENAME_RANGE, y, z - RENAME_RANGE, x + RENAME_RANGE + 1, y + 1, z + RENAME_RANGE + 1);
 					Component name = nameTag.getHoverName();
 					List<LivingEntity> nameableEntities = level.getEntitiesOfClass(LivingEntity.class, renameArea,
@@ -91,9 +93,9 @@ public class LabelliaBlockEntity extends FunctionalFlowerBlockEntity {
 							}
 						}
 						for (ItemEntity i : nameableItems) {
-							i.getItem().setHoverName(name);
+							i.getItem().set(DataComponents.CUSTOM_NAME, name);
 							EntityHelper.syncItem(i);
-							((ServerLevel) level).sendParticles(ParticleTypes.INSTANT_EFFECT,
+							((ServerLevel) level).sendParticles(SpellParticleOption.create(ParticleTypes.INSTANT_EFFECT, 1.0F, 1.0F, 1.0F, 1.0F),
 									i.getX(), i.getY(), i.getZ(),
 									3, 0, 0, 0, 0);
 

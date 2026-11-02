@@ -10,6 +10,7 @@ package vazkii.botania.common.block.block_entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 
 import vazkii.botania.client.fx.SparkleParticleData;
@@ -21,8 +22,8 @@ public class StarfieldCreatorBlockEntity extends BotaniaBlockEntity {
 	}
 
 	public static void clientTick(Level level, BlockPos worldPosition, BlockState state, StarfieldCreatorBlockEntity self) {
-		level.updateSkyBrightness(); // this isn't called often on clients, but we need so that isDay is accurate.
-		if (level.isDay()) {
+		level.updateSkyBrightness(); // this isn't called often on clients, but we need so that isBrightOutside is accurate.
+		if (level.isBrightOutside()) {
 			return;
 		}
 
@@ -44,7 +45,7 @@ public class StarfieldCreatorBlockEntity extends BotaniaBlockEntity {
 			int m = 50;
 
 			SparkleParticleData data = SparkleParticleData.sparkle(s, r, g, b, m);
-			level.addParticle(data, true, x, y, z, 0, 0, 0);
+			level.addParticle(data, x, y, z, 0, 0, 0);
 		}
 	}
 

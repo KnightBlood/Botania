@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(Biome.class)
 public interface BiomeAccessor {
+	// 26.1: sea level became a parameter (vanilla hardcoded 64 before)
 	@Invoker
-	float callGetTemperature(BlockPos pos);
+	float callGetTemperature(BlockPos pos, int seaLevel);
 }

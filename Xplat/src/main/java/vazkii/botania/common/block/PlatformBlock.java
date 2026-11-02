@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -41,8 +42,9 @@ import vazkii.botania.common.lib.BotaniaTags;
 
 import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
-public class PlatformBlock extends BotaniaBlock implements ManaCollisionGhost, EntityBlock {
+public class PlatformBlock extends BotaniaBlock implements ManaCollisionGhost, EntityBlock, TooltipBlock {
 
 	public enum Variant {
 		ABSTRUSE(false, (pos, context) -> {
@@ -122,15 +124,21 @@ public class PlatformBlock extends BotaniaBlock implements ManaCollisionGhost, E
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, Consumer<Component> tooltip, TooltipFlag flags) {
 		if (variant.indestructible) {
-			tooltip.add(Component.translatable("botaniamisc.creative").withStyle(ChatFormatting.GRAY));
+			tooltip.accept(Component.translatable("botaniamisc.creative").withStyle(ChatFormatting.GRAY));
 		}
 	}
 
 	@NotNull
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+	protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level world, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hit) {
+		return useItemOn(itemStack, world, player, hand, hit);
+	}
+
+	private InteractionResult useItemOn(ItemStack itemStack, Level world, Player player, InteractionHand hand, BlockHitResult hit) {
+		BlockPos pos = hit.getBlockPos();
+
 		ItemStack currentStack = player.getItemInHand(hand);
 
 		if (variant.indestructible && !player.isCreative()) {
@@ -143,14 +151,14 @@ public class PlatformBlock extends BotaniaBlock implements ManaCollisionGhost, E
 			BlockState changeState = Block.byItem(currentStack.getItem()).getStateForPlacement(ctx);
 
 			if (changeState != null && !changeState.is(BotaniaTags.Blocks.UNSUPPORTED_PLATFORM_DISGUISE)
-					&& (changeState.isSolidRender(world, pos) || changeState.getRenderShape() == RenderShape.MODEL)
+					&& (changeState.isSolidRender() || changeState.getRenderShape() == RenderShape.MODEL)
 					&& !(changeState.getBlock() instanceof PlatformBlock)
 					&& !changeState.isAir()) {
-				if (!world.isClientSide) {
+				if (!world.isClientSide()) {
 					camo.setCamoState(changeState);
 				}
 
-				return InteractionResult.sidedSuccess(world.isClientSide());
+				return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 			}
 		}
 

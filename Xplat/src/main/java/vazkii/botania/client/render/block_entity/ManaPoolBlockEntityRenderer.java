@@ -11,17 +11,23 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.util.Mth;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.Nullable;
@@ -39,23 +45,21 @@ import java.util.Random;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class ManaPoolBlockEntityRenderer implements BlockEntityRenderer<ManaPoolBlockEntity> {
+public class ManaPoolBlockEntityRenderer extends BotaniaBlockEntityRenderer<ManaPoolBlockEntity> {
 
 	// Overrides for when we call this renderer from a cart
 	public static int cartMana = -1;
 	private final TextureAtlasSprite waterSprite;
-	private final BlockRenderDispatcher blockRenderDispatcher;
 
 	public ManaPoolBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-		this.blockRenderDispatcher = ctx.getBlockRenderDispatcher();
 		this.waterSprite = Objects.requireNonNull(
-				Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-						.apply(prefix("block/mana_water"))
+				Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
+						.getSprite(prefix("block/mana_water"))
 		);
 	}
 
 	@Override
-	public void render(@Nullable ManaPoolBlockEntity pool, float f, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@Nullable ManaPoolBlockEntity pool, float f, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		ms.pushPose();
 
 		boolean fab = pool != null && ((ManaPoolBlock) pool.getBlockState().getBlock()).variant == ManaPoolBlock.Variant.FABULOUS;
@@ -78,17 +82,15 @@ public class ManaPoolBlockEntityRenderer implements BlockEntityRenderer<ManaPool
 			int green = (color & 0xFF00) >> 8;
 			int blue = color & 0xFF;
 			BlockState state = pool.getBlockState();
-			BakedModel model = blockRenderDispatcher.getBlockModel(state);
-			VertexConsumer buffer = buffers.getBuffer(ItemBlockRenderTypes.getRenderType(state, false));
-			blockRenderDispatcher.getModelRenderer()
-					.renderModel(ms.last(), buffer, state, model, red / 255F, green / 255F, blue / 255F, light, overlay);
+			BlockStateModel model = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(state);
+			RenderHelper.renderBlockModel(ms, buffers, state, model, red / 255F, green / 255F, blue / 255F, light, overlay);
 		}
 
 		if (pool != null) {
 			Block below = pool.getLevel().getBlockState(pool.getBlockPos().below()).getBlock();
 			if (below instanceof PoolOverlayProvider overlayProvider) {
 				var overlaySpriteId = overlayProvider.getIcon(pool.getLevel(), pool.getBlockPos());
-				var overlayIcon = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(overlaySpriteId);
+				var overlayIcon = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(overlaySpriteId);
 				ms.pushPose();
 
 				float alpha = (float) ((Math.sin((ClientTickHandler.ticksInGame + f) / 20.0) + 1) * 0.3 + 0.2);

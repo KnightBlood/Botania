@@ -10,13 +10,15 @@ package vazkii.botania.common.crafting.recipe;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -24,17 +26,17 @@ import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.ManaBlasterItem;
 
 public class ManaBlasterRemoveLensRecipe extends CustomRecipe {
-	public static final NoOpRecipeSerializer<ManaBlasterRemoveLensRecipe> SERIALIZER = new NoOpRecipeSerializer<>(ManaBlasterRemoveLensRecipe::new);
+	public static final RecipeSerializer<ManaBlasterRemoveLensRecipe> SERIALIZER = NoOpRecipeSerializer.create(ManaBlasterRemoveLensRecipe::new);
 
-	public ManaBlasterRemoveLensRecipe(ResourceLocation id) {
-		super(id, CraftingBookCategory.EQUIPMENT);
+	public ManaBlasterRemoveLensRecipe(Identifier id) {
+		// MC 26.1: CustomRecipe no-arg constructor
 	}
 
 	@Override
-	public boolean matches(@NotNull CraftingContainer inv, @NotNull Level world) {
+	public boolean matches(@NotNull CraftingInput inv, @NotNull Level world) {
 		boolean foundGun = false;
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (!stack.isEmpty()) {
 				if (stack.getItem() instanceof ManaBlasterItem
@@ -51,10 +53,10 @@ public class ManaBlasterRemoveLensRecipe extends CustomRecipe {
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registries) {
+	public ItemStack assemble(@NotNull CraftingInput inv) {
 		ItemStack gun = ItemStack.EMPTY;
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (!stack.isEmpty()) {
 				if (stack.getItem() instanceof ManaBlasterItem) {
@@ -69,20 +71,16 @@ public class ManaBlasterRemoveLensRecipe extends CustomRecipe {
 		return gunCopy;
 	}
 
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height > 0;
-	}
 
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends CustomRecipe> getSerializer() {
 		return SERIALIZER;
 	}
 
 	@NotNull
 	@Override
-	public NonNullList<ItemStack> getRemainingItems(@NotNull CraftingContainer inv) {
+	public NonNullList<ItemStack> getRemainingItems(CraftingInput inv) {
 		return RecipeUtils.getRemainingItemsSub(inv, s -> {
 			if (s.is(BotaniaItems.manaGun)) {
 				ItemStack stack = ManaBlasterItem.getLens(s);

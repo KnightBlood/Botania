@@ -16,13 +16,14 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -110,7 +111,7 @@ public class CorporeaHelperImpl implements CorporeaHelper {
 
 	@Override
 	public CorporeaSpark getSparkForBlock(Level world, BlockPos pos) {
-		List<Entity> sparks = world.getEntitiesOfClass(Entity.class, new AABB(pos.above(), pos.offset(1, 2, 1)), Predicates.instanceOf(CorporeaSpark.class));
+		List<Entity> sparks = world.getEntitiesOfClass(Entity.class, new AABB(Vec3.atLowerCornerOf(pos.above()), Vec3.atLowerCornerOf(pos.offset(1, 2, 1))), Predicates.instanceOf(CorporeaSpark.class));
 		return sparks.isEmpty() ? null : (CorporeaSpark) sparks.get(0);
 	}
 
@@ -126,7 +127,7 @@ public class CorporeaHelperImpl implements CorporeaHelper {
 	}
 
 	@Override
-	public <T extends CorporeaRequestMatcher> void registerRequestMatcher(ResourceLocation id, Class<T> clazz, Function<CompoundTag, T> deserializer) {
+	public <T extends CorporeaRequestMatcher> void registerRequestMatcher(Identifier id, Class<T> clazz, Function<CompoundTag, T> deserializer) {
 		CorporeaRetainerBlockEntity.addCorporeaRequestMatcher(id, clazz, deserializer);
 	}
 

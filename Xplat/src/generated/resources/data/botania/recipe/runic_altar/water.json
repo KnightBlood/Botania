@@ -1,0 +1,15 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    "#botania:mana_dusts",
+    "#botania:manasteel_ingots",
+    "minecraft:bone_meal",
+    "minecraft:sugar_cane",
+    "minecraft:fishing_rod"
+  ],
+  "mana": 5200,
+  "output": {
+    "count": 2,
+    "id": "botania:rune_water"
+  }
+}

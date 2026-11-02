@@ -12,7 +12,8 @@ import com.google.gson.JsonObject;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.biome.Biome;
@@ -28,7 +29,6 @@ import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.crafting.StateIngredientHelper;
 import vazkii.botania.common.lib.BotaniaTags;
 
-import java.util.function.Consumer;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
@@ -41,64 +41,64 @@ public class OrechidProvider extends BotaniaRecipeProvider {
 	// TODO: We had an enormous amount of ores defined for mod compat.
 	//       The old data needs to be completely revised.
 	@Override
-	protected void buildRecipes(Consumer<net.minecraft.data.recipes.FinishedRecipe> consumer) {
-		consumer.accept(stone(Blocks.COAL_ORE, 67415));
-		consumer.accept(stone(Blocks.IRON_ORE, 29371));
-		consumer.accept(stone(Blocks.REDSTONE_ORE, 7654));
-		consumer.accept(stone(Blocks.COPPER_ORE, 7000));
-		consumer.accept(stone(Blocks.GOLD_ORE, 2647));
-		consumer.accept(stone(Blocks.EMERALD_ORE, 1239));
-		consumer.accept(stone(Blocks.LAPIS_ORE, 1079));
-		consumer.accept(stone(Blocks.DIAMOND_ORE, 883));
+	protected void buildRecipes(RecipeOutput output) {
+		saveFinishedRecipe(output, stone(Blocks.COAL_ORE, 67415));
+		saveFinishedRecipe(output, stone(Blocks.IRON_ORE, 29371));
+		saveFinishedRecipe(output, stone(Blocks.REDSTONE_ORE, 7654));
+		saveFinishedRecipe(output, stone(Blocks.COPPER_ORE, 7000));
+		saveFinishedRecipe(output, stone(Blocks.GOLD_ORE, 2647));
+		saveFinishedRecipe(output, stone(Blocks.EMERALD_ORE, 1239));
+		saveFinishedRecipe(output, stone(Blocks.LAPIS_ORE, 1079));
+		saveFinishedRecipe(output, stone(Blocks.DIAMOND_ORE, 883));
 
-		consumer.accept(deepslate(Blocks.DEEPSLATE_COAL_ORE, 75));
-		consumer.accept(deepslate(Blocks.DEEPSLATE_IRON_ORE, 250));
-		consumer.accept(deepslate(Blocks.DEEPSLATE_REDSTONE_ORE, 150));
-		consumer.accept(deepslate(Blocks.DEEPSLATE_COPPER_ORE, 75));
-		consumer.accept(deepslate(Blocks.DEEPSLATE_GOLD_ORE, 125));
-		consumer.accept(deepslate(Blocks.DEEPSLATE_EMERALD_ORE, 50));
-		consumer.accept(deepslate(Blocks.DEEPSLATE_LAPIS_ORE, 175));
-		consumer.accept(deepslate(Blocks.DEEPSLATE_DIAMOND_ORE, 100));
+		saveFinishedRecipe(output, deepslate(Blocks.DEEPSLATE_COAL_ORE, 75));
+		saveFinishedRecipe(output, deepslate(Blocks.DEEPSLATE_IRON_ORE, 250));
+		saveFinishedRecipe(output, deepslate(Blocks.DEEPSLATE_REDSTONE_ORE, 150));
+		saveFinishedRecipe(output, deepslate(Blocks.DEEPSLATE_COPPER_ORE, 75));
+		saveFinishedRecipe(output, deepslate(Blocks.DEEPSLATE_GOLD_ORE, 125));
+		saveFinishedRecipe(output, deepslate(Blocks.DEEPSLATE_EMERALD_ORE, 50));
+		saveFinishedRecipe(output, deepslate(Blocks.DEEPSLATE_LAPIS_ORE, 175));
+		saveFinishedRecipe(output, deepslate(Blocks.DEEPSLATE_DIAMOND_ORE, 100));
 
-		consumer.accept(netherrack(Blocks.NETHER_QUARTZ_ORE, 19600));
-		consumer.accept(netherrack(Blocks.NETHER_GOLD_ORE, 3635));
-		consumer.accept(netherrack(Blocks.ANCIENT_DEBRIS, 148));
+		saveFinishedRecipe(output, netherrack(Blocks.NETHER_QUARTZ_ORE, 19600));
+		saveFinishedRecipe(output, netherrack(Blocks.NETHER_GOLD_ORE, 3635));
+		saveFinishedRecipe(output, netherrack(Blocks.ANCIENT_DEBRIS, 148));
 
-		consumer.accept(biomeStone(BotaniaBlocks.biomeStoneForest, BotaniaTags.Biomes.MARIMORPHOSIS_FOREST_BONUS));
-		consumer.accept(biomeStone(BotaniaBlocks.biomeStonePlains, BotaniaTags.Biomes.MARIMORPHOSIS_PLAINS_BONUS));
-		consumer.accept(biomeStone(BotaniaBlocks.biomeStoneMountain, BotaniaTags.Biomes.MARIMORPHOSIS_MOUNTAIN_BONUS));
-		consumer.accept(biomeStone(BotaniaBlocks.biomeStoneFungal, BotaniaTags.Biomes.MARIMORPHOSIS_FUNGAL_BONUS));
-		consumer.accept(biomeStone(BotaniaBlocks.biomeStoneSwamp, BotaniaTags.Biomes.MARIMORPHOSIS_SWAMP_BONUS));
-		consumer.accept(biomeStone(BotaniaBlocks.biomeStoneDesert, BotaniaTags.Biomes.MARIMORPHOSIS_DESERT_BONUS));
-		consumer.accept(biomeStone(BotaniaBlocks.biomeStoneTaiga, BotaniaTags.Biomes.MARIMORPHOSIS_TAIGA_BONUS));
-		consumer.accept(biomeStone(BotaniaBlocks.biomeStoneMesa, BotaniaTags.Biomes.MARIMORPHOSIS_MESA_BONUS));
+		saveFinishedRecipe(output, biomeStone(BotaniaBlocks.biomeStoneForest, BotaniaTags.Biomes.MARIMORPHOSIS_FOREST_BONUS));
+		saveFinishedRecipe(output, biomeStone(BotaniaBlocks.biomeStonePlains, BotaniaTags.Biomes.MARIMORPHOSIS_PLAINS_BONUS));
+		saveFinishedRecipe(output, biomeStone(BotaniaBlocks.biomeStoneMountain, BotaniaTags.Biomes.MARIMORPHOSIS_MOUNTAIN_BONUS));
+		saveFinishedRecipe(output, biomeStone(BotaniaBlocks.biomeStoneFungal, BotaniaTags.Biomes.MARIMORPHOSIS_FUNGAL_BONUS));
+		saveFinishedRecipe(output, biomeStone(BotaniaBlocks.biomeStoneSwamp, BotaniaTags.Biomes.MARIMORPHOSIS_SWAMP_BONUS));
+		saveFinishedRecipe(output, biomeStone(BotaniaBlocks.biomeStoneDesert, BotaniaTags.Biomes.MARIMORPHOSIS_DESERT_BONUS));
+		saveFinishedRecipe(output, biomeStone(BotaniaBlocks.biomeStoneTaiga, BotaniaTags.Biomes.MARIMORPHOSIS_TAIGA_BONUS));
+		saveFinishedRecipe(output, biomeStone(BotaniaBlocks.biomeStoneMesa, BotaniaTags.Biomes.MARIMORPHOSIS_MESA_BONUS));
 	}
 
-	protected ResourceLocation orechidId(Block b) {
+	protected Identifier orechidId(Block b) {
 		return prefix("orechid/" + BuiltInRegistries.BLOCK.getKey(b).getPath());
 	}
 
-	protected ResourceLocation ignemId(Block b) {
+	protected Identifier ignemId(Block b) {
 		return prefix("orechid_ignem/" + BuiltInRegistries.BLOCK.getKey(b).getPath());
 	}
 
-	protected ResourceLocation marimorphosisId(Block b) {
+	protected Identifier marimorphosisId(Block b) {
 		return prefix("marimorphosis/" + BuiltInRegistries.BLOCK.getKey(b).getPath());
 	}
 
-	protected Result stone(Block output, int weight) {
+	protected Result stone(Block output, int Weighted) {
 		return new Result(BotaniaRecipeTypes.ORECHID_SERIALIZER, orechidId(output),
-				forBlock(Blocks.STONE), forBlock(output), weight);
+				forBlock(Blocks.STONE), forBlock(output), Weighted);
 	}
 
-	protected Result deepslate(Block output, int weight) {
+	protected Result deepslate(Block output, int Weighted) {
 		return new Result(BotaniaRecipeTypes.ORECHID_SERIALIZER, orechidId(output),
-				forBlock(Blocks.DEEPSLATE), forBlock(output), weight);
+				forBlock(Blocks.DEEPSLATE), forBlock(output), Weighted);
 	}
 
-	protected Result netherrack(Block output, int weight) {
+	protected Result netherrack(Block output, int Weighted) {
 		return new Result(BotaniaRecipeTypes.ORECHID_IGNEM_SERIALIZER, ignemId(output),
-				forBlock(Blocks.NETHERRACK), forBlock(output), weight);
+				forBlock(Blocks.NETHERRACK), forBlock(output), Weighted);
 	}
 
 	protected Result biomeStone(Block output, TagKey<Biome> biome) {
@@ -119,31 +119,30 @@ public class OrechidProvider extends BotaniaRecipeProvider {
 		return "Botania Orechid and Marimorphosis recipes";
 	}
 
-	protected static class Result implements net.minecraft.data.recipes.FinishedRecipe {
+	protected static class Result implements BotaniaFinishedRecipe {
 		private final RecipeSerializer<? extends OrechidRecipe> type;
-		private final ResourceLocation id;
+		private final Identifier id;
 		private final StateIngredient input;
 		private final StateIngredient output;
-		private final int weight;
+		private final int Weighted;
 
-		public Result(RecipeSerializer<? extends OrechidRecipe> type, ResourceLocation id,
-				StateIngredient input, StateIngredient output, int weight) {
+		public Result(RecipeSerializer<? extends OrechidRecipe> type, Identifier id,
+				StateIngredient input, StateIngredient output, int Weighted) {
 			this.type = type;
 			this.id = id;
 			this.input = input;
 			this.output = output;
-			this.weight = weight;
+			this.Weighted = Weighted;
 		}
 
 		@Override
 		public void serializeRecipeData(JsonObject json) {
 			json.add("input", input.serialize());
 			json.add("output", output.serialize());
-			json.addProperty("weight", weight);
+			json.addProperty("weight", Weighted);
 		}
 
-		@Override
-		public ResourceLocation getId() {
+				public Identifier getId() {
 			return id;
 		}
 
@@ -160,7 +159,7 @@ public class OrechidProvider extends BotaniaRecipeProvider {
 
 		@Nullable
 		@Override
-		public ResourceLocation getAdvancementId() {
+		public Identifier getAdvancementId() {
 			return null;
 		}
 	}
@@ -169,10 +168,10 @@ public class OrechidProvider extends BotaniaRecipeProvider {
 		private final int bonusWeight;
 		private final TagKey<Biome> biome;
 
-		public BiomeResult(RecipeSerializer<? extends OrechidRecipe> type, ResourceLocation id,
-				StateIngredient input, StateIngredient output, int weight, int bonusWeight,
+		public BiomeResult(RecipeSerializer<? extends OrechidRecipe> type, Identifier id,
+				StateIngredient input, StateIngredient output, int Weighted, int bonusWeight,
 				TagKey<Biome> biome) {
-			super(type, id, input, output, weight);
+			super(type, id, input, output, Weighted);
 			this.bonusWeight = bonusWeight;
 			this.biome = biome;
 		}

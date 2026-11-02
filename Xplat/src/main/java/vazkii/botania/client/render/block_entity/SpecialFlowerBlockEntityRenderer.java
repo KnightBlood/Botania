@@ -12,8 +12,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -35,7 +33,7 @@ import vazkii.botania.common.helper.PlayerHelper;
 import vazkii.botania.common.item.WandOfTheForestItem;
 import vazkii.botania.common.item.equipment.bauble.ManaseerMonocleItem;
 
-public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity> implements BlockEntityRenderer<T> {
+public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity> extends BotaniaBlockEntityRenderer<T> {
 
 	public static final int INNER_ALPHA = 32;
 	public static final int OUTER_ALPHA = 64;
@@ -48,11 +46,11 @@ public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity
 	public SpecialFlowerBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {}
 
 	@Override
-	public void render(SpecialFlowerBlockEntity tile, float partialTicks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(SpecialFlowerBlockEntity tile, float partialTicks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		if (tile.isFloating()) {
 			FloatingFlowerBlockEntityRenderer.renderFloatingIsland(tile, partialTicks, ms, buffers, overlay);
 		}
-		if (!(Minecraft.getInstance().cameraEntity instanceof LivingEntity view)) {
+		if (!(Minecraft.getInstance().getCameraEntity() instanceof LivingEntity view)) {
 			return;
 		}
 
@@ -80,7 +78,7 @@ public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity
 		}
 	}
 
-	public static void renderRadius(BlockEntity tile, PoseStack ms, MultiBufferSource buffers, @Nullable RadiusDescriptor descriptor) {
+	public static void renderRadius(BlockEntity tile, PoseStack ms, BotaniaRenderContext buffers, @Nullable RadiusDescriptor descriptor) {
 		if (descriptor != null) {
 			ms.pushPose();
 			ms.translate(0, RenderHelper.getOffY(), 0);
@@ -102,7 +100,7 @@ public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity
 		return false;
 	}
 
-	public static void renderCircle(PoseStack ms, MultiBufferSource buffers, BlockPos tilePos, BlockPos center, double radius) {
+	public static void renderCircle(PoseStack ms, BotaniaRenderContext buffers, BlockPos tilePos, BlockPos center, double radius) {
 		ms.pushPose();
 		ms.translate(center.getX() - tilePos.getX() + 0.5, center.getY() - tilePos.getY(), center.getZ() - tilePos.getZ() + 0.5);
 
@@ -115,8 +113,8 @@ public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity
 		Matrix4f mat = ms.last().pose();
 
 		double innerRadius = radius - FRAME_WIDTH;
-		Runnable centerFuncInner = () -> buffer.vertex(mat, 0, Y_OFFSET_INNER, 0).color(r, g, b, INNER_ALPHA).endVertex();
-		Runnable centerFuncOuter = () -> buffer.vertex(mat, 0, Y_OFFSET_OUTER, 0).color(r, g, b, OUTER_ALPHA).endVertex();
+		Runnable centerFuncInner = () -> buffer.addVertex(mat, 0, Y_OFFSET_INNER, 0).setColor(r, g, b, INNER_ALPHA);
+		Runnable centerFuncOuter = () -> buffer.addVertex(mat, 0, Y_OFFSET_OUTER, 0).setColor(r, g, b, OUTER_ALPHA);
 		Runnable[] vertexFuncsInner = new Runnable[TOTAL_ANGLES + 1];
 		Runnable[] vertexFuncsOuter = new Runnable[TOTAL_ANGLES + 1];
 
@@ -127,11 +125,11 @@ public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity
 
 			float xpInner = (float) (cos * innerRadius);
 			float zpInner = (float) (sin * innerRadius);
-			vertexFuncsInner[i] = (() -> buffer.vertex(mat, xpInner, Y_OFFSET_INNER, zpInner).color(r, g, b, INNER_ALPHA).endVertex());
+			vertexFuncsInner[i] = (() -> buffer.addVertex(mat, xpInner, Y_OFFSET_INNER, zpInner).setColor(r, g, b, INNER_ALPHA));
 
 			float xpOuter = (float) (Math.cos(rad) * radius);
 			float zpOuter = (float) (Math.sin(rad) * radius);
-			vertexFuncsOuter[i] = (() -> buffer.vertex(mat, xpOuter, Y_OFFSET_OUTER, zpOuter).color(r, g, b, OUTER_ALPHA).endVertex());
+			vertexFuncsOuter[i] = (() -> buffer.addVertex(mat, xpOuter, Y_OFFSET_OUTER, zpOuter).setColor(r, g, b, OUTER_ALPHA));
 		}
 		vertexFuncsInner[TOTAL_ANGLES] = vertexFuncsInner[0];
 		vertexFuncsOuter[TOTAL_ANGLES] = vertexFuncsOuter[0];
@@ -142,7 +140,7 @@ public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity
 		ms.popPose();
 	}
 
-	public static void renderRectangle(PoseStack ms, MultiBufferSource buffers, BlockPos tilePos, AABB aabb) {
+	public static void renderRectangle(PoseStack ms, BotaniaRenderContext buffers, BlockPos tilePos, AABB aabb) {
 		ms.pushPose();
 		ms.translate(aabb.minX - tilePos.getX(), aabb.minY - tilePos.getY(), aabb.minZ - tilePos.getZ());
 

@@ -10,8 +10,6 @@ package vazkii.botania.client.render.block_entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -25,16 +23,16 @@ import vazkii.botania.xplat.ClientXplatAbstractions;
 
 import java.util.Random;
 
-public class FloatingFlowerBlockEntityRenderer implements BlockEntityRenderer<FloatingFlowerBlockEntity> {
+public class FloatingFlowerBlockEntityRenderer extends BotaniaBlockEntityRenderer<FloatingFlowerBlockEntity> {
 
 	public FloatingFlowerBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {}
 
 	@Override
-	public void render(@NotNull FloatingFlowerBlockEntity tile, float t, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@NotNull FloatingFlowerBlockEntity tile, float t, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		renderFloatingIsland(tile, t, ms, buffers, overlay);
 	}
 
-	public static void renderFloatingIsland(BlockEntity tile, float t, PoseStack ms, MultiBufferSource buffers, int overlay) {
+	public static void renderFloatingIsland(BlockEntity tile, float t, PoseStack ms, BotaniaRenderContext buffers, int overlay) {
 		if (BotaniaConfig.client().staticFloaters()) {
 			return;
 		}

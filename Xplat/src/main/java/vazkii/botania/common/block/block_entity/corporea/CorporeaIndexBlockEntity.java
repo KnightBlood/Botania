@@ -301,7 +301,7 @@ public class CorporeaIndexBlockEntity extends BaseCorporeaBlockEntity implements
 
 	public static List<CorporeaIndexBlockEntity> getNearbyValidIndexes(Player player) {
 		List<CorporeaIndexBlockEntity> result = new ArrayList<>();
-		for (var index : (player.level().isClientSide ? clientIndexes : serverIndexes)) {
+		for (var index : (player.level().isClientSide() ? clientIndexes : serverIndexes)) {
 			if (index.getSpark() != null && index.isInRange(player)) {
 				result.add(index);
 			}
@@ -353,12 +353,12 @@ public class CorporeaIndexBlockEntity extends BaseCorporeaBlockEntity implements
 	}
 
 	private static void addIndex(CorporeaIndexBlockEntity index) {
-		Set<CorporeaIndexBlockEntity> set = index.level.isClientSide ? clientIndexes : serverIndexes;
+		Set<CorporeaIndexBlockEntity> set = index.level.isClientSide() ? clientIndexes : serverIndexes;
 		set.add(index);
 	}
 
 	private static void removeIndex(CorporeaIndexBlockEntity index) {
-		Set<CorporeaIndexBlockEntity> set = index.level.isClientSide ? clientIndexes : serverIndexes;
+		Set<CorporeaIndexBlockEntity> set = index.level.isClientSide() ? clientIndexes : serverIndexes;
 		set.remove(index);
 	}
 
@@ -373,7 +373,7 @@ public class CorporeaIndexBlockEntity extends BaseCorporeaBlockEntity implements
 
 			player.sendSystemMessage(Component.translatable("botaniamisc.requestMsg", count, request.getRequestName(), res.matchedCount(), res.extractedCount()).withStyle(ChatFormatting.LIGHT_PURPLE));
 			player.awardStat(BotaniaStats.CORPOREA_ITEMS_REQUESTED, res.extractedCount());
-			CorporeaRequestTrigger.INSTANCE.trigger(player, player.serverLevel(), this.getBlockPos(), res.extractedCount());
+			CorporeaRequestTrigger.INSTANCE.trigger(player, player.level(), this.getBlockPos(), res.extractedCount());
 		}
 	}
 

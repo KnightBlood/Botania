@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "minecraft:lapis_lazuli",
+    "L": "botania:lens_normal",
+    "P": "minecraft:piston",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    " P ",
+    "ALA",
+    " R "
+  ],
+  "result": {
+    "id": "botania:lens_mine"
+  }
+}

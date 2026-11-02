@@ -1,18 +1,20 @@
 package vazkii.botania.client.render.entity;
 
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -20,10 +22,8 @@ import vazkii.botania.client.render.block_entity.*;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
-import vazkii.botania.common.block.block_entity.GaiaHeadBlockEntity;
 import vazkii.botania.common.entity.BotaniaEntities;
 
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -56,15 +56,16 @@ public final class EntityRenderers {
 		consumer.accept(BotaniaEntities.ENDER_AIR_BOTTLE, ThrownItemRenderer::new);
 	}
 
-	public static void addAuxiliaryPlayerRenders(PlayerRenderer renderer,
-			Consumer<RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>> consumer) {
+	public static void addAuxiliaryPlayerRenders(AvatarRenderer<AbstractClientPlayer> renderer,
+			Consumer<RenderLayer<AvatarRenderState, PlayerModel>> consumer) {
 		consumer.accept(new ContributorFancinessHandler(renderer));
 		consumer.accept(new ManaTabletRenderHandler(renderer));
 		consumer.accept(new TerrasteelHelmetLayer(renderer));
 	}
 
 	public interface BERConsumer {
-		<E extends BlockEntity> void register(BlockEntityType<E> type, BlockEntityRendererProvider<? super E> factory);
+		<E extends BlockEntity, S extends BlockEntityRenderState> void register(BlockEntityType<? extends E> type,
+				BlockEntityRendererProvider<E, S> factory);
 	}
 
 	public static void registerBlockEntityRenderers(BERConsumer consumer) {
@@ -96,9 +97,7 @@ public final class EntityRenderers {
 		consumer.register(BotaniaBlockEntities.COCOON, CocoonBlockEntityRenderer::new);
 		consumer.register(BotaniaBlockEntities.LIGHT_RELAY, LuminizerBlockEntityRenderer::new);
 		consumer.register(BotaniaBlockEntities.BELLOWS, BellowsBlockEntityRenderer::new);
-		@SuppressWarnings("unchecked")
-		BlockEntityRendererProvider<GaiaHeadBlockEntity> gaia = ctx -> (BlockEntityRenderer<GaiaHeadBlockEntity>) (BlockEntityRenderer<?>) new GaiaHeadBlockEntityRenderer(ctx);
-		consumer.register(BotaniaBlockEntities.GAIA_HEAD, gaia);
+		consumer.register(BotaniaBlockEntities.GAIA_HEAD, SkullBlockRenderer::new);
 		consumer.register(BotaniaBlockEntities.TERU_TERU_BOZU, TeruTeruBozuBlockEntityRenderer::new);
 		consumer.register(BotaniaBlockEntities.AVATAR, AvatarBlockEntityRenderer::new);
 		consumer.register(BotaniaBlockEntities.ANIMATED_TORCH, AnimatedTorchBlockEntityRenderer::new);
@@ -156,18 +155,6 @@ public final class EntityRenderers {
 		consumer.register(BotaniaFlowerBlocks.ORECHID_IGNEM, SpecialFlowerBlockEntityRenderer::new);
 		consumer.register(BotaniaFlowerBlocks.LABELLIA, SpecialFlowerBlockEntityRenderer::new);
 	}
-
-	public static final Map<Block, Function<Block, TEISR>> BE_ITEM_RENDERER_FACTORIES = Map.of(
-			BotaniaBlocks.manaPylon, PylonBlockEntityRenderer.ItemRenderer::new,
-			BotaniaBlocks.naturaPylon, PylonBlockEntityRenderer.ItemRenderer::new,
-			BotaniaBlocks.gaiaPylon, PylonBlockEntityRenderer.ItemRenderer::new,
-			BotaniaBlocks.teruTeruBozu, TEISR::new,
-			BotaniaBlocks.avatar, TEISR::new,
-			BotaniaBlocks.bellows, TEISR::new,
-			BotaniaBlocks.brewery, TEISR::new,
-			BotaniaBlocks.corporeaIndex, TEISR::new,
-			BotaniaBlocks.hourglass, TEISR::new
-	);
 
 	private EntityRenderers() {}
 }

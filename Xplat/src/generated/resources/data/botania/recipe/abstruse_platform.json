@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "0": "#botania:livingwood_logs",
+    "3": "botania:framed_livingwood",
+    "4": "botania:pattern_framed_livingwood",
+    "P": "botania:mana_pearl"
+  },
+  "pattern": [
+    "343",
+    "0P0"
+  ],
+  "result": {
+    "count": 2,
+    "id": "botania:abstruse_platform"
+  }
+}

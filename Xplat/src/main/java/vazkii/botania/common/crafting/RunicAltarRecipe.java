@@ -9,59 +9,59 @@
 package vazkii.botania.common.crafting;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.Container;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 import vazkii.botania.common.crafting.recipe.RecipeUtils;
-
-import java.util.ArrayList;
-import java.util.List;
+import vazkii.botania.common.helper.IngredientHelper;
 
 public class RunicAltarRecipe implements vazkii.botania.api.recipe.RunicAltarRecipe {
-	private final ResourceLocation id;
-	private final ItemStack output;
-	private final NonNullList<Ingredient> inputs;
-	private final int mana;
+	protected Identifier id;
+	protected final ItemStackTemplate output;
+	protected final NonNullList<Ingredient> inputs;
+	protected final int mana;
 
-	public RunicAltarRecipe(ResourceLocation id, ItemStack output, int mana, Ingredient... inputs) {
+	public RunicAltarRecipe(Identifier id, ItemStackTemplate output, int mana, Ingredient... inputs) {
 		Preconditions.checkArgument(inputs.length <= 16, "Cannot have more than 16 ingredients");
 		this.id = id;
 		this.output = output;
-		this.inputs = NonNullList.of(Ingredient.EMPTY, inputs);
+		this.inputs = NonNullList.of(IngredientHelper.EMPTY, inputs);
 		this.mana = mana;
 	}
 
 	@Override
-	public boolean matches(Container inv, @NotNull Level world) {
+	public boolean matches(RecipeInput inv, @NotNull Level world) {
 		return RecipeUtils.matches(inputs, inv, null);
 	}
 
 	@NotNull
 	@Override
-	public final ItemStack getResultItem(@NotNull RegistryAccess registries) {
-		return output;
+	public ItemStack getResultItem() {
+		return output.create();
 	}
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull Container inv, @NotNull RegistryAccess registries) {
-		return getResultItem(registries).copy();
+	public ItemStack assemble(@NotNull RecipeInput inv) {
+		return getResultItem().copy();
 	}
 
 	@NotNull
@@ -71,20 +71,24 @@ public class RunicAltarRecipe implements vazkii.botania.api.recipe.RunicAltarRec
 	}
 
 	@NotNull
-	@Override
 	public ItemStack getToastSymbol() {
 		return new ItemStack(BotaniaBlocks.runeAltar);
 	}
 
 	@NotNull
 	@Override
-	public ResourceLocation getId() {
+	public Identifier getId() {
 		return id;
+	}
+
+	@Override
+	public void setId(Identifier id) {
+		this.id = id;
 	}
 
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends Recipe<RecipeInput>> getSerializer() {
 		return BotaniaRecipeTypes.RUNE_SERIALIZER;
 	}
 
@@ -93,40 +97,20 @@ public class RunicAltarRecipe implements vazkii.botania.api.recipe.RunicAltarRec
 		return mana;
 	}
 
-	public static class Serializer implements RecipeSerializer<RunicAltarRecipe> {
-		@NotNull
-		@Override
-		public RunicAltarRecipe fromJson(@NotNull ResourceLocation id, @NotNull JsonObject json) {
-			ItemStack output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "output"));
-			int mana = GsonHelper.getAsInt(json, "mana");
-			JsonArray ingrs = GsonHelper.getAsJsonArray(json, "ingredients");
-			List<Ingredient> inputs = new ArrayList<>();
-			for (JsonElement e : ingrs) {
-				inputs.add(Ingredient.fromJson(e));
-			}
-			return new RunicAltarRecipe(id, output, mana, inputs.toArray(new Ingredient[0]));
-		}
+	public static final MapCodec<RunicAltarRecipe> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			ItemStackTemplate.CODEC.fieldOf("output").forGetter(r -> r.output),
+			Codec.INT.fieldOf("mana").forGetter(r -> r.mana),
+			IngredientHelper.CODEC.listOf().fieldOf("ingredients").forGetter(r -> r.inputs)
+	).apply(i, (output, mana, inputs) -> new RunicAltarRecipe(RecipeSerializers.UNKNOWN_ID,
+			output, mana, inputs.toArray(new Ingredient[0]))));
 
-		@Override
-		public RunicAltarRecipe fromNetwork(@NotNull ResourceLocation id, @NotNull FriendlyByteBuf buf) {
-			Ingredient[] inputs = new Ingredient[buf.readVarInt()];
-			for (int i = 0; i < inputs.length; i++) {
-				inputs[i] = Ingredient.fromNetwork(buf);
-			}
-			ItemStack output = buf.readItem();
-			int mana = buf.readVarInt();
-			return new RunicAltarRecipe(id, output, mana, inputs);
-		}
+	public static final StreamCodec<RegistryFriendlyByteBuf, RunicAltarRecipe> STREAM_CODEC = StreamCodec.composite(
+			ItemStackTemplate.STREAM_CODEC, r -> r.output,
+			ByteBufCodecs.VAR_INT, r -> r.mana,
+			RecipeSerializers.ingredientList(), r -> r.inputs,
+			(output, mana, inputs) -> new RunicAltarRecipe(RecipeSerializers.UNKNOWN_ID,
+					output, mana, inputs.toArray(new Ingredient[0]))
+	);
 
-		@Override
-		public void toNetwork(@NotNull FriendlyByteBuf buf, @NotNull RunicAltarRecipe recipe) {
-			buf.writeVarInt(recipe.getIngredients().size());
-			for (Ingredient input : recipe.getIngredients()) {
-				input.toNetwork(buf);
-			}
-			buf.writeItem(recipe.output);
-			buf.writeVarInt(recipe.getManaUsage());
-		}
-	}
-
+	public static final RecipeSerializer<RunicAltarRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
 }

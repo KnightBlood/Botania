@@ -71,3 +71,16 @@ Temporary Items
 
 # Logs
 Xplat/logs/latest.log
+
+# Local MC 26.1 migration tooling (decompiled reference sources + helper scripts)
+mc26_src/
+mc26_class_index.json
+build_errors*.txt
+tools/__pycache__/
+
+# Local run logs and IDE-local data
+tools/
+run/
+.vscode/
+.workbuddy/
+Forge/.eclipse/

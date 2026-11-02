@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
@@ -31,6 +32,7 @@ import vazkii.botania.common.entity.GaiaGuardianEntity;
 import vazkii.botania.common.item.*;
 import vazkii.botania.common.lib.LibMisc;
 import vazkii.botania.common.proxy.Proxy;
+import vazkii.botania.mixin.client.DebugScreenEntriesAccessor;
 import vazkii.botania.xplat.BotaniaConfig;
 import vazkii.patchouli.api.IMultiblock;
 import vazkii.patchouli.api.PatchouliAPI;
@@ -48,8 +50,11 @@ public class ClientProxy implements Proxy {
 
 	public static KeyMapping CORPOREA_REQUEST;
 
+	public static final KeyMapping.Category BOTANIA_CATEGORY = KeyMapping.Category
+			.register(Identifier.fromNamespaceAndPath(LibMisc.MOD_ID, "botania"));
+
 	public static void initKeybindings(Consumer<KeyMapping> consumer) {
-		CORPOREA_REQUEST = new KeyMapping("key.botania_corporea_request", GLFW.GLFW_KEY_C, LibMisc.MOD_NAME);
+		CORPOREA_REQUEST = new KeyMapping("key.botania_corporea_request", GLFW.GLFW_KEY_C, BOTANIA_CATEGORY);
 		consumer.accept(CORPOREA_REQUEST);
 	}
 
@@ -63,6 +68,12 @@ public class ClientProxy implements Proxy {
 				ClientProxy.dootDoot = true;
 			}
 		}
+	}
+
+	// MC 26.1: F3 debug screen entries are registered instead of intercepting text lists
+	public static void initDebugEntry() {
+		Identifier id = Identifier.fromNamespaceAndPath(LibMisc.MOD_ID, "mana_network");
+		DebugScreenEntriesAccessor.botania_registerDebugEntry(id, new BotaniaDebugEntry());
 	}
 
 	@Override
@@ -99,8 +110,8 @@ public class ClientProxy implements Proxy {
 	@Override
 	public void addParticleForceNear(Level world, ParticleOptions particleData, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
 		Camera info = Minecraft.getInstance().gameRenderer.getMainCamera();
-		if (info.isInitialized() && info.getPosition().distanceToSqr(x, y, z) <= 1024.0D) {
-			world.addParticle(particleData, true, x, y, z, xSpeed, ySpeed, zSpeed);
+		if (info.isInitialized() && info.position().distanceToSqr(x, y, z) <= 1024.0D) {
+			world.addParticle(particleData, x, y, z, xSpeed, ySpeed, zSpeed);
 		}
 	}
 

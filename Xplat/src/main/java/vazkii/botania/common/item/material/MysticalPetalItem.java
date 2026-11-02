@@ -9,17 +9,19 @@
 package vazkii.botania.common.item.material;
 
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import vazkii.botania.api.recipe.CustomApothecaryColor;
 
-public class MysticalPetalItem extends ItemNameBlockItem implements CustomApothecaryColor {
+public class MysticalPetalItem extends Item implements CustomApothecaryColor {
 	public final DyeColor color;
+	public final Block buriedPetals;
 
 	public MysticalPetalItem(Block buriedPetals, DyeColor color, Properties props) {
-		super(buriedPetals, props);
+		super(props);
+		this.buriedPetals = buriedPetals;
 		this.color = color;
 	}
 

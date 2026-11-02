@@ -1,0 +1,18 @@
+{
+  "type": "botania:armor_upgrade",
+  "category": "equipment",
+  "key": {
+    "A": "botania:manasteel_chestplate",
+    "R": "botania:rune_summer",
+    "S": "#botania:terrasteel_ingots",
+    "T": "botania:livingwood_twig"
+  },
+  "pattern": [
+    "TRT",
+    "SAS",
+    " S "
+  ],
+  "result": {
+    "id": "botania:terrasteel_chestplate"
+  }
+}

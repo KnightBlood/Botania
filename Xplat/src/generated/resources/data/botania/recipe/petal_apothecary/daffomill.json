@@ -1,0 +1,16 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/white",
+    "#botania:petals/white",
+    "#botania:petals/brown",
+    "#botania:petals/yellow",
+    "botania:rune_air",
+    "botania:redstone_root"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:daffomill"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

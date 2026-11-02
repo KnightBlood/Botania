@@ -1,0 +1,14 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/yellow",
+    "#botania:petals/yellow",
+    "#botania:petals/orange",
+    "#botania:petals/light_blue"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:daybloom_motif"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "botania:glimmering_dreamwood",
+  "ingredients": [
+    "botania:dreamwood",
+    "minecraft:glowstone_dust"
+  ],
+  "result": {
+    "id": "botania:glimmering_dreamwood"
+  }
+}

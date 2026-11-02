@@ -1,0 +1,9 @@
+{
+  "type": "botania:mana_infusion",
+  "input": "minecraft:ender_pearl",
+  "mana": 6000,
+  "output": {
+    "count": 1,
+    "id": "botania:mana_pearl"
+  }
+}

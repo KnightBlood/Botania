@@ -36,11 +36,12 @@ public class FlowerPouchContainer extends AbstractContainerMenu {
 	private final ItemStack bag;
 	public final Container flowerBagInv;
 
+	@SuppressWarnings("this-escape")
 	public FlowerPouchContainer(int windowId, Inventory playerInv, ItemStack bag) {
 		super(BotaniaItems.FLOWER_BAG_CONTAINER, windowId);
 
 		this.bag = bag;
-		if (!playerInv.player.level().isClientSide) {
+		if (!playerInv.player.level().isClientSide()) {
 			flowerBagInv = FlowerPouchItem.getInventory(bag);
 		} else {
 			flowerBagInv = new SimpleContainer(FlowerPouchItem.SIZE);

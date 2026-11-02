@@ -2,11 +2,13 @@ package vazkii.botania.xplat;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -25,7 +27,7 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -167,18 +169,20 @@ public interface XplatAbstractions {
 	// Registrations
 	boolean isSpecialFlowerBlock(Block b);
 
-	default FlowerBlock createSpecialFlowerBlock(MobEffect effect, int effectDuration,
+	default FlowerBlock createSpecialFlowerBlock(
+			Holder<MobEffect> effect, int effectDuration,
 			BlockBehaviour.Properties props,
 			Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> beType) {
 		return createSpecialFlowerBlock(effect, effectDuration, props, beType, false);
 	}
 
-	FlowerBlock createSpecialFlowerBlock(MobEffect effect, int effectDuration,
+	FlowerBlock createSpecialFlowerBlock(
+			Holder<MobEffect> effect, int effectDuration,
 			BlockBehaviour.Properties props,
 			Supplier<BlockEntityType<? extends SpecialFlowerBlockEntity>> beType,
 			boolean hasComparatorOutput);
 	<T extends BlockEntity> BlockEntityType<T> createBlockEntityType(BiFunction<BlockPos, BlockState, T> func, Block... blocks);
-	void registerReloadListener(PackType type, ResourceLocation id, PreparableReloadListener listener);
+	void registerReloadListener(PackType type, Identifier id, PreparableReloadListener listener);
 	Item.Properties defaultItemBuilder();
 
 	default Item.Properties defaultItemBuilderWithCustomDamageOnFabric() {
@@ -199,8 +203,8 @@ public interface XplatAbstractions {
 
 	// Misc
 	void openMenu(ServerPlayer player, MenuProvider menu, Consumer<FriendlyByteBuf> buf);
-	Attribute getReachDistanceAttribute();
-	Attribute getStepHeightAttribute();
+	Holder<Attribute> getReachDistanceAttribute();
+	Holder<Attribute> getStepHeightAttribute();
 	TagKey<Block> getOreTag();
 	boolean isInGlassTag(BlockState state);
 	// Forge patches AbstractFurnaceBlockEntity.canBurn to be an instance method, so we gotta abstract it
@@ -212,7 +216,9 @@ public interface XplatAbstractions {
 	void addAxeStripping(Block input, Block output);
 	int transferEnergyToNeighbors(Level level, BlockPos pos, int energy);
 	@Nullable
-	FoodProperties getFoodProperties(ItemStack stack);
+	default FoodProperties getFoodProperties(ItemStack stack) {
+		return stack.get(net.minecraft.core.component.DataComponents.FOOD);
+	}
 	boolean canToolLightFire(ItemStack stack);
 
 	// Red string container

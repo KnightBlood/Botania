@@ -1,4 +1,5 @@
 {
+  "fabric:type": "botania:floating_flower",
   "parent": "minecraft:block/block",
   "flower": {
     "parent": "botania:block/purple_mystical_flower"

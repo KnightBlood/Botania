@@ -24,14 +24,15 @@ public class ItemBackedInventory extends SimpleContainer {
 	private static final String TAG_ITEMS = "Items";
 	private final ItemStack stack;
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public ItemBackedInventory(ItemStack stack, int expectedSize) {
-		super(expectedSize);
+		super(stack);
 		this.stack = stack;
 
 		ListTag lst = ItemNBTHelper.getList(stack, TAG_ITEMS, Tag.TAG_COMPOUND, false);
 		int i = 0;
 		for (; i < expectedSize && i < lst.size(); i++) {
-			setItem(i, ItemStack.of(lst.getCompound(i)));
+			setItem(i, ItemNBTHelper.deserializeStackNbt(lst.getCompoundOrEmpty(i)));
 		}
 	}
 
@@ -45,7 +46,7 @@ public class ItemBackedInventory extends SimpleContainer {
 		super.setChanged();
 		ListTag list = new ListTag();
 		for (int i = 0; i < getContainerSize(); i++) {
-			list.add(getItem(i).save(new CompoundTag()));
+			list.add(ItemNBTHelper.serializeStackNbt(getItem(i)));
 		}
 		ItemNBTHelper.setList(stack, TAG_ITEMS, list);
 	}

@@ -9,7 +9,7 @@
 package vazkii.botania.common.block.block_entity;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
@@ -18,6 +18,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -38,6 +39,7 @@ import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.brew.BotaniaBrews;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.handler.BotaniaSounds;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.helper.EntityHelper;
 
 import java.util.List;
@@ -89,7 +91,9 @@ public class BreweryBlockEntity extends SimpleInventoryBlockEntity implements Ma
 	}
 
 	private void findRecipe() {
-		Optional<BotanicalBreweryRecipe> maybeRecipe = level.getRecipeManager().getRecipeFor(BotaniaRecipeTypes.BREW_TYPE, getItemHandler(), level);
+		Optional<BotanicalBreweryRecipe> maybeRecipe = RecipeHelper.getRecipeManager(level)
+			.getRecipeFor(BotaniaRecipeTypes.BREW_TYPE, RecipeHelper.adapt(getItemHandler()), level)
+			.map(RecipeHolder::value);
 		maybeRecipe.ifPresent(recipeBrew -> {
 			this.recipe = recipeBrew;
 			level.setBlockAndUpdate(worldPosition, BotaniaBlocks.brewery.defaultBlockState().setValue(BlockStateProperties.POWERED, true));
@@ -108,7 +112,7 @@ public class BreweryBlockEntity extends SimpleInventoryBlockEntity implements Ma
 		// Update every tick.
 		self.receiveMana(0);
 
-		if (!level.isClientSide && self.recipe == null) {
+		if (!level.isClientSide() && self.recipe == null) {
 			List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, new AABB(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), worldPosition.getX() + 1, worldPosition.getY() + 1, worldPosition.getZ() + 1));
 			for (ItemEntity item : items) {
 				if (item.isAlive() && !item.getItem().isEmpty()) {
@@ -121,7 +125,7 @@ public class BreweryBlockEntity extends SimpleInventoryBlockEntity implements Ma
 		}
 
 		if (self.recipe != null) {
-			if (!self.recipe.matches(self.getItemHandler(), level)) {
+			if (!self.recipe.matches(RecipeHelper.adapt(self.getItemHandler()), level)) {
 				self.recipe = null;
 				level.setBlockAndUpdate(worldPosition, BotaniaBlocks.brewery.defaultBlockState());
 			}
@@ -142,7 +146,7 @@ public class BreweryBlockEntity extends SimpleInventoryBlockEntity implements Ma
 					}
 				}
 
-				if (self.mana >= self.getManaCost() && !level.isClientSide) {
+				if (self.mana >= self.getManaCost() && !level.isClientSide()) {
 					int mana = self.getManaCost();
 					self.receiveMana(-mana);
 
@@ -174,7 +178,7 @@ public class BreweryBlockEntity extends SimpleInventoryBlockEntity implements Ma
 	@Override
 	public boolean triggerEvent(int event, int param) {
 		if (event == CRAFT_EFFECT_EVENT) {
-			if (level.isClientSide) {
+			if (level.isClientSide()) {
 				for (int i = 0; i < 25; i++) {
 					float r = (param >> 16 & 0xFF) / 255F;
 					float g = (param >> 8 & 0xFF) / 255F;
@@ -213,7 +217,7 @@ public class BreweryBlockEntity extends SimpleInventoryBlockEntity implements Ma
 	public void readPacketNBT(CompoundTag tag) {
 		super.readPacketNBT(tag);
 
-		mana = tag.getInt(TAG_MANA);
+		mana = tag.getIntOr(TAG_MANA, 0);
 	}
 
 	@Override
@@ -264,7 +268,7 @@ public class BreweryBlockEntity extends SimpleInventoryBlockEntity implements Ma
 		}
 
 		@Override
-		public void renderHUD(GuiGraphics gui, Minecraft mc) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc) {
 			int manaToGet = brewery.getManaCost();
 			if (manaToGet > 0) {
 				if (brewery.recipe == null) {

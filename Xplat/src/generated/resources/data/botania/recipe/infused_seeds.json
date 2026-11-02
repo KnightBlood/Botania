@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:seeds",
+  "ingredients": [
+    "botania:grass_seeds",
+    "minecraft:prismarine_shard"
+  ],
+  "result": {
+    "id": "botania:infused_seeds"
+  }
+}

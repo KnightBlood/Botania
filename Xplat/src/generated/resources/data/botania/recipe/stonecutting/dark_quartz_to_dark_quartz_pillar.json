@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:dark_quartz",
+  "result": {
+    "id": "botania:dark_quartz_pillar"
+  }
+}

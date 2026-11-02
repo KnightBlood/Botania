@@ -11,13 +11,13 @@ package vazkii.botania.common.block.flower.functional;
 import com.google.common.collect.ImmutableList;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -77,12 +77,12 @@ public class RannuncarpusBlockEntity extends FunctionalFlowerBlockEntity impleme
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide || redstoneSignal > 0) {
+		if (getLevel().isClientSide() || redstoneSignal > 0) {
 			return;
 		}
 
 		if (ticksExisted % PLACE_INTERVAL_TICKS == 0) {
-			List<ItemEntity> items = getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(getBlockPos().offset(-PICKUP_RANGE, -PICKUP_RANGE_Y, -PICKUP_RANGE), getBlockPos().offset(PICKUP_RANGE + 1, PICKUP_RANGE_Y + 1, PICKUP_RANGE + 1)));
+			List<ItemEntity> items = getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(Vec3.atLowerCornerOf(getBlockPos().offset(-PICKUP_RANGE, -PICKUP_RANGE_Y, -PICKUP_RANGE)), Vec3.atLowerCornerOf(getBlockPos().offset(PICKUP_RANGE + 1, PICKUP_RANGE_Y + 1, PICKUP_RANGE + 1))));
 
 			List<ItemStack> filter = HopperhockBlockEntity.getFilterForInventory(getLevel(), getFilterPos(), false);
 
@@ -97,14 +97,14 @@ public class RannuncarpusBlockEntity extends FunctionalFlowerBlockEntity impleme
 				}
 
 				Item stackItem = stack.getItem();
-				ResourceLocation id = BuiltInRegistries.ITEM.getKey(stackItem);
+				Identifier id = BuiltInRegistries.ITEM.getKey(stackItem);
 				if (BotaniaConfig.common().rannuncarpusModBlacklist().contains(id.getNamespace())
 						|| BotaniaConfig.common().rannuncarpusItemBlacklist().contains(id.toString())) {
 					continue;
 				}
 
 				if (stackItem instanceof BlockItem || stackItem instanceof FlowerPlaceable) {
-					BlockPos coords = getCandidatePosition(getLevel().random, stack);
+					BlockPos coords = getCandidatePosition(getLevel().getRandom(), stack);
 					if (coords == null) {
 						continue;
 					}
@@ -199,7 +199,7 @@ public class RannuncarpusBlockEntity extends FunctionalFlowerBlockEntity impleme
 	public void readFromPacketNBT(CompoundTag cmp) {
 		super.readFromPacketNBT(cmp);
 		if (cmp.contains(TAG_STATE_SENSITIVE)) {
-			stateSensitive = cmp.getBoolean(TAG_STATE_SENSITIVE);
+			stateSensitive = cmp.getBooleanOr(TAG_STATE_SENSITIVE, false);
 		} else {
 			// old flowers stay state sensitive, new flowers are state insensitive
 			stateSensitive = true;
@@ -229,7 +229,7 @@ public class RannuncarpusBlockEntity extends FunctionalFlowerBlockEntity impleme
 		}
 
 		@Override
-		public void renderHUD(GuiGraphics gui, Minecraft mc) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc) {
 			ItemStack filterStack = new ItemStack(flower.getUnderlyingBlock().getBlock());
 			int color = flower.getColor();
 			String mode = I18n.get("botaniamisc.rannuncarpus." + (flower.stateSensitive ? "state_sensitive" : "state_insensitive"));
@@ -239,7 +239,7 @@ public class RannuncarpusBlockEntity extends FunctionalFlowerBlockEntity impleme
 			int minWidth = Math.max(RenderHelper.itemWithNameWidth(mc, filterStack), modeWidth) + 4;
 
 			super.renderHUD(gui, mc, minWidth / 2, minWidth / 2, filterStack.isEmpty() ? 40 : 60);
-			gui.drawString(mc.font, mode, modeTextStart, centerY + 30, color);
+			gui.text(mc.font, mode, modeTextStart, centerY + 30, color);
 			RenderHelper.renderItemWithNameCentered(gui, mc, filterStack, centerY + 40, color);
 		}
 	}

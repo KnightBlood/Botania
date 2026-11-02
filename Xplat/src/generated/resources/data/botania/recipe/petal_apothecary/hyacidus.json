@@ -1,0 +1,18 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/purple",
+    "#botania:petals/purple",
+    "#botania:petals/magenta",
+    "#botania:petals/magenta",
+    "#botania:petals/green",
+    "botania:rune_water",
+    "botania:rune_autumn",
+    "botania:redstone_root"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:hyacidus"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

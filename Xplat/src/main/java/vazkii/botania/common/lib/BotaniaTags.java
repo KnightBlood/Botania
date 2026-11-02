@@ -240,7 +240,7 @@ public class BotaniaTags {
 		public static final TagKey<Block> MARIMORPHOSIS_CONVERTABLE = tag("marimorphosis_convertable");
 
 		/**
-		 * Blocks in this tag are affected by the weight lens even if they don't drop themselves with silk touch.
+		 * Blocks in this tag are affected by the Weighted lens even if they don't drop themselves with silk touch.
 		 */
 		public static final TagKey<Block> WEIGHT_LENS_WHITELIST = tag("weight_lens_whitelist");
 

@@ -9,7 +9,7 @@
 package vazkii.botania.network.serverbound;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -22,7 +22,7 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class JumpPacket implements BotaniaPacket {
 	public static final JumpPacket INSTANCE = new JumpPacket();
-	public static final ResourceLocation ID = prefix("jmp");
+	public static final Identifier ID = prefix("jmp");
 
 	@Override
 	public void encode(FriendlyByteBuf buf) {
@@ -30,7 +30,7 @@ public class JumpPacket implements BotaniaPacket {
 	}
 
 	@Override
-	public ResourceLocation getFabricId() {
+	public Identifier getFabricId() {
 		return ID;
 	}
 

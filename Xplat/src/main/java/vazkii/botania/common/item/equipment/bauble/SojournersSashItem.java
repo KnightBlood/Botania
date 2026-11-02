@@ -13,10 +13,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -37,13 +38,12 @@ import java.util.UUID;
 
 public class SojournersSashItem extends BaubleItem {
 
-	private static final UUID STEP_BOOST_UUID = UUID.fromString("8511cd62-2650-4078-8d69-9ebe80b21eb5");
+	private static final Identifier STEP_BOOST_ID = Identifier.parse("botania:travel_belt");
 	private static final AttributeModifier STEP_BOOST = new AttributeModifier(
-			STEP_BOOST_UUID,
-			"botania:travel_belt",
-			0.65, AttributeModifier.Operation.ADDITION);
+			STEP_BOOST_ID,
+			0.65, AttributeModifier.Operation.ADD_VALUE);
 
-	private static final ResourceLocation texture = new ResourceLocation(ResourcesLib.MODEL_TRAVEL_BELT);
+	private static final Identifier texture = Identifier.parse(ResourcesLib.MODEL_TRAVEL_BELT);
 
 	private static final int COST = 1;
 	private static final int COST_INTERVAL = 10;
@@ -75,6 +75,7 @@ public class SojournersSashItem extends BaubleItem {
 		return dist;
 	}
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public SojournersSashItem(Properties props, float speed, float jump, float fallBuffer) {
 		super(props);
 		this.speed = speed;
@@ -88,12 +89,12 @@ public class SojournersSashItem extends BaubleItem {
 
 		var stepHeight = XplatAbstractions.INSTANCE.getStepHeightAttribute();
 		AttributeInstance attrib = player.getAttribute(stepHeight);
-		boolean hasBoost = attrib.hasModifier(STEP_BOOST);
+		boolean hasBoost = attrib.hasModifier(STEP_BOOST.id());
 
 		if (tryConsumeMana(player)) {
-			if (player.level().isClientSide) {
+			if (player.level().isClientSide()) {
 				SojournersSashItem beltItem = (SojournersSashItem) belt.getItem();
-				if ((player.onGround() || player.getAbilities().flying) && player.zza > 0F && !player.isInWaterOrBubble()) {
+				if ((player.onGround() || player.getAbilities().flying) && player.zza > 0F && !player.isInWater()) {
 					float speed = beltItem.getSpeed(belt);
 					player.moveRelative(player.getAbilities().flying ? speed : speed, new Vec3(0, 0, 1));
 					beltItem.onMovedTick(belt, player);
@@ -115,7 +116,7 @@ public class SojournersSashItem extends BaubleItem {
 					}
 				}
 			}
-		} else if (!player.level().isClientSide && hasBoost) {
+		} else if (!player.level().isClientSide() && hasBoost) {
 			attrib.removeModifier(STEP_BOOST);
 		}
 	}
@@ -143,12 +144,12 @@ public class SojournersSashItem extends BaubleItem {
 		return !result.isEmpty() && ManaItemHandler.instance().requestManaExact(result, player, COST, false);
 	}
 
-	ResourceLocation getRenderTexture() {
+	Identifier getRenderTexture() {
 		return texture;
 	}
 
 	public static class Renderer implements AccessoryRenderer {
-		private static HumanoidModel<LivingEntity> model = null;
+		private static HumanoidModel<HumanoidRenderState> model = null;
 
 		@Override
 		public void doRender(HumanoidModel<?> bipedModel, ItemStack stack, LivingEntity living, PoseStack ms, MultiBufferSource buffers, int light, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
@@ -161,9 +162,9 @@ public class SojournersSashItem extends BaubleItem {
 						.getEntityModels().bakeLayer(ModelLayers.PLAYER));
 			}
 
-			ResourceLocation texture = ((SojournersSashItem) stack.getItem()).getRenderTexture();
+			Identifier texture = ((SojournersSashItem) stack.getItem()).getRenderTexture();
 			VertexConsumer buffer = buffers.getBuffer(model.renderType(texture));
-			model.body.render(ms, buffer, light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+			model.body.render(ms, buffer, light, OverlayTexture.NO_OVERLAY, -1);
 		}
 	}
 

@@ -8,6 +8,10 @@
  */
 package vazkii.botania.common.internal_caps;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.PrimedTnt;
 
@@ -15,7 +19,15 @@ import vazkii.botania.common.helper.EthicalTntHelper;
 
 public class EthicalComponent extends SerializableComponent {
 	protected static final String TAG_UNETHICAL = "botania:unethical";
+	public static final MapCodec<EthicalComponent> CODEC = Codec.BOOL.fieldOf("unethical")
+			.xmap(unethical -> {
+				var component = new EthicalComponent();
+				component.unethical = unethical;
+				return component;
+			}, component -> component.unethical);
 	protected boolean unethical;
+
+	public EthicalComponent() {}
 
 	public EthicalComponent(PrimedTnt entity) {
 		if (!entity.level().isClientSide()) {
@@ -32,12 +44,12 @@ public class EthicalComponent extends SerializableComponent {
 	}
 
 	@Override
-	public void readFromNbt(CompoundTag tag) {
-		unethical = tag.getBoolean(TAG_UNETHICAL);
+	public void readFromNbt(CompoundTag tag, HolderLookup.Provider registries) {
+		unethical = tag.getBooleanOr(TAG_UNETHICAL, false);
 	}
 
 	@Override
-	public void writeToNbt(CompoundTag tag) {
+	public void writeToNbt(CompoundTag tag, HolderLookup.Provider registries) {
 		tag.putBoolean(TAG_UNETHICAL, unethical);
 	}
 }

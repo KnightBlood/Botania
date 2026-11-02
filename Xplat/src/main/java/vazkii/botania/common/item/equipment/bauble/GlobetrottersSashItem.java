@@ -8,20 +8,20 @@
  */
 package vazkii.botania.common.item.equipment.bauble;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import vazkii.botania.client.lib.ResourcesLib;
 
 public class GlobetrottersSashItem extends SojournersSashItem {
 
-	private static final ResourceLocation texture = new ResourceLocation(ResourcesLib.MODEL_SUPER_TRAVEL_BELT);
+	private static final Identifier texture = Identifier.parse(ResourcesLib.MODEL_SUPER_TRAVEL_BELT);
 
 	public GlobetrottersSashItem(Properties props) {
 		super(props, 0.085F, 0.3F, 4F);
 	}
 
 	@Override
-	public ResourceLocation getRenderTexture() {
+	public Identifier getRenderTexture() {
 		return texture;
 	}
 }

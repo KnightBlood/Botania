@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": "botania:blue_pavement_slab"
+  },
+  "pattern": [
+    "QQ"
+  ],
+  "result": {
+    "id": "botania:blue_pavement"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "E": "#botania:elementium_ingots",
+    "G": "botania:elf_glass",
+    "S": "minecraft:slime_ball"
+  },
+  "pattern": [
+    "EGE",
+    "ESE",
+    " E "
+  ],
+  "result": {
+    "id": "botania:slime_bottle"
+  }
+}

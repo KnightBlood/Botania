@@ -18,7 +18,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.Item.Properties;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -37,14 +40,14 @@ public class TerrasteelHelmItem extends TerrasteelArmorItem implements ManaDisco
 	public static final String TAG_ANCIENT_WILL = "AncientWill";
 
 	public TerrasteelHelmItem(Properties props) {
-		super(Type.HELMET, props);
+		super(ArmorType.HELMET, props);
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
-		super.inventoryTick(stack, world, entity, slot, selected);
-		if (!world.isClientSide && entity instanceof Player player
-				&& player.getInventory().armor.contains(stack)
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
+		super.inventoryTick(stack, world, entity, slot);
+		if (!world.isClientSide() && entity instanceof Player player
+				&& player.getItemBySlot(EquipmentSlot.HEAD) == stack
 				&& hasArmorSet(player)) {
 			int food = player.getFoodData().getFoodLevel();
 			if (food > 0 && food < 18 && player.isHurt() && player.tickCount % 80 == 0) {
@@ -121,7 +124,7 @@ public class TerrasteelHelmItem extends TerrasteelArmorItem implements ManaDisco
 					player.heal(amount * 0.25F);
 				}
 				if (hasAncientWill_(stack, AncientWillType.TORAG)) {
-					entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 1));
+					entity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 1));
 				}
 				if (hasAncientWill_(stack, AncientWillType.VERAC)) {
 					source = BotaniaDamageTypes.Sources.playerAttackArmorPiercing(player.level().registryAccess(), player);
@@ -135,3 +138,4 @@ public class TerrasteelHelmItem extends TerrasteelArmorItem implements ManaDisco
 	}
 
 }
+

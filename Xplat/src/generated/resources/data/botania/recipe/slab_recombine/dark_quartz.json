@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": "botania:dark_quartz_slab"
+  },
+  "pattern": [
+    "QQ"
+  ],
+  "result": {
+    "id": "botania:dark_quartz"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:shiny_flower",
+  "ingredients": [
+    "minecraft:glowstone_dust",
+    "minecraft:glowstone_dust",
+    "botania:purple_mystical_flower"
+  ],
+  "result": {
+    "id": "botania:purple_shiny_flower"
+  }
+}

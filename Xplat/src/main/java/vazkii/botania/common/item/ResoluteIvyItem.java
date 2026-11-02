@@ -8,6 +8,7 @@
  */
 package vazkii.botania.common.item;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +33,7 @@ public class ResoluteIvyItem extends Item {
 	}
 
 	public static boolean hasIvy(ItemStack stack) {
-		return !stack.isEmpty() && stack.hasTag() && ItemNBTHelper.getBoolean(stack, TAG_KEEP, false);
+		return !stack.isEmpty() && ItemNBTHelper.getBoolean(stack, TAG_KEEP, false);
 	}
 
 	// Accessories are handled in the integration code
@@ -40,7 +41,7 @@ public class ResoluteIvyItem extends Item {
 		List<ItemStack> keeps = new ArrayList<>();
 		for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
 			ItemStack stack = player.getInventory().getItem(i);
-			if (!stack.isEmpty() && stack.hasTag() && ItemNBTHelper.getBoolean(stack, TAG_KEEP, false)) {
+			if (!stack.isEmpty() && ItemNBTHelper.getBoolean(stack, TAG_KEEP, false)) {
 				keeps.add(stack);
 				player.getInventory().setItem(i, ItemStack.EMPTY);
 			}
@@ -59,12 +60,13 @@ public class ResoluteIvyItem extends Item {
 
 			for (ItemStack stack : keeps.getStacks()) {
 				ItemStack copy = stack.copy();
-				copy.removeTagKey(TAG_KEEP);
+				ItemNBTHelper.removeEntry(copy, TAG_KEEP);
 				if (!newPlayer.getInventory().add(copy)) {
-					newPlayer.spawnAtLocation(copy);
+					newPlayer.spawnAtLocation((ServerLevel) newPlayer.level(), copy);
 				}
 			}
 		}
 	}
 
 }
+

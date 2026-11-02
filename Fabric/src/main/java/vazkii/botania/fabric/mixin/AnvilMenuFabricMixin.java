@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -27,8 +28,14 @@ public abstract class AnvilMenuFabricMixin extends ItemCombinerMenu {
 	@Final
 	private DataSlot cost;
 
+	@Invoker("createInputSlotDefinitions")
+	private static ItemCombinerMenuSlotDefinition botania$createInputSlotDefinitions() {
+		throw new AssertionError();
+	}
+
+	// 26.1: ItemCombinerMenu takes an explicit ItemCombinerMenuSlotDefinition.
 	public AnvilMenuFabricMixin(MenuType<?> type, int i, Inventory inv, ContainerLevelAccess cla) {
-		super(type, i, inv, cla);
+		super(type, i, inv, cla, botania$createInputSlotDefinitions());
 	}
 
 	@Inject(method = "createResult", at = @At("HEAD"), cancellable = true)

@@ -13,7 +13,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.player.Player;
@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -41,17 +42,17 @@ public class EnderAirItem extends Item {
 		super(props);
 	}
 
-	public static InteractionResultHolder<ItemStack> onPlayerInteract(Player player, Level world, InteractionHand hand) {
+	public static InteractionResult onPlayerInteract(Player player, Level world, InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 
 		if (stack.isEmpty() || !stack.is(Items.GLASS_BOTTLE)) {
-			return InteractionResultHolder.pass(stack);
+			return InteractionResult.PASS;
 		}
 
 		if ((world.dimension() == Level.END && isClearFromDragonBreath(world, player.getBoundingBox().inflate(3.5)) && notAimingAtFluid(world, player))
 				|| pickupFromEntity(world, player.getBoundingBox().inflate(1.0))) {
 
-			if (!world.isClientSide) {
+			if (!world.isClientSide()) {
 				ItemStack enderAir = new ItemStack(BotaniaItems.enderAirBottle);
 				player.getInventory().placeItemBackInInventory(enderAir);
 				stack.shrink(1);
@@ -59,10 +60,10 @@ public class EnderAirItem extends Item {
 				world.gameEvent(player, GameEvent.FLUID_PICKUP, player.position());
 			}
 
-			return InteractionResultHolder.sidedSuccess(stack, world.isClientSide());
+			return world.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(stack) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(stack);
 		}
 
-		return InteractionResultHolder.pass(stack);
+		return InteractionResult.PASS;
 	}
 
 	private static boolean notAimingAtFluid(Level world, Player player) {
@@ -92,7 +93,7 @@ public class EnderAirItem extends Item {
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		if (!player.getAbilities().instabuild) {
 			stack.shrink(1);
@@ -100,11 +101,11 @@ public class EnderAirItem extends Item {
 
 		world.playSound(null, player.getX(), player.getY(), player.getZ(), BotaniaSounds.enderAirThrow, SoundSource.PLAYERS, 1F, 0.4F / (player.getRandom().nextFloat() * 0.4F + 0.8F));
 
-		if (!world.isClientSide) {
+		if (!world.isClientSide()) {
 			EnderAirBottleEntity b = new EnderAirBottleEntity(player, world);
 			b.shootFromRotation(player, player.getXRot(), player.getYRot(), 0F, 1.5F, 1F);
 			world.addFreshEntity(b);
 		}
-		return InteractionResultHolder.sidedSuccess(stack, world.isClientSide);
+		return world.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(stack) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(stack);
 	}
 }

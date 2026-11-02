@@ -14,6 +14,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -35,7 +36,7 @@ public class RedStringInterceptorBlockEntity extends RedStringBlockEntity {
 
 	public static void commonTick(Level level, BlockPos worldPosition, BlockState state, RedStringInterceptorBlockEntity self) {
 		RedStringBlockEntity.commonTick(level, worldPosition, state, self);
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			interceptors.add(self);
 		}
 	}
@@ -50,7 +51,7 @@ public class RedStringInterceptorBlockEntity extends RedStringBlockEntity {
 	}
 
 	public static InteractionResult onInteract(Player player, Level world, BlockPos pos, InteractionHand hand) {
-		if (world.isClientSide) {
+		if (world.isClientSide()) {
 			return InteractionResult.PASS;
 		}
 

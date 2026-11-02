@@ -1,0 +1,14 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "group": "botania:crop_cycle",
+  "input": "minecraft:cocoa_beans",
+  "mana": 6000,
+  "output": {
+    "count": 1,
+    "id": "minecraft:wheat_seeds"
+  }
+}

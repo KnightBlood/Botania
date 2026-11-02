@@ -10,14 +10,15 @@ package vazkii.botania.common.item.rod;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,7 +39,7 @@ import java.util.Random;
 
 public class PlentifulMantleRodItem extends Item {
 
-	private static final ResourceLocation avatarOverlay = new ResourceLocation(ResourcesLib.MODEL_AVATAR_DIVINING);
+	private static final Identifier avatarOverlay = Identifier.parse(ResourcesLib.MODEL_AVATAR_DIVINING);
 
 	static final int COST = 3000;
 
@@ -48,21 +49,21 @@ public class PlentifulMantleRodItem extends Item {
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player p, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level world, Player p, @NotNull InteractionHand hand) {
 		ItemStack stack = p.getItemInHand(hand);
 		if (ManaItemHandler.instance().requestManaExactForTool(stack, p, COST, true)) {
-			if (world.isClientSide) {
+			if (world.isClientSide()) {
 				int range = ManaItemHandler.instance().hasProficiency(p, stack) ? 20 : 15;
-				long seedxor = world.random.nextLong();
+				long seedxor = world.getRandom().nextLong();
 				doHighlight(world, p.blockPosition(), range, seedxor);
 			} else {
 				world.playSound(null, p.getX(), p.getY(), p.getZ(), BotaniaSounds.divinationRod, SoundSource.PLAYERS, 1F, 1F);
 				p.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
 			}
-			return InteractionResultHolder.sidedSuccess(stack, world.isClientSide);
+			return world.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(stack) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(stack);
 		}
 
-		return InteractionResultHolder.pass(stack);
+		return InteractionResult.PASS;
 	}
 
 	private static void doHighlight(Level world, BlockPos pos, int range, long seedxor) {
@@ -74,7 +75,7 @@ public class PlentifulMantleRodItem extends Item {
 			if (state.is(XplatAbstractions.INSTANCE.getOreTag())) {
 				Random rand = new Random(BuiltInRegistries.BLOCK.getKey(block).hashCode() ^ seedxor);
 				WispParticleData data = WispParticleData.wisp(0.25F, rand.nextFloat(), rand.nextFloat(), rand.nextFloat(), 8, false);
-				world.addParticle(data, true, pos_.getX() + world.random.nextFloat(), pos_.getY() + world.random.nextFloat(), pos_.getZ() + world.random.nextFloat(), 0, 0, 0);
+				world.addParticle(data, pos_.getX() + world.getRandom().nextFloat(), pos_.getY() + world.getRandom().nextFloat(), pos_.getZ() + world.getRandom().nextFloat(), 0, 0, 0);
 			}
 		}
 	}
@@ -92,7 +93,7 @@ public class PlentifulMantleRodItem extends Item {
 		}
 
 		@Override
-		public ResourceLocation getOverlayResource(Avatar tile) {
+		public Identifier getOverlayResource(Avatar tile) {
 			return avatarOverlay;
 		}
 	}

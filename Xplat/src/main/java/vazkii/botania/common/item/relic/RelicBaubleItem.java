@@ -12,9 +12,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.item.equipment.bauble.BaubleItem;
 import vazkii.botania.xplat.XplatAbstractions;
@@ -28,8 +35,8 @@ public abstract class RelicBaubleItem extends BaubleItem {
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean held) {
-		if (!world.isClientSide && entity instanceof Player player) {
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
+		if (!world.isClientSide() && entity instanceof Player player) {
 			var relic = XplatAbstractions.INSTANCE.findRelic(stack);
 			if (relic != null) {
 				relic.tickBinding(player);
@@ -38,9 +45,9 @@ public abstract class RelicBaubleItem extends BaubleItem {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> tooltip, TooltipFlag flags) {
-		super.appendHoverText(stack, world, tooltip, flags);
-		RelicImpl.addDefaultTooltip(stack, tooltip);
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
+		super.appendHoverText(stack, context, display, builder, flags);
+		RelicImpl.addDefaultTooltip(stack, builder);
 	}
 
 	@Override

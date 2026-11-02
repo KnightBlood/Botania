@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "H": "botania:rune_pride",
+    "L": "botania:life_essence",
+    "P": "botania:tiny_planet"
+  },
+  "pattern": [
+    "LGP",
+    " HG",
+    " GL"
+  ],
+  "result": {
+    "id": "botania:diva_charm"
+  }
+}

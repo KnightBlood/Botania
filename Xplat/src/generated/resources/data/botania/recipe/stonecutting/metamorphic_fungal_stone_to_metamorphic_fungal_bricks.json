@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:metamorphic_fungal_stone",
+  "result": {
+    "id": "botania:metamorphic_fungal_bricks"
+  }
+}

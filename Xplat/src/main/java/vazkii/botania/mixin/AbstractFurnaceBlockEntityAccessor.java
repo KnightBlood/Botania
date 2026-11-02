@@ -13,6 +13,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,20 +25,21 @@ public interface AbstractFurnaceBlockEntityAccessor {
 	NonNullList<ItemStack> getItems();
 
 	@Accessor("quickCheck")
-	RecipeManager.CachedCheck<Container, ? extends AbstractCookingRecipe> getQuickCheck();
+	RecipeManager.CachedCheck<SingleRecipeInput, ? extends AbstractCookingRecipe> getQuickCheck();
+
+	// 26.1: litTime -> litTimeRemaining, cookingProgress -> cookingTimer
+	@Accessor
+	int getLitTimeRemaining();
 
 	@Accessor
-	int getLitTime();
+	void setLitTimeRemaining(int burnTime);
 
 	@Accessor
-	void setLitTime(int burnTime);
-
-	@Accessor
-	int getCookingProgress();
+	int getCookingTimer();
 
 	@Accessor
 	int getCookingTotalTime();
 
 	@Accessor
-	void setCookingProgress(int cookTime);
+	void setCookingTimer(int cookTime);
 }

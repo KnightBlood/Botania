@@ -10,6 +10,7 @@ package vazkii.botania.fabric.mixin.client;
 
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.KeyEvent;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,11 +22,12 @@ import vazkii.botania.common.item.equipment.bauble.RingOfDexterousMotionItem;
 
 @Mixin(KeyboardHandler.class)
 public class KeyboardHandlerFabricMixin {
+	// MC 26.1: keyPress(long window, int action, KeyEvent) - key/scancode/modifiers moved into KeyEvent
 	@Inject(at = @At("HEAD"), method = "keyPress")
-	private void keyEvent(long window, int key, int scancode, int action, int modifiers, CallbackInfo ci) {
-		if (window == Minecraft.getInstance().getWindow().getWindow()) {
+	private void keyEvent(long window, int action, KeyEvent event, CallbackInfo ci) {
+		if (window == Minecraft.getInstance().getWindow().handle()) {
 			RingOfDexterousMotionItem.ClientLogic.onKeyDown();
-			KonamiHandler.handleInput(key, action, modifiers);
+			KonamiHandler.handleInput(event.key(), action, event.modifiers());
 		}
 	}
 }

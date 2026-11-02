@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": "#botania:dragonstone_gems",
+    "G": "minecraft:short_grass",
+    "S": "minecraft:wheat_seeds"
+  },
+  "pattern": [
+    "G",
+    "S",
+    "D"
+  ],
+  "result": {
+    "count": 4,
+    "id": "botania:world_seed"
+  }
+}

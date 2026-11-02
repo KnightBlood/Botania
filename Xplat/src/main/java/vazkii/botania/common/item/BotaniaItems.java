@@ -9,12 +9,16 @@
 package vazkii.botania.common.item;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 import org.jetbrains.annotations.NotNull;
@@ -70,7 +74,7 @@ import java.util.function.BiConsumer;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public final class BotaniaItems {
-	private static final Map<ResourceLocation, Item> ALL = new LinkedHashMap<>(); // Preserve insertion order
+	private static final Map<Identifier, Item> ALL = new LinkedHashMap<>(); // Preserve insertion order
 	public static final LexicaBotaniaItem lexicon = make(prefix(LibItemNames.LEXICON), new LexicaBotaniaItem(unstackable().rarity(Rarity.UNCOMMON)));
 	public static final Item twigWand = make(prefix(LibItemNames.TWIG_WAND), new WandOfTheForestItem(ChatFormatting.DARK_GREEN, unstackable().rarity(Rarity.RARE)));
 	public static final Item dreamwoodWand = make(prefix(LibItemNames.DREAMWOOD_WAND), new WandOfTheForestItem(ChatFormatting.LIGHT_PURPLE, unstackable().rarity(Rarity.RARE)));
@@ -194,15 +198,15 @@ public final class BotaniaItems {
 
 	// Equipment
 	public static final Item manasteelHelm = make(prefix(LibItemNames.MANASTEEL_HELM), new ManasteelHelmItem(unstackableCustomDamage()));
-	public static final Item manasteelChest = make(prefix(LibItemNames.MANASTEEL_CHEST), new ManasteelArmorItem(ArmorItem.Type.CHESTPLATE, unstackableCustomDamage()));
-	public static final Item manasteelLegs = make(prefix(LibItemNames.MANASTEEL_LEGS), new ManasteelArmorItem(ArmorItem.Type.LEGGINGS, unstackableCustomDamage()));
-	public static final Item manasteelBoots = make(prefix(LibItemNames.MANASTEEL_BOOTS), new ManasteelArmorItem(ArmorItem.Type.BOOTS, unstackableCustomDamage()));
+	public static final Item manasteelChest = make(prefix(LibItemNames.MANASTEEL_CHEST), new ManasteelArmorItem(ArmorType.CHESTPLATE, unstackableCustomDamage()));
+	public static final Item manasteelLegs = make(prefix(LibItemNames.MANASTEEL_LEGS), new ManasteelArmorItem(ArmorType.LEGGINGS, unstackableCustomDamage()));
+	public static final Item manasteelBoots = make(prefix(LibItemNames.MANASTEEL_BOOTS), new ManasteelArmorItem(ArmorType.BOOTS, unstackableCustomDamage()));
 	public static final Item manasteelPick = make(prefix(LibItemNames.MANASTEEL_PICK), new ManasteelPickaxeItem(unstackableCustomDamage()));
 	public static final Item manasteelShovel = make(prefix(LibItemNames.MANASTEEL_SHOVEL), new ManasteelShovelItem(unstackableCustomDamage()));
 	public static final Item manasteelAxe = make(prefix(LibItemNames.MANASTEEL_AXE), new ManasteelAxeItem(unstackableCustomDamage()));
 	public static final Item manasteelHoe = make(prefix(LibItemNames.MANASTEEL_HOE), new ManasteelHoeItem(unstackableCustomDamage()));
 	public static final Item manasteelSword = make(prefix(LibItemNames.MANASTEEL_SWORD), new ManasteelSwordItem(unstackableCustomDamage()));
-	public static final Item manasteelShears = make(prefix(LibItemNames.MANASTEEL_SHEARS), new ManasteelShearsItem(unstackableCustomDamage().defaultDurability(238)));
+	public static final Item manasteelShears = make(prefix(LibItemNames.MANASTEEL_SHEARS), new ManasteelShearsItem(unstackableCustomDamage().durability(238)));
 	public static final Item elementiumHelm = make(prefix(LibItemNames.ELEMENTIUM_HELM), new ElementiumHelmItem(unstackableCustomDamage()));
 	public static final Item elementiumChest = make(prefix(LibItemNames.ELEMENTIUM_CHEST), new ElementiumChestItem(unstackableCustomDamage()));
 	public static final Item elementiumLegs = make(prefix(LibItemNames.ELEMENTIUM_LEGS), new ElementiumLegsItem(unstackableCustomDamage()));
@@ -212,24 +216,24 @@ public final class BotaniaItems {
 	public static final Item elementiumAxe = make(prefix(LibItemNames.ELEMENTIUM_AXE), new ElementiumAxeItem(unstackableCustomDamage()));
 	public static final Item elementiumHoe = make(prefix(LibItemNames.ELEMENTIUM_HOE), new ElementiumHoeItem(unstackableCustomDamage()));
 	public static final Item elementiumSword = make(prefix(LibItemNames.ELEMENTIUM_SWORD), new ElementiumSwordItem(unstackableCustomDamage()));
-	public static final Item elementiumShears = make(prefix(LibItemNames.ELEMENTIUM_SHEARS), new ElementiumShearsItem(unstackableCustomDamage().defaultDurability(238)));
+	public static final Item elementiumShears = make(prefix(LibItemNames.ELEMENTIUM_SHEARS), new ElementiumShearsItem(unstackableCustomDamage().durability(238)));
 	public static final Item terrasteelHelm = make(prefix(LibItemNames.TERRASTEEL_HELM), new TerrasteelHelmItem(unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
-	public static final Item terrasteelChest = make(prefix(LibItemNames.TERRASTEEL_CHEST), new TerrasteelArmorItem(ArmorItem.Type.CHESTPLATE, unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
-	public static final Item terrasteelLegs = make(prefix(LibItemNames.TERRASTEEL_LEGS), new TerrasteelArmorItem(ArmorItem.Type.LEGGINGS, unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
-	public static final Item terrasteelBoots = make(prefix(LibItemNames.TERRASTEEL_BOOTS), new TerrasteelArmorItem(ArmorItem.Type.BOOTS, unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
+	public static final Item terrasteelChest = make(prefix(LibItemNames.TERRASTEEL_CHEST), new TerrasteelArmorItem(ArmorType.CHESTPLATE, unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
+	public static final Item terrasteelLegs = make(prefix(LibItemNames.TERRASTEEL_LEGS), new TerrasteelArmorItem(ArmorType.LEGGINGS, unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
+	public static final Item terrasteelBoots = make(prefix(LibItemNames.TERRASTEEL_BOOTS), new TerrasteelArmorItem(ArmorType.BOOTS, unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
 	public static final Item terraPick = make(prefix(LibItemNames.TERRA_PICK), new TerraShattererItem(unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
 	public static final Item terraAxe = make(prefix(LibItemNames.TERRA_AXE), new TerraTruncatorItem(unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
 	public static final Item terraSword = make(prefix(LibItemNames.TERRA_SWORD), new TerraBladeItem(unstackableCustomDamage().fireResistant().rarity(Rarity.UNCOMMON)));
 	public static final Item starSword = make(prefix(LibItemNames.STAR_SWORD), new StarcallerItem(unstackableCustomDamage().rarity(Rarity.UNCOMMON)));
 	public static final Item thunderSword = make(prefix(LibItemNames.THUNDER_SWORD), new ThundercallerItem(unstackableCustomDamage().rarity(Rarity.UNCOMMON)));
 	public static final Item manaweaveHelm = make(prefix(LibItemNames.MANAWEAVE_HELM), new ManaweaveHelmItem(unstackableCustomDamage()));
-	public static final Item manaweaveChest = make(prefix(LibItemNames.MANAWEAVE_CHEST), new ManaweaveArmorItem(ArmorItem.Type.CHESTPLATE, unstackableCustomDamage()));
-	public static final Item manaweaveLegs = make(prefix(LibItemNames.MANAWEAVE_LEGS), new ManaweaveArmorItem(ArmorItem.Type.LEGGINGS, unstackableCustomDamage()));
-	public static final Item manaweaveBoots = make(prefix(LibItemNames.MANAWEAVE_BOOTS), new ManaweaveArmorItem(ArmorItem.Type.BOOTS, unstackableCustomDamage()));
-	public static final Item enderDagger = make(prefix(LibItemNames.ENDER_DAGGER), new SoulscribeItem(unstackable().defaultDurability(69))); // What you looking at?
+	public static final Item manaweaveChest = make(prefix(LibItemNames.MANAWEAVE_CHEST), new ManaweaveArmorItem(ArmorType.CHESTPLATE, unstackableCustomDamage()));
+	public static final Item manaweaveLegs = make(prefix(LibItemNames.MANAWEAVE_LEGS), new ManaweaveArmorItem(ArmorType.LEGGINGS, unstackableCustomDamage()));
+	public static final Item manaweaveBoots = make(prefix(LibItemNames.MANAWEAVE_BOOTS), new ManaweaveArmorItem(ArmorType.BOOTS, unstackableCustomDamage()));
+	public static final Item enderDagger = make(prefix(LibItemNames.ENDER_DAGGER), new SoulscribeItem(unstackable().durability(69))); // What you looking at?
 	public static final Item glassPick = make(prefix(LibItemNames.GLASS_PICK), new VitreousPickaxeItem(unstackableCustomDamage()));
-	public static final Item livingwoodBow = make(prefix(LibItemNames.LIVINGWOOD_BOW), new LivingwoodBowItem(defaultBuilderCustomDamage().defaultDurability(500)));
-	public static final Item crystalBow = make(prefix(LibItemNames.CRYSTAL_BOW), new CrystalBowItem(defaultBuilderCustomDamage().defaultDurability(500)));
+	public static final Item livingwoodBow = make(prefix(LibItemNames.LIVINGWOOD_BOW), new LivingwoodBowItem(defaultBuilderCustomDamage().durability(500)));
+	public static final Item crystalBow = make(prefix(LibItemNames.CRYSTAL_BOW), new CrystalBowItem(defaultBuilderCustomDamage().durability(500)));
 	public static final Item thornChakram = make(prefix(LibItemNames.THORN_CHAKRAM), new ThornChakramItem(defaultBuilder().stacksTo(6)));
 	public static final Item flareChakram = make(prefix(LibItemNames.FLARE_CHAKRAM), new ThornChakramItem(defaultBuilder().stacksTo(6)));
 
@@ -248,7 +252,7 @@ public final class BotaniaItems {
 	public static final Item enderHand = make(prefix(LibItemNames.ENDER_HAND), new EnderHandItem(unstackable()));
 	public static final Item craftingHalo = make(prefix(LibItemNames.CRAFTING_HALO), new AssemblyHaloItem(unstackable()));
 	public static final Item autocraftingHalo = make(prefix(LibItemNames.AUTOCRAFTING_HALO), new ManufactoryHaloItem(unstackable()));
-	public static final Item spellCloth = make(prefix(LibItemNames.SPELL_CLOTH), new SpellbindingClothItem(XplatAbstractions.INSTANCE.noRepairOnForge(unstackable().defaultDurability(35))));
+	public static final Item spellCloth = make(prefix(LibItemNames.SPELL_CLOTH), new SpellbindingClothItem(XplatAbstractions.INSTANCE.noRepairOnForge(unstackable().durability(35))));
 	public static final Item flowerBag = make(prefix(LibItemNames.FLOWER_BAG), new FlowerPouchItem(unstackable()));
 	public static final Item blackHoleTalisman = make(prefix(LibItemNames.BLACK_HOLE_TALISMAN), new BlackHoleTalismanItem(unstackable()));
 	public static final Item temperanceStone = make(prefix(LibItemNames.TEMPERANCE_STONE), new StoneOfTemperanceItem(unstackable()));
@@ -294,10 +298,13 @@ public final class BotaniaItems {
 	public static final Item flightTiara = make(prefix(LibItemNames.FLIGHT_TIARA), new FlugelTiaraItem(unstackable().rarity(Rarity.UNCOMMON)));
 
 	// Misc
-	public static final Item manaCookie = make(prefix(LibItemNames.MANA_COOKIE), new Item(defaultBuilder().food(new FoodProperties.Builder().nutrition(0).saturationMod(0.1F).effect(new MobEffectInstance(MobEffects.SATURATION, 20, 0), 1).build())));
+	public static final Item manaCookie = make(prefix(LibItemNames.MANA_COOKIE), new Item(defaultBuilder()
+				.food(new FoodProperties.Builder().nutrition(0).saturationModifier(0.1F).build())
+				.component(DataComponents.CONSUMABLE, Consumable.builder()
+						.onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.SATURATION, 20, 0), 1.0F)).build())));
 	public static final Item manaBottle = make(prefix(LibItemNames.MANA_BOTTLE), new BottledManaItem(
 			// Mark as food just to fool foxes into using it
-			unstackable().food(new FoodProperties.Builder().alwaysEat().build())));
+			unstackable().food(new FoodProperties.Builder().alwaysEdible().build())));
 	public static final Item laputaShard = make(prefix(LibItemNames.LAPUTA_SHARD), new LaputaShardItem(unstackable().rarity(Rarity.UNCOMMON)));
 	public static final Item necroVirus = make(prefix(LibItemNames.NECRO_VIRUS), new EquestrianVirusItem(defaultBuilder()));
 	public static final Item nullVirus = make(prefix(LibItemNames.NULL_VIRUS), new EquestrianVirusItem(defaultBuilder()));
@@ -335,8 +342,8 @@ public final class BotaniaItems {
 	public static final Item thorRing = make(prefix(LibItemNames.THOR_RING), new RingOfThorItem(unstackable().fireResistant().rarity(Rarity.EPIC)));
 	public static final Item odinRing = make(prefix(LibItemNames.ODIN_RING), new RingOfOdinItem(unstackable().fireResistant().rarity(Rarity.EPIC)));
 	public static final Item lokiRing = make(prefix(LibItemNames.LOKI_RING), new RingOfLokiItem(unstackable().fireResistant().rarity(Rarity.EPIC)));
-	public static final Item recordGaia1 = make(prefix(LibItemNames.RECORD_GAIA1), new BotaniaRecordItem(1, BotaniaSounds.gaiaMusic1, unstackable().rarity(Rarity.RARE), 202));
-	public static final Item recordGaia2 = make(prefix(LibItemNames.RECORD_GAIA2), new BotaniaRecordItem(1, BotaniaSounds.gaiaMusic2, unstackable().rarity(Rarity.RARE), 227));
+	public static final Item recordGaia1 = make(prefix(LibItemNames.RECORD_GAIA1), new BotaniaRecordItem(1, BotaniaSounds.gaiaMusic1, unstackable().rarity(Rarity.RARE), 202, "item.botania.record_gaia1.desc"));
+	public static final Item recordGaia2 = make(prefix(LibItemNames.RECORD_GAIA2), new BotaniaRecordItem(1, BotaniaSounds.gaiaMusic2, unstackable().rarity(Rarity.RARE), 227, "item.botania.record_gaia2.desc"));
 	public static final Item ancientWillAhrim = make(prefix(LibItemNames.ANCIENT_WILL_PREFIX + "ahrim"), new AncientWillItem(AncientWillContainer.AncientWillType.AHRIM, unstackable().rarity(Rarity.UNCOMMON)));
 	public static final Item ancientWillDharok = make(prefix(LibItemNames.ANCIENT_WILL_PREFIX + "dharok"), new AncientWillItem(AncientWillContainer.AncientWillType.DHAROK, unstackable().rarity(Rarity.UNCOMMON)));
 	public static final Item ancientWillGuthan = make(prefix(LibItemNames.ANCIENT_WILL_PREFIX + "guthan"), new AncientWillItem(AncientWillContainer.AncientWillType.GUTHAN, unstackable().rarity(Rarity.UNCOMMON)));
@@ -391,7 +398,7 @@ public final class BotaniaItems {
 	public static final MenuType<BaubleBoxContainer> BAUBLE_BOX_CONTAINER = XplatAbstractions.INSTANCE.createMenuType(BaubleBoxContainer::fromNetwork);
 	public static final MenuType<FlowerPouchContainer> FLOWER_BAG_CONTAINER = XplatAbstractions.INSTANCE.createMenuType(FlowerPouchContainer::fromNetwork);
 
-	private static <T extends Item> T make(ResourceLocation id, T item) {
+	private static <T extends Item> T make(Identifier id, T item) {
 		var old = ALL.put(id, item);
 		if (old != null) {
 			throw new IllegalArgumentException("Typo? Duplicate id " + id);
@@ -428,18 +435,18 @@ public final class BotaniaItems {
 		return defaultBuilder().stacksTo(1);
 	}
 
-	public static void registerItems(BiConsumer<Item, ResourceLocation> r) {
+	public static void registerItems(BiConsumer<Item, Identifier> r) {
 		for (var e : ALL.entrySet()) {
 			r.accept(e.getValue(), e.getKey());
 		}
 	}
 
-	public static void registerMenuTypes(BiConsumer<MenuType<?>, ResourceLocation> consumer) {
+	public static void registerMenuTypes(BiConsumer<MenuType<?>, Identifier> consumer) {
 		consumer.accept(BAUBLE_BOX_CONTAINER, prefix(LibItemNames.BAUBLE_BOX));
 		consumer.accept(FLOWER_BAG_CONTAINER, prefix(LibItemNames.FLOWER_BAG));
 	}
 
-	public static void registerRecipeSerializers(BiConsumer<RecipeSerializer<?>, ResourceLocation> r) {
+	public static void registerRecipeSerializers(BiConsumer<RecipeSerializer<?>, Identifier> r) {
 		r.accept(AncientWillRecipe.SERIALIZER, prefix("ancient_will_attach"));
 		r.accept(ArmorUpgradeRecipe.SERIALIZER, prefix("armor_upgrade"));
 		r.accept(BlackHoleTalismanExtractRecipe.SERIALIZER, prefix("black_hole_talisman_extract"));

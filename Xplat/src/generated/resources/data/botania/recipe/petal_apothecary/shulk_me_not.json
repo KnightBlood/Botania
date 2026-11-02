@@ -1,0 +1,18 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/purple",
+    "#botania:petals/purple",
+    "#botania:petals/magenta",
+    "#botania:petals/magenta",
+    "#botania:petals/light_gray",
+    "botania:life_essence",
+    "botania:rune_envy",
+    "botania:rune_wrath"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:shulk_me_not"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

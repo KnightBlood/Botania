@@ -10,7 +10,7 @@ package vazkii.botania.mixin;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.VegetationBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +21,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import vazkii.botania.common.block.BotaniaGrassBlock;
 import vazkii.botania.common.block.EnchantedSoilBlock;
 
-@Mixin(BushBlock.class)
+/**
+ * 26.1: {@code mayPlaceOn} moved from {@code BushBlock} up to its new parent
+ * {@link VegetationBlock}; the mixin target moved with it so all vegetation
+ * blocks (flowers, crops, saplings...) keep accepting Botania special soils.
+ */
+@Mixin(VegetationBlock.class)
 public class BushBlockMixin {
 	@Inject(at = @At("HEAD"), method = "mayPlaceOn", cancellable = true)
 	private void canPlant(BlockState floor, BlockGetter world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {

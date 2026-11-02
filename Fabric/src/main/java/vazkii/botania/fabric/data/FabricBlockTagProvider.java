@@ -3,7 +3,7 @@ package vazkii.botania.fabric.data;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
@@ -18,15 +18,15 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class FabricBlockTagProvider extends BlockTagProvider {
-	public static final TagKey<Block> LAPIS_BLOCKS = blockTag(new ResourceLocation("c", "lapis_blocks"));
-	public static final TagKey<Block> QUARTZ_BLOCKS = blockTag(new ResourceLocation("c", "quartz_blocks"));
-	public static final TagKey<Block> MUSHROOMS = blockTag(new ResourceLocation("c", "mushrooms"));
-	public static final TagKey<Block> GLASS = blockTag(new ResourceLocation("c", "glass"));
-	public static final TagKey<Block> GLASS_ALT = blockTag(new ResourceLocation("c", "glass_blocks"));
-	public static final TagKey<Block> GLASS_PANE = blockTag(new ResourceLocation("c", "glass_pane"));
-	public static final TagKey<Block> GLASS_PANE_ALT = blockTag(new ResourceLocation("c", "glass_panes"));
+	public static final TagKey<Block> LAPIS_BLOCKS = blockTag(Identifier.fromNamespaceAndPath("c", "lapis_blocks"));
+	public static final TagKey<Block> QUARTZ_BLOCKS = blockTag(Identifier.fromNamespaceAndPath("c", "quartz_blocks"));
+	public static final TagKey<Block> MUSHROOMS = blockTag(Identifier.fromNamespaceAndPath("c", "mushrooms"));
+	public static final TagKey<Block> GLASS = blockTag(Identifier.fromNamespaceAndPath("c", "glass"));
+	public static final TagKey<Block> GLASS_ALT = blockTag(Identifier.fromNamespaceAndPath("c", "glass_blocks"));
+	public static final TagKey<Block> GLASS_PANE = blockTag(Identifier.fromNamespaceAndPath("c", "glass_pane"));
+	public static final TagKey<Block> GLASS_PANE_ALT = blockTag(Identifier.fromNamespaceAndPath("c", "glass_panes"));
 
-	private static TagKey<Block> blockTag(ResourceLocation location) {
+	private static TagKey<Block> blockTag(Identifier location) {
 		return TagKey.create(Registries.BLOCK, location);
 	}
 
@@ -35,7 +35,7 @@ public class FabricBlockTagProvider extends BlockTagProvider {
 	}
 
 	@Override
-	protected void addTags(HolderLookup.Provider provider) {
+	public void addTags(HolderLookup.Provider provider) {
 		tag(LAPIS_BLOCKS).add(Blocks.LAPIS_BLOCK);
 		tag(QUARTZ_BLOCKS).add(
 				BotaniaBlocks.darkQuartz, BotaniaBlocks.manaQuartz, BotaniaBlocks.blazeQuartz,

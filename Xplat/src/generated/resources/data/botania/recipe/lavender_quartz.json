@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:quartz_block",
+  "key": {
+    "Q": "botania:quartz_lavender"
+  },
+  "pattern": [
+    "QQ",
+    "QQ"
+  ],
+  "result": {
+    "id": "botania:lavender_quartz"
+  }
+}

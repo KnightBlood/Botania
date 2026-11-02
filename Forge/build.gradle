@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'java-library'
-    id 'net.neoforged.moddev.legacyforge' version '2.0.142'
+    id 'net.neoforged.moddev' version "${neo_moddev_version}"
 }
 
 version = "${minecraft_version}-${build_number}-FORGE"
@@ -9,12 +9,7 @@ if (System.getenv().RELEASE_MODE != "1") {
     version += '-SNAPSHOT'
 }
 
-mixin {
-    add sourceSets.main, "botania.refmap.json"
-
-    config "botania_xplat.mixins.json"
-    config "botania_forge.mixins.json"
-}
+// Mixin configs are registered via neoforge.mods.toml [[mixins]] section
 
 repositories {
     maven {
@@ -42,17 +37,15 @@ repositories {
     }
 }
 
-legacyForge {
-    enable {
-        forgeVersion = "1.20.1-47.1.3"
-        // TODO: Legacy MDG bug? Can't compile anonymous classes with more than one constructor parameter in CI mode.
-        disableRecompilation = false
-    }
+neoForge {
+    version = neo_version
     accessTransformers = [project(':Xplat').file('src/main/resources/META-INF/accesstransformer.cfg')]
 
-    parchment {
-        minecraftVersion = '1.20.1'
-        mappingsVersion = '2023.09.03'
+    if (parchment_version != 'none') {
+        parchment {
+            minecraftVersion = parchment_minecraft_version
+            mappingsVersion = parchment_version
+        }
     }
 
     runs {
@@ -90,30 +83,35 @@ legacyForge {
 
 dependencies {
     compileOnly project(":Xplat")
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    // NeoForge 26.1 is unobfuscated - no mixin refmap / annotation processor needed
 
-    modImplementation("vazkii.patchouli:Patchouli:${minecraft_version}-84-FORGE")
-    modCompileOnly("mezz.jei:jei-1.20.1-common-api:15.2.0.27")
-    modRuntimeOnly("mezz.jei:jei-1.20.1-forge:15.2.0.27")
+    implementation("vazkii.patchouli:patchouli-neoforge:${patchouli_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    // Explicit downgrade: JEI 29.2.0.21 (latest of the 26.1 line) hard-requires neoforge >= 26.1.0.8-beta,
+    // but this port is pinned to 26.1.0.1-beta. Keep JEI out of the runtime until we upgrade NeoForge.
+    // runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
-    modCompileOnlyApi("dev.emi:emi-forge:1.0.4+${minecraft_version}")
-    //modRuntimeOnly("dev.emi:emi-forge:1.1.24+${minecraft_version}")
+    // EMI unofficial port (curseforge 1544558, no maven) - local jar, mojmap neoforge build
+    compileOnlyApi(rootProject.files("libs/emi-1.1.24+26.1.2+neoforge.jar"))
+    //runtimeOnly("dev.emi:emi-neoforge:${emi_version}")
 
-    modCompileOnly("top.theillusivec4.curios:curios-forge:5.4.2+1.20.1:api")
-    modRuntimeOnly("top.theillusivec4.curios:curios-forge:5.4.2+1.20.1")
+    compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
+    runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")
 
-    // modCompileOnly('com.blamejared.crafttweaker:CraftTweaker-forge-1.18.2:9.1.123')
+    // compileOnly('com.blamejared.crafttweaker:CraftTweaker-forge-1.18.2:9.1.123')
 
-    modCompileOnly('com.unascribed:ears-api:1.4.5')
+    compileOnly('com.unascribed:ears-api:1.4.5')
 
-    modCompileOnly('maven.modrinth:rubidium:0.7.0') { transitive = false }
+    compileOnly('maven.modrinth:rubidium:0.7.0') { transitive = false }
 
     compileOnly "org.jetbrains:annotations:24.0.1"
 }
 
 compileJava {
     source(project(":Xplat").sourceSets.main.allSource)
-    options.compilerArgs << "-Xlint:all,-classfile,-processing,-deprecation,-serial" << "-Werror"
+    // -this-escape: standard modding pattern (registering callbacks / default states
+    // from constructors) triggers this lint everywhere; suppressed project-wide.
+    options.compilerArgs << "-Xlint:all,-classfile,-processing,-deprecation,-serial,-this-escape" << "-Werror"
 }
 
 sourcesJar {
@@ -129,7 +127,7 @@ processResources {
     from project(":Xplat").sourceSets.main.resources
     inputs.property "version", project.version
 
-    filesMatching("mods.toml") {
+    filesMatching("neoforge.mods.toml") {
         expand "version": project.version
     }
 
@@ -149,11 +147,10 @@ jar {
                 "MixinConfigs": "botania_xplat.mixins.json,botania_forge.mixins.json"
         ])
     }
-    finalizedBy 'reobfJar'
 }
 
 task apiJar(type: Jar, dependsOn: classes) {
-    // Sources included because of MinecraftForge/ForgeGradle#369
+    // Sources included because of ForgeGradle#369
     from project(":Xplat").sourceSets.main.allJava
     from(sourceSets.main.allJava)
     from(sourceSets.main.output)
@@ -167,7 +164,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             groupId project.group
-            artifactId project.archivesBaseName
+            artifactId project.base.archivesName.get()
             version project.version
             artifact jar
             artifact sourcesJar

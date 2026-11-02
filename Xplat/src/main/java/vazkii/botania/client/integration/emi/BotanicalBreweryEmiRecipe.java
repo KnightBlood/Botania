@@ -5,8 +5,9 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -18,24 +19,25 @@ import java.util.stream.Stream;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class BotanicalBreweryEmiRecipe extends BotaniaEmiRecipe {
-	private static final ResourceLocation TEXTURE = prefix("textures/gui/nei_brewery.png");
+	private static final Identifier TEXTURE = prefix("textures/gui/nei_brewery.png");
 	private final List<EmiIngredient> ingredients;
-	private final ResourceLocation id;
+	private final Identifier id;
 
-	public BotanicalBreweryEmiRecipe(BotanicalBreweryRecipe recipe, ItemStack container) {
-		super(BotaniaEmiPlugin.BOTANICAL_BREWERY, recipe);
+	public BotanicalBreweryEmiRecipe(RecipeHolder<BotanicalBreweryRecipe> holder, ItemStack container) {
+		super(BotaniaEmiPlugin.BOTANICAL_BREWERY, holder);
+		BotanicalBreweryRecipe recipe = holder.value();
 		this.ingredients = recipe.getIngredients().stream().map(EmiIngredient::of).toList();
 		this.input = Stream.concat(Stream.of(EmiStack.of(container)), ingredients.stream()).toList();
 		this.output = List.of(EmiStack.of(recipe.getOutput(container.copy())));
-		ResourceLocation id = recipe.getId();
-		ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(container.getItem());
-		this.id = new ResourceLocation("emi", "botania/botanical_brewery/"
+		Identifier id = recipe.getId();
+		Identifier itemId = BuiltInRegistries.ITEM.getKey(container.getItem());
+		this.id = Identifier.fromNamespaceAndPath("emi", "botania/botanical_brewery/"
 				+ id.getNamespace() + "/" + id.getPath() + "/"
 				+ itemId.getNamespace() + "/" + itemId.getPath());
 	}
 
 	@Override
-	public @Nullable ResourceLocation getId() {
+	public @Nullable Identifier getId() {
 		return id;
 	}
 
@@ -58,6 +60,6 @@ public class BotanicalBreweryEmiRecipe extends BotaniaEmiRecipe {
 			widgets.addSlot(stack, sx, 1).drawBack(false);
 			sx += 18;
 		}
-		widgets.addSlot(output.get(0), 58, 35).recipeContext(this);
+		widgets.addSlot(input.get(0), 58, 35).recipeContext(this);
 	}
 }

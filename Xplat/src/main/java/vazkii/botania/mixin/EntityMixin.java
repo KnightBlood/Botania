@@ -38,8 +38,13 @@ public abstract class EntityMixin {
 	 * Cancels some invulnerabilities conferred by items
 	 * 
 	 * Adds invulnerability to nonliving entities for key explosions
+	 *
+	 * 26.1: {@code Entity#isInvulnerableTo(DamageSource)} was removed; the
+	 * invulnerability check now funnels through {@code isInvulnerableToBase}
+	 * (called directly by e.g. {@code ItemEntity#hurtServer} and via
+	 * {@code LivingEntity#isInvulnerableTo}), so hook that instead.
 	 */
-	@Inject(at = @At("HEAD"), method = "isInvulnerableTo", cancellable = true)
+	@Inject(at = @At("HEAD"), method = "isInvulnerableToBase", cancellable = true)
 	private void checkInvulnerabilities(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
 		if (((Object) this) instanceof LivingEntity self) {
 			if (EquestrianVirusItem.onLivingHurt(self, source)) {
@@ -48,7 +53,7 @@ public abstract class EntityMixin {
 				cir.setReturnValue(true);
 			}
 		}
-		if (source.is(BotaniaDamageTypes.KEY_EXPLOSION) && this.getType().is(BotaniaTags.Entities.KEY_IMMUNE)) {
+		if (source.is(BotaniaDamageTypes.KEY_EXPLOSION) && this.getType().builtInRegistryHolder().is(BotaniaTags.Entities.KEY_IMMUNE)) {
 			cir.setReturnValue(true);
 		}
 	}

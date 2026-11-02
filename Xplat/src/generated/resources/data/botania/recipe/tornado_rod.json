@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "F": "minecraft:feather",
+    "R": "botania:rune_air",
+    "T": "botania:livingwood_twig"
+  },
+  "pattern": [
+    "  F",
+    " T ",
+    "R  "
+  ],
+  "result": {
+    "id": "botania:tornado_rod"
+  }
+}

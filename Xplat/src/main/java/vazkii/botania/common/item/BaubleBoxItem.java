@@ -22,6 +22,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -52,8 +53,8 @@ public class BaubleBoxItem extends Item {
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, @NotNull InteractionHand hand) {
-		if (!world.isClientSide) {
+	public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
+		if (!world.isClientSide()) {
 			ItemStack stack = player.getItemInHand(hand);
 			ItemNBTHelper.setBoolean(stack, TAG_OPEN, true);
 			XplatAbstractions.INSTANCE.openMenu((ServerPlayer) player, new MenuProvider() {
@@ -68,7 +69,7 @@ public class BaubleBoxItem extends Item {
 				}
 			}, buf -> buf.writeBoolean(hand == InteractionHand.MAIN_HAND));
 		}
-		return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), world.isClientSide());
+		return world.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(player.getItemInHand(hand)) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(player.getItemInHand(hand));
 	}
 
 	@Override

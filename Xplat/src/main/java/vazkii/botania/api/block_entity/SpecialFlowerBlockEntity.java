@@ -9,16 +9,19 @@
 package vazkii.botania.api.block_entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -35,6 +38,7 @@ import vazkii.botania.common.annotations.SoftImplement;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.block_entity.red_string.RedStringSpooferBlockEntity;
 import vazkii.botania.common.block.decor.FloatingFlowerBlock;
+import vazkii.botania.common.helper.ValueIOHelper;
 import vazkii.botania.common.lib.BotaniaTags;
 
 /**
@@ -47,7 +51,7 @@ public abstract class SpecialFlowerBlockEntity extends BlockEntity implements Fl
 	private final FloatingFlower floatingData = new FloatingFlowerImpl() {
 		@Override
 		public ItemStack getDisplayStack() {
-			ResourceLocation id = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(getType());
+			Identifier id = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(getType());
 			return BuiltInRegistries.ITEM.getOptional(id).map(ItemStack::new).orElse(super.getDisplayStack());
 		}
 	};
@@ -144,10 +148,11 @@ public abstract class SpecialFlowerBlockEntity extends BlockEntity implements Fl
 	}
 
 	@Override
-	public final void load(CompoundTag cmp) {
-		super.load(cmp);
+	public final void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
+		CompoundTag cmp = ValueIOHelper.readAll(input);
 		if (cmp.contains(TAG_TICKS_EXISTED)) {
-			ticksExisted = cmp.getInt(TAG_TICKS_EXISTED);
+			ticksExisted = cmp.getIntOr(TAG_TICKS_EXISTED, 0);
 		}
 		if (getBlockState().getBlock() instanceof FloatingFlowerBlock) {
 			setFloating(true);
@@ -161,15 +166,17 @@ public abstract class SpecialFlowerBlockEntity extends BlockEntity implements Fl
 	}
 
 	@Override
-	public final void saveAdditional(CompoundTag cmp) {
-		super.saveAdditional(cmp);
+	public final void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
+		var cmp = new CompoundTag();
 		cmp.putInt(TAG_TICKS_EXISTED, ticksExisted);
 		writeToPacketNBT(cmp);
+		ValueIOHelper.storeAll(output, cmp);
 	}
 
 	@NotNull
 	@Override
-	public CompoundTag getUpdateTag() {
+	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
 		var tag = new CompoundTag();
 		writeToPacketNBT(tag);
 		return tag;
@@ -193,7 +200,7 @@ public abstract class SpecialFlowerBlockEntity extends BlockEntity implements Fl
 	 */
 	public void readFromPacketNBT(CompoundTag cmp) {
 		if (cmp.contains(TAG_FLOATING_DATA)) {
-			floatingData.readNBT(cmp.getCompound(TAG_FLOATING_DATA));
+			floatingData.readNBT(cmp.getCompoundOrEmpty(TAG_FLOATING_DATA));
 		}
 	}
 
@@ -274,10 +281,10 @@ public abstract class SpecialFlowerBlockEntity extends BlockEntity implements Fl
 	}
 
 	public void emitParticle(ParticleOptions options, double xOffset, double yOffset, double zOffset, double xSpeed, double ySpeed, double zSpeed) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			return;
 		}
-		Vec3 offset = level.getBlockState(getEffectivePos()).getOffset(level, getEffectivePos());
+		Vec3 offset = level.getBlockState(getEffectivePos()).getOffset(getEffectivePos());
 		level.addParticle(options,
 				getEffectivePos().getX() + offset.x + xOffset,
 				getEffectivePos().getY() + offset.y + yOffset,

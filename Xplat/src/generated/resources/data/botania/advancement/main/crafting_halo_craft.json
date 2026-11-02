@@ -1,0 +1,32 @@
+{
+  "parent": "botania:main/mana_pool_pickup",
+  "criteria": {
+    "pool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "botania:crafting_halo"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.botania:craftingHaloCraft.desc"
+    },
+    "icon": {
+      "id": "botania:crafting_halo"
+    },
+    "title": {
+      "translate": "advancement.botania:craftingHaloCraft"
+    }
+  },
+  "requirements": [
+    [
+      "pool"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -8,9 +8,10 @@
  */
 package vazkii.botania.common.block.decor;
 
-import net.minecraft.world.level.block.AbstractGlassBlock;
+import net.minecraft.world.level.block.HalfTransparentBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 
-public class BotaniaGlassBlock extends AbstractGlassBlock {
+public class BotaniaGlassBlock extends HalfTransparentBlock {
 	public BotaniaGlassBlock(Properties props) {
 		super(props);
 	}

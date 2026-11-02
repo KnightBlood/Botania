@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "botania:corporea_spark",
+    "G": "botania:elf_glass",
+    "W": "#botania:dreamwood_logs"
+  },
+  "pattern": [
+    "C",
+    "G",
+    "W"
+  ],
+  "result": {
+    "id": "botania:corporea_crystal_cube"
+  }
+}

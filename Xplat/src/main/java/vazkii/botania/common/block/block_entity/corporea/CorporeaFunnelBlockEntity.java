@@ -10,13 +10,14 @@ package vazkii.botania.common.block.block_entity.corporea;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -42,9 +43,9 @@ public class CorporeaFunnelBlockEntity extends BaseCorporeaBlockEntity implement
 	public void doRequest() {
 		CorporeaSpark spark = getSpark();
 		if (spark != null && spark.getMaster() != null) {
-			WeightedRandomList<FilterHelper.WeightedItemStack> filter = getFilter();
+			WeightedList<FilterHelper.WeightedItemStack> filter = getFilter();
 			if (!filter.isEmpty()) {
-				ItemStack stack = filter.getRandom(level.random)
+				ItemStack stack = filter.getRandom(level.getRandom())
 						.map(FilterHelper.WeightedItemStack::stack)
 						.orElse(ItemStack.EMPTY);
 
@@ -56,11 +57,11 @@ public class CorporeaFunnelBlockEntity extends BaseCorporeaBlockEntity implement
 		}
 	}
 
-	public WeightedRandomList<FilterHelper.WeightedItemStack> getFilter() {
+	public WeightedList<FilterHelper.WeightedItemStack> getFilter() {
 		List<FilterHelper.WeightedItemStack> filter = new ArrayList<>();
 
 		for (Direction dir : Direction.values()) {
-			List<ItemFrame> frames = level.getEntitiesOfClass(ItemFrame.class, new AABB(worldPosition.relative(dir), worldPosition.relative(dir).offset(1, 1, 1)));
+			List<ItemFrame> frames = level.getEntitiesOfClass(ItemFrame.class, new AABB(Vec3.atLowerCornerOf(worldPosition.relative(dir)), Vec3.atLowerCornerOf(worldPosition.relative(dir).offset(1, 1, 1))));
 			for (ItemFrame frame : frames) {
 				Direction orientation = frame.getDirection();
 				if (orientation == dir) {
@@ -75,7 +76,8 @@ public class CorporeaFunnelBlockEntity extends BaseCorporeaBlockEntity implement
 			}
 		}
 
-		return WeightedRandomList.create(filter);
+		return net.minecraft.util.random.WeightedList.of(filter.stream()
+				.map(FilterHelper.WeightedItemStack::weighted).toList());
 	}
 
 	@Override

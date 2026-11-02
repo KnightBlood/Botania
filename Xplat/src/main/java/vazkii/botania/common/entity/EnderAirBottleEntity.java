@@ -9,11 +9,14 @@
 package vazkii.botania.common.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,8 +24,10 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LevelEvent;
@@ -39,6 +44,7 @@ import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.lib.BotaniaTags;
+import vazkii.botania.common.loot.BotaniaLootTables;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,14 +54,16 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class EnderAirBottleEntity extends ThrowableProjectile implements ItemSupplier {
 	public static final int PARTICLE_COLOR = 0x000008;
-	private static final ResourceLocation GHAST_LOOT_TABLE = prefix("ghast_ender_air_crying");
+	private static final Identifier GHAST_LOOT_TABLE = prefix("ghast_ender_air_crying");
 
 	public EnderAirBottleEntity(EntityType<EnderAirBottleEntity> type, Level world) {
 		super(type, world);
 	}
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public EnderAirBottleEntity(LivingEntity entity, Level world) {
-		super(BotaniaEntities.ENDER_AIR_BOTTLE, entity, world);
+		super(BotaniaEntities.ENDER_AIR_BOTTLE, world);
+		setOwner(entity);
 	}
 
 	public EnderAirBottleEntity(double x, double y, double z, Level world) {
@@ -77,7 +85,7 @@ public class EnderAirBottleEntity extends ThrowableProjectile implements ItemSup
 	@Override
 	protected void onHitBlock(@NotNull BlockHitResult result) {
 		super.onHitBlock(result);
-		if (level().isClientSide) {
+		if (level().isClientSide()) {
 			return;
 		}
 		convertBlock(result.getBlockPos());
@@ -87,7 +95,7 @@ public class EnderAirBottleEntity extends ThrowableProjectile implements ItemSup
 	@Override
 	protected void onHitEntity(@NotNull EntityHitResult result) {
 		super.onHitEntity(result);
-		if (this.level().isClientSide) {
+		if (this.level().isClientSide()) {
 			return;
 		}
 		Entity entity = result.getEntity();
@@ -102,12 +110,12 @@ public class EnderAirBottleEntity extends ThrowableProjectile implements ItemSup
 			Vec3 vec = new Vec3(lookVec.x(), 0, lookVec.z()).normalize();
 
 			// Position chosen to appear roughly in the ghast's face
-			((ServerLevel) this.level()).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.GHAST_TEAR)),
+			((ServerLevel) this.level()).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStackTemplate(BuiltInRegistries.ITEM.wrapAsHolder(Items.GHAST_TEAR), 1, DataComponentPatch.EMPTY)),
 					entity.getX() + (2.3 * vec.x), entity.getY() + vec.y + 2.6, entity.getZ() + (2.3 * vec.z),
 					40,
 					Math.abs(vec.z) + 0.15, 0.2, Math.abs(vec.x) + 0.15, 0.2);
 
-			LootTable table = this.level().getServer().getLootData().getLootTable(GHAST_LOOT_TABLE);
+			LootTable table = this.level().getServer().reloadableRegistries().getLootTable(BotaniaLootTables.key(GHAST_LOOT_TABLE));
 			LootParams.Builder builder = new LootParams.Builder(((ServerLevel) level()));
 			builder.withParameter(LootContextParams.THIS_ENTITY, entity);
 			builder.withParameter(LootContextParams.ORIGIN, entity.position());
@@ -115,7 +123,7 @@ public class EnderAirBottleEntity extends ThrowableProjectile implements ItemSup
 
 			LootParams context = builder.create(LootContextParamSets.ENTITY);
 			for (ItemStack stack : table.getRandomItems(context)) {
-				ItemEntity item = entity.spawnAtLocation(stack, 2);
+				ItemEntity item = entity.spawnAtLocation((ServerLevel) entity.level(), stack, 2F);
 				item.setDeltaMovement(item.getDeltaMovement().add(vec.scale(0.4)));
 			}
 		} else {
@@ -147,7 +155,7 @@ public class EnderAirBottleEntity extends ThrowableProjectile implements ItemSup
 	}
 
 	@Override
-	protected void defineSynchedData() {}
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {}
 
 	@NotNull
 	@Override

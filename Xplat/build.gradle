@@ -1,23 +1,26 @@
 plugins {
     id('java')
-    id 'net.neoforged.moddev.legacyforge' version '2.0.142'
+    id 'net.neoforged.moddev' version "${neo_moddev_version}"
 }
 
-archivesBaseName = "${mod_name}-xplat"
+base {
+    archivesName = "${mod_name}-xplat"
+}
 version = "${minecraft_version}-${build_number}"
 if (System.getenv().RELEASE_MODE == null) {
     version += '-SNAPSHOT'
 }
 
-legacyForge {
-    mcpVersion = "1.20.1"
+neoForge {
+    version = neo_version
     accessTransformers = [file('src/main/resources/META-INF/accesstransformer.cfg')]
 
-    parchment {
-        minecraftVersion = '1.20.1'
-        mappingsVersion = '2023.09.03'
+    if (parchment_version != 'none') {
+        parchment {
+            minecraftVersion = parchment_minecraft_version
+            mappingsVersion = parchment_version
+        }
     }
-
 }
 
 repositories {
@@ -37,7 +40,7 @@ repositories {
 
 dependencies {
     compileOnly "org.spongepowered:mixin:0.8.5"
-    compileOnly "vazkii.patchouli:Patchouli-xplat:${minecraft_version}-84"
+    compileOnly "vazkii.patchouli:patchouli-xplat:${patchouli_version}"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.1'
@@ -46,8 +49,9 @@ dependencies {
 
     compileOnly "com.unascribed:ears-api:1.4.5"
 
-    compileOnly "mezz.jei:jei-1.20.1-common-api:15.2.0.27"
-    compileOnly "dev.emi:emi-xplat-mojmap:1.0.4+${minecraft_version}:api"
+    compileOnly "mezz.jei:jei-26.1-common-api:${jei_version}"
+// EMI unofficial port (curseforge 1544558, no maven) - local jar, mojmap neoforge build
+compileOnly(rootProject.files("libs/emi-1.1.24+26.1.2+neoforge.jar"))
 
     compileOnly "org.jetbrains:annotations:24.0.1"
 
@@ -64,11 +68,16 @@ sourceSets.main.resources {
     exclude 'assets/botania/patchouli_books/lexicon/en_us/README'
 }
 
+// TODO: GameTest framework removed in MC 26.1, tests need rewrite
+sourceSets.main.java.exclude('vazkii/botania/test/**')
+// TODO: JEI/EMI/Patchouli versions for 26.1 not yet available
+sourceSets.main.java.exclude('vazkii/botania/client/integration/jei/**')
+
 tasks.withType(JavaCompile).configureEach {
     it.options.compilerArgs.add("-Acrafttweaker.processor.document.output_directory=${new File(rootProject.buildDir, "docsOut")}")
     it.options.compilerArgs.add("-Acrafttweaker.processor.document.multi_source=true")
 
-    it.options.compilerArgs << "-Xmaxerrs" << "2000"
+    it.options.compilerArgs << "-Xmaxerrs" << "20000"
 
 }
 
@@ -81,7 +90,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             groupId project.group
-            artifactId project.archivesBaseName
+            artifactId project.base.archivesName.get()
             version project.version
             from components.java
         }

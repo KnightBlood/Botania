@@ -1,0 +1,14 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "group": "botania:sapling_cycle",
+  "input": "minecraft:acacia_sapling",
+  "mana": 120,
+  "output": {
+    "count": 1,
+    "id": "minecraft:dark_oak_sapling"
+  }
+}

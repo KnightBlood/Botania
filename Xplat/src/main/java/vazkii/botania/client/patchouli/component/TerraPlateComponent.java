@@ -8,9 +8,8 @@
  */
 package vazkii.botania.client.patchouli.component;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 
 import vazkii.patchouli.api.IComponentRenderContext;
@@ -40,35 +39,21 @@ public class TerraPlateComponent implements ICustomComponent {
 	}
 
 	@Override
-	public void render(GuiGraphics gui, IComponentRenderContext context, float pticks, int mouseX, int mouseY) {
-		PoseStack ms = gui.pose();
-		ms.pushPose();
-		ms.translate(0, 0, -10);
+	public void extractRenderState(GuiGraphicsExtractor gui, IComponentRenderContext context, float pticks, int mouseX, int mouseY) {
 		context.renderItemStack(gui, x + 13, y + 1, mouseX, mouseY, cornerBlock);
-
-		ms.translate(0F, 0F, 5F);
 		context.renderItemStack(gui, x + 20, y + 4, mouseX, mouseY, middleBlock);
 		context.renderItemStack(gui, x + 7, y + 4, mouseX, mouseY, middleBlock);
-
-		ms.translate(0F, 0F, 5F);
 		context.renderItemStack(gui, x + 13, y + 8, mouseX, mouseY, cornerBlock);
 		context.renderItemStack(gui, x + 27, y + 8, mouseX, mouseY, centerBlock);
 		context.renderItemStack(gui, x, y + 8, mouseX, mouseY, cornerBlock);
-
-		ms.translate(0F, 0F, 5F);
 		context.renderItemStack(gui, x + 7, y + 12, mouseX, mouseY, middleBlock);
 		context.renderItemStack(gui, x + 20, y + 12, mouseX, mouseY, middleBlock);
-
-		ms.translate(0F, 0F, 5F);
 		context.renderItemStack(gui, x + 14, y + 15, mouseX, mouseY, cornerBlock);
-
-		ms.translate(0F, 0F, 5F);
 		context.renderItemStack(gui, x + 13, y, mouseX, mouseY, plateBlock);
-		ms.popPose();
 	}
 
 	@Override
-	public void onVariablesAvailable(UnaryOperator<IVariable> lookup) {
+	public void onVariablesAvailable(UnaryOperator<IVariable> lookup, HolderLookup.Provider registries) {
 		cornerBlock = lookup.apply(corner).as(ItemStack.class);
 		centerBlock = lookup.apply(center).as(ItemStack.class);
 		middleBlock = lookup.apply(edge).as(ItemStack.class);

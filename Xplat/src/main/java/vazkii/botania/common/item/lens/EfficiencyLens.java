@@ -17,7 +17,7 @@ public class EfficiencyLens extends Lens {
 	@Override
 	public void apply(ItemStack stack, BurstProperties props) {
 		props.manaLossPerTick /= 5F;
-		props.ticksBeforeManaLoss *= 1.1F;
+		props.ticksBeforeManaLoss = (int) (props.ticksBeforeManaLoss * 1.1F);
 	}
 
 }

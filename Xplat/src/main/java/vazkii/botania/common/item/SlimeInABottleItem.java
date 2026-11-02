@@ -12,6 +12,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.block.flower.generating.NarslimmusBlockEntity;
 import vazkii.botania.common.helper.ItemNBTHelper;
@@ -24,8 +27,8 @@ public class SlimeInABottleItem extends Item {
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int something, boolean somethingelse) {
-		if (!world.isClientSide) {
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
+		if (!world.isClientSide()) {
 			boolean slime = NarslimmusBlockEntity.isSlimeChunk(world, entity.blockPosition());
 			ItemNBTHelper.setBoolean(stack, TAG_ACTIVE, slime);
 		}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "botania:cosmetic_bauble",
+  "key": {
+    "P": "minecraft:magenta_dye",
+    "S": "botania:mana_string"
+  },
+  "pattern": [
+    "PPP",
+    "PSP",
+    "PPP"
+  ],
+  "result": {
+    "id": "botania:cosmetic_unicorn_horn"
+  }
+}

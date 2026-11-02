@@ -2,85 +2,106 @@
   "parent": "botania:ocean_ruins",
   "spawnedMobs": [
     {
-      "type": "minecraft:creeper",
-      "effectsToApply": [
-        {
-          "duration": 100,
-          "effect": "minecraft:fire_resistance"
-        },
-        {
-          "duration": 100,
-          "effect": "minecraft:regeneration"
-        },
-        {
-          "effect": "minecraft:water_breathing"
-        }
-      ],
+      "data": {
+        "type": "minecraft:creeper",
+        "effectsToApply": [
+          {
+            "duration": 100,
+            "effect": "minecraft:fire_resistance"
+          },
+          {
+            "duration": 100,
+            "effect": "minecraft:regeneration"
+          },
+          {
+            "effect": "minecraft:water_breathing"
+          }
+        ],
+        "weight": 199
+      },
       "weight": 199
     },
     {
-      "type": "minecraft:creeper",
-      "effectsToApply": [
-        {
-          "duration": 100,
-          "effect": "minecraft:fire_resistance"
+      "data": {
+        "type": "minecraft:creeper",
+        "effectsToApply": [
+          {
+            "duration": 100,
+            "effect": "minecraft:fire_resistance"
+          },
+          {
+            "duration": 100,
+            "effect": "minecraft:regeneration"
+          },
+          {
+            "effect": "minecraft:water_breathing"
+          }
+        ],
+        "nbt": {
+          "powered": 1
         },
-        {
-          "duration": 100,
-          "effect": "minecraft:regeneration"
-        },
-        {
-          "effect": "minecraft:water_breathing"
-        }
-      ],
-      "nbt": {
-        "powered": 1
+        "weight": 1
       },
       "weight": 1
     },
     {
-      "type": "minecraft:drowned",
-      "equipmentTable": "botania:equipment/loonium/weapon_trident",
+      "data": {
+        "type": "minecraft:drowned",
+        "equipmentTable": "botania:equipment/loonium/weapon_trident",
+        "weight": 540
+      },
       "weight": 540
     },
     {
-      "type": "minecraft:zombie",
-      "equipmentTable": "botania:equipment/loonium/weapon_sword",
+      "data": {
+        "type": "minecraft:zombie",
+        "equipmentTable": "botania:equipment/loonium/weapon_sword",
+        "weight": 60
+      },
       "weight": 60
     },
     {
-      "type": "minecraft:skeleton",
-      "equipmentTable": "botania:equipment/loonium/weapon_bow",
+      "data": {
+        "type": "minecraft:skeleton",
+        "equipmentTable": "botania:equipment/loonium/weapon_bow",
+        "weight": 400
+      },
       "weight": 400
     },
     {
-      "type": "minecraft:cave_spider",
-      "effectsToApply": [
-        {
-          "effect": "minecraft:fire_resistance"
-        },
-        {
-          "effect": "minecraft:regeneration"
-        },
-        {
-          "effect": "minecraft:water_breathing"
-        }
-      ],
+      "data": {
+        "type": "minecraft:cave_spider",
+        "effectsToApply": [
+          {
+            "effect": "minecraft:fire_resistance"
+          },
+          {
+            "effect": "minecraft:regeneration"
+          },
+          {
+            "effect": "minecraft:water_breathing"
+          }
+        ],
+        "weight": 30
+      },
       "weight": 30
     },
     {
-      "type": "minecraft:spider",
-      "effectsToApply": [
-        {
-          "effect": "minecraft:fire_resistance"
-        },
-        {
-          "effect": "minecraft:regeneration"
-        },
-        {
-          "effect": "minecraft:water_breathing"
-        }
-      ],
+      "data": {
+        "type": "minecraft:spider",
+        "effectsToApply": [
+          {
+            "effect": "minecraft:fire_resistance"
+          },
+          {
+            "effect": "minecraft:regeneration"
+          },
+          {
+            "effect": "minecraft:water_breathing"
+          }
+        ],
+        "weight": 270
+      },
       "weight": 270
     }
   ]

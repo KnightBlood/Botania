@@ -1,0 +1,18 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/purple",
+    "#botania:petals/purple",
+    "#botania:petals/green",
+    "#botania:petals/green",
+    "#botania:petals/black",
+    "botania:rune_earth",
+    "botania:rune_pride",
+    "botania:pixie_dust"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:rafflowsia"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

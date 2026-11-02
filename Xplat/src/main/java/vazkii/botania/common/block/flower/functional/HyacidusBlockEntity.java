@@ -15,6 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.api.block_entity.FunctionalFlowerBlockEntity;
 import vazkii.botania.api.block_entity.RadiusDescriptor;
@@ -34,14 +35,14 @@ public class HyacidusBlockEntity extends FunctionalFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide || redstoneSignal > 0) {
+		if (getLevel().isClientSide() || redstoneSignal > 0) {
 			return;
 		}
 
-		List<LivingEntity> entities = getLevel().getEntitiesOfClass(LivingEntity.class, new AABB(getEffectivePos().offset(-RANGE, -RANGE, -RANGE), getEffectivePos().offset(RANGE + 1, RANGE + 1, RANGE + 1)));
+		List<LivingEntity> entities = getLevel().getEntitiesOfClass(LivingEntity.class, new AABB(Vec3.atLowerCornerOf(getEffectivePos().offset(-RANGE, -RANGE, -RANGE)), Vec3.atLowerCornerOf(getEffectivePos().offset(RANGE + 1, RANGE + 1, RANGE + 1))));
 		boolean did = false;
 		for (LivingEntity entity : entities) {
-			if (!(entity instanceof Player) && !entity.hasEffect(MobEffects.POISON) && getMana() >= COST && !entity.level().isClientSide
+			if (!(entity instanceof Player) && !entity.hasEffect(MobEffects.POISON) && getMana() >= COST && !entity.level().isClientSide()
 					&& entity.addEffect(new MobEffectInstance(MobEffects.POISON, 60, 0))) {
 				addMana(-COST);
 				did = true;

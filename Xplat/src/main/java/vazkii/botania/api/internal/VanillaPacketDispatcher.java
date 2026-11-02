@@ -23,7 +23,7 @@ public final class VanillaPacketDispatcher {
 			if (packet != null) {
 				BlockPos pos = tile.getBlockPos();
 				((ServerChunkCache) tile.getLevel().getChunkSource()).chunkMap
-						.getPlayers(new ChunkPos(pos), false)
+						.getPlayers(new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4), false)
 						.forEach(e -> e.connection.send(packet));
 			}
 		}

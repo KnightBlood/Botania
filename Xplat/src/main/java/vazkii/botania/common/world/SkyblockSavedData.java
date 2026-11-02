@@ -11,12 +11,16 @@ package vazkii.botania.common.world;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import net.minecraft.Util;
+import com.mojang.serialization.Codec;
+
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.util.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,8 +29,16 @@ import vazkii.botania.xplat.BotaniaConfig;
 import java.util.Map;
 import java.util.UUID;
 
+import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
+
 public class SkyblockSavedData extends SavedData {
-	private static final String NAME = "gog_skyblock_islands";
+	public static final Codec<SkyblockSavedData> CODEC = CompoundTag.CODEC.xmap(
+			SkyblockSavedData::new, data -> data.save(new CompoundTag()));
+
+	// 4-arg ctor for both loaders; no datafix applies to mod saved data, so pass null (NeoForge's
+	// 3-arg convenience overload does exactly this internally, but vanilla only has the 4-arg one).
+	private static final SavedDataType<SkyblockSavedData> TYPE = new SavedDataType<>(
+			prefix("gog_skyblock_islands"), () -> new SkyblockSavedData(new CompoundTag()), CODEC, null);
 
 	/** The offset is chosen to put islands under default settings in the center of a chunk region. */
 	private static final int OFFSET = 1;
@@ -36,21 +48,20 @@ public class SkyblockSavedData extends SavedData {
 
 	public SkyblockSavedData(CompoundTag nbt) {
 		HashBiMap<IslandPos, UUID> map = HashBiMap.create();
-		for (Tag inbt : nbt.getList("Islands", Tag.TAG_COMPOUND)) {
+		for (Tag inbt : nbt.getListOrEmpty("Islands")) {
 			CompoundTag tag = (CompoundTag) inbt;
-			map.put(IslandPos.fromTag(tag), tag.getUUID("Player"));
+			map.put(IslandPos.fromTag(tag), tag.getIntArray("Player").map(UUIDUtil::uuidFromIntArray).orElse(Util.NIL_UUID));
 		}
 		this.skyblocks = map;
-		if (nbt.contains("SpiralState", Tag.TAG_INT_ARRAY)) {
-			this.spiral = Spiral.fromArray(nbt.getIntArray("SpiralState"));
+		if (nbt.contains("SpiralState")) {
+			this.spiral = Spiral.fromArray(nbt.getIntArray("SpiralState").orElseGet(() -> new Spiral().toIntArray()));
 		} else {
 			this.spiral = new Spiral();
 		}
 	}
 
 	public static SkyblockSavedData get(ServerLevel world) {
-		return world.getDataStorage().computeIfAbsent(SkyblockSavedData::new,
-				() -> new SkyblockSavedData(new CompoundTag()), NAME);
+		return world.getDataStorage().computeIfAbsent(TYPE);
 	}
 
 	public IslandPos getSpawn() {
@@ -76,13 +87,12 @@ public class SkyblockSavedData extends SavedData {
 		return islandPos;
 	}
 
-	@NotNull
-	@Override
+	// 26.1: no longer an override; serialization is routed through CODEC.
 	public CompoundTag save(@NotNull CompoundTag nbt) {
 		ListTag list = new ListTag();
 		for (Map.Entry<IslandPos, UUID> entry : skyblocks.entrySet()) {
 			CompoundTag entryTag = entry.getKey().toTag();
-			entryTag.putUUID("Player", entry.getValue());
+			entryTag.putIntArray("Player", UUIDUtil.uuidToIntArray(entry.getValue()));
 			list.add(entryTag);
 		}
 		nbt.putIntArray("SpiralState", spiral.toIntArray());

@@ -8,37 +8,44 @@
  */
 package vazkii.botania.data;
 
-import net.minecraft.advancements.critereon.EnchantmentPredicate;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.EnchantmentPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.StatePropertiesPredicate;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.predicates.DataComponentPredicates;
+import net.minecraft.core.component.predicates.EnchantmentsPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.world.level.storage.loot.Deserializers;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.AlternativesEntry;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.minecraft.world.level.storage.loot.entries.LootTableReference;
+import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.functions.ApplyExplosionDecay;
-import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
-import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
+import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchTool;
-import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 import org.jetbrains.annotations.NotNull;
@@ -64,8 +71,11 @@ import java.util.function.Function;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class BlockLootProvider implements DataProvider {
-	private static final LootItemCondition.Builder SILK_TOUCH = MatchTool.toolMatches(ItemPredicate.Builder.item()
-			.hasEnchantment(new EnchantmentPredicate(Enchantments.SILK_TOUCH, MinMaxBounds.Ints.atLeast(1))));
+	// 26.1: enchantments are data-driven, so the silk touch holder must be resolved from
+	// the datagen registries instead of a class-load-time static.
+	private final CompletableFuture<HolderLookup.Provider> lookupFuture;
+	private static HolderLookup.Provider registries;
+
 	private static final Function<Block, LootTable.Builder> SKIP = b -> {
 		throw new RuntimeException("shouldn't be executed");
 	};
@@ -73,11 +83,12 @@ public class BlockLootProvider implements DataProvider {
 	private final PackOutput.PathProvider pathProvider;
 	private final Map<Block, Function<Block, LootTable.Builder>> functionTable = new HashMap<>();
 
-	public BlockLootProvider(PackOutput packOutput) {
-		this.pathProvider = packOutput.createPathProvider(PackOutput.Target.DATA_PACK, "loot_tables/blocks");
+	public BlockLootProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupFuture) {
+		this.lookupFuture = lookupFuture;
+		this.pathProvider = packOutput.createPathProvider(PackOutput.Target.DATA_PACK, Registries.LOOT_TABLE.identifier().getPath() + "/blocks");
 
 		for (Block b : BuiltInRegistries.BLOCK) {
-			ResourceLocation id = BuiltInRegistries.BLOCK.getKey(b);
+			Identifier id = BuiltInRegistries.BLOCK.getKey(b);
 			if (!LibMisc.MOD_ID.equals(id.getNamespace())) {
 				continue;
 			}
@@ -88,7 +99,13 @@ public class BlockLootProvider implements DataProvider {
 			} else if (b instanceof BotaniaGrassBlock) {
 				functionTable.put(b, BlockLootProvider::genAltGrass);
 			} else if (b instanceof FlowerPotBlock flowerPot) {
-				functionTable.put(b, block -> createPotAndPlantItemTable(flowerPot.getContent()));
+				functionTable.put(b, block -> createPotAndPlantItemTable(flowerPot.getPotted()));
+			} else if (b instanceof vazkii.botania.common.block.decor.BuriedPetalBlock buried) {
+				// The buried petals have no block item; they drop their color's petal item.
+				functionTable.put(b, block -> LootTable.lootTable().withPool(LootPool.lootPool()
+						.setRolls(ConstantValue.exactly(1))
+						.add(LootItem.lootTableItem(vazkii.botania.common.item.BotaniaItems.getPetal(buried.color)))
+						.when(ExplosionCondition.survivesExplosion())));
 			} else if (id.getPath().matches(LibBlockNames.METAMORPHIC_PREFIX + "\\w+" + "_stone")) {
 				functionTable.put(b, BlockLootProvider::genMetamorphicStone);
 			}
@@ -128,10 +145,28 @@ public class BlockLootProvider implements DataProvider {
 
 	@Override
 	public CompletableFuture<?> run(CachedOutput cache) {
-		Map<ResourceLocation, LootTable.Builder> tables = new HashMap<>();
+		return lookupFuture.thenCompose(registries -> this.run(cache, registries));
+	}
+
+	private static Holder<Enchantment> silkTouchHolder() {
+		return registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH);
+	}
+
+	private static LootItemCondition.Builder silkTouch() {
+		return MatchTool.toolMatches(ItemPredicate.Builder.item()
+				.withComponents(DataComponentMatchers.Builder.components()
+						.partial(DataComponentPredicates.ENCHANTMENTS,
+								EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(
+										silkTouchHolder(), MinMaxBounds.Ints.atLeast(1)))))
+						.build()));
+	}
+
+	private CompletableFuture<?> run(CachedOutput cache, HolderLookup.Provider registries) {
+		BlockLootProvider.registries = registries;
+		Map<Identifier, LootTable.Builder> tables = new HashMap<>();
 
 		for (Block b : BuiltInRegistries.BLOCK) {
-			ResourceLocation id = BuiltInRegistries.BLOCK.getKey(b);
+			Identifier id = BuiltInRegistries.BLOCK.getKey(b);
 			if (!LibMisc.MOD_ID.equals(id.getNamespace())) {
 				continue;
 			}
@@ -142,9 +177,15 @@ public class BlockLootProvider implements DataProvider {
 		}
 
 		List<CompletableFuture<?>> output = new ArrayList<>();
-		for (Map.Entry<ResourceLocation, LootTable.Builder> e : tables.entrySet()) {
+		for (Map.Entry<Identifier, LootTable.Builder> e : tables.entrySet()) {
 			Path path = pathProvider.json(e.getKey());
-			output.add(DataProvider.saveStable(cache, Deserializers.createLootTableSerializer().create().toJsonTree(e.getValue().setParamSet(LootContextParamSets.BLOCK).build()), path));
+			try {
+				LootTable lootTable = e.getValue().setParamSet(LootContextParamSets.BLOCK).build();
+				output.add(DataProvider.saveStable(cache, registries, LootTable.DIRECT_CODEC, lootTable, path));
+			} catch (Exception ex) {
+				vazkii.botania.api.BotaniaAPI.LOGGER.error("Failed to serialize loot table {}", e.getKey(), ex);
+				throw ex;
+			}
 		}
 		return CompletableFuture.allOf(output.toArray(CompletableFuture[]::new));
 	}
@@ -159,11 +200,12 @@ public class BlockLootProvider implements DataProvider {
 	}
 
 	protected static LootTable.Builder genCopyNbt(Block b, String... tags) {
+		// 26.1: CopyNbtFunction is gone; copy the block entity data component instead.
+		// The individual tag paths are ignored, the whole component is carried over.
 		LootPoolEntryContainer.Builder<?> entry = LootItem.lootTableItem(b);
-		CopyNbtFunction.Builder func = CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY);
-		for (String tag : tags) {
-			func = func.copy(tag, "BlockEntityTag." + tag);
-		}
+		CopyComponentsFunction.Builder func = CopyComponentsFunction
+				.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
+				.include(DataComponents.BLOCK_ENTITY_DATA);
 		LootPool.Builder pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1)).add(entry)
 				.when(ExplosionCondition.survivesExplosion())
 				.apply(func);
@@ -172,7 +214,11 @@ public class BlockLootProvider implements DataProvider {
 
 	protected static LootTable.Builder genCellBlock(Block b) {
 		ItemPredicate.Builder silkPred = ItemPredicate.Builder.item()
-				.hasEnchantment(new EnchantmentPredicate(Enchantments.SILK_TOUCH, MinMaxBounds.Ints.atLeast(1)));
+				.withComponents(DataComponentMatchers.Builder.components()
+						.partial(DataComponentPredicates.ENCHANTMENTS,
+								EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(
+										silkTouchHolder(), MinMaxBounds.Ints.atLeast(1)))))
+						.build());
 		LootPoolEntryContainer.Builder<?> silk = LootItem.lootTableItem(b)
 				.when(MatchTool.toolMatches(silkPred));
 		return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).add(silk));
@@ -180,7 +226,8 @@ public class BlockLootProvider implements DataProvider {
 
 	protected static LootTable.Builder genTinyPotato(Block b) {
 		LootPoolEntryContainer.Builder<?> entry = LootItem.lootTableItem(b)
-				.apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY));
+				.apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
+						.include(DataComponents.CUSTOM_NAME));
 		LootPool.Builder pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1)).add(entry)
 				.when(ExplosionCondition.survivesExplosion());
 		return LootTable.lootTable().withPool(pool);
@@ -194,7 +241,7 @@ public class BlockLootProvider implements DataProvider {
 
 	protected static LootTable.Builder genSilkDrop(ItemLike silkDrop, ItemLike normalDrop) {
 		LootPoolEntryContainer.Builder<?> cobbleDrop = LootItem.lootTableItem(normalDrop).when(ExplosionCondition.survivesExplosion());
-		LootPoolEntryContainer.Builder<?> stoneDrop = LootItem.lootTableItem(silkDrop).when(SILK_TOUCH);
+		LootPoolEntryContainer.Builder<?> stoneDrop = LootItem.lootTableItem(silkDrop).when(silkTouch());
 
 		return LootTable.lootTable().withPool(
 				LootPool.lootPool().setRolls(ConstantValue.exactly(1))
@@ -202,7 +249,7 @@ public class BlockLootProvider implements DataProvider {
 	}
 
 	protected static LootTable.Builder genSolidVine(Block b) {
-		LootPoolEntryContainer.Builder<?> entry = LootTableReference.lootTableReference(new ResourceLocation("blocks/vine"));
+		LootPoolEntryContainer.Builder<?> entry = NestedLootTable.lootTableReference(ResourceKey.create(Registries.LOOT_TABLE, Identifier.parse("blocks/vine")));
 		return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).add(entry));
 	}
 
@@ -231,7 +278,7 @@ public class BlockLootProvider implements DataProvider {
 
 	protected static LootTable.Builder genAltGrass(Block b) {
 		LootPoolEntryContainer.Builder<?> silk = LootItem.lootTableItem(b)
-				.when(SILK_TOUCH);
+				.when(silkTouch());
 		LootPoolEntryContainer.Builder<?> dirt = LootItem.lootTableItem(Blocks.DIRT)
 				.when(ExplosionCondition.survivesExplosion());
 		LootPoolEntryContainer.Builder<?> entry = AlternativesEntry.alternatives(silk, dirt);

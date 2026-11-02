@@ -8,29 +8,53 @@
  */
 package vazkii.botania.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-
-import net.minecraft.client.model.SkullModelBase;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.object.skull.SkullModelBase;
 
 import vazkii.botania.client.render.block_entity.GaiaHeadBlockEntityRenderer;
 
+/**
+ * A skull model that mirrors the head of whichever mob is currently looking at it, so that the Gaia
+ * head appears to be made of the viewer's face. The delegate model is picked per frame; its pose is
+ * copied onto our own head geometry.
+ */
 public class GaiaHeadModel extends SkullModelBase {
-	@Override
-	public void setupAnim(float animationProgress, float yRot, float xRot) {
-		var type = GaiaHeadBlockEntityRenderer.getViewType();
-		var model = GaiaHeadBlockEntityRenderer.models.get(type);
-		if (model != null) {
-			model.setupAnim(animationProgress, yRot, xRot);
-		}
+	private final ModelPart head;
+
+	public GaiaHeadModel(ModelPart root) {
+		super(root);
+		this.head = root.getChild("head");
 	}
 
 	@Override
-	public void renderToBuffer(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float a) {
-		var type = GaiaHeadBlockEntityRenderer.getViewType();
-		var model = GaiaHeadBlockEntityRenderer.models.get(type);
-		if (model != null) {
-			model.renderToBuffer(ms, buffer, light, overlay, r, g, b, a);
+	public void setupAnim(SkullModelBase.State state) {
+		super.setupAnim(state);
+
+		SkullModelBase delegate = GaiaHeadBlockEntityRenderer.models.get(GaiaHeadBlockEntityRenderer.getViewType());
+		if (delegate != null) {
+			delegate.setupAnim(state);
+			copyPose(delegate.root(), this.head);
+		} else {
+			this.head.yRot = state.yRot * (float) (Math.PI / 180.0);
+			this.head.xRot = state.xRot * (float) (Math.PI / 180.0);
+		}
+	}
+
+	/**
+	 * Copies the pose of the delegate's head part, then recurses into same-named children so that
+	 * things like the dragon's jaw still animate.
+	 */
+	private static void copyPose(ModelPart from, ModelPart to) {
+		to.xRot = from.xRot;
+		to.yRot = from.yRot;
+		to.zRot = from.zRot;
+		to.x = from.x;
+		to.y = from.y;
+		to.z = from.z;
+		for (String name : new String[] { "jaw", "hat" }) {
+			if (from.hasChild(name) && to.hasChild(name)) {
+				copyPose(from.getChild(name), to.getChild(name));
+			}
 		}
 	}
 }

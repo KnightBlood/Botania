@@ -8,7 +8,7 @@
  */
 package vazkii.botania.common.item.equipment.bauble;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -23,8 +23,8 @@ import vazkii.botania.common.handler.BotaniaSounds;
 
 public class CloakOfBalanceItem extends CloakOfVirtueItem {
 
-	private static final ResourceLocation texture = new ResourceLocation(ResourcesLib.MODEL_BALANCE_CLOAK);
-	private static final ResourceLocation textureGlow = new ResourceLocation(ResourcesLib.MODEL_BALANCE_CLOAK_GLOW);
+	private static final Identifier texture = Identifier.parse(ResourcesLib.MODEL_BALANCE_CLOAK);
+	private static final Identifier textureGlow = Identifier.parse(ResourcesLib.MODEL_BALANCE_CLOAK_GLOW);
 
 	public CloakOfBalanceItem(Properties props) {
 		super(props);
@@ -61,12 +61,12 @@ public class CloakOfBalanceItem extends CloakOfVirtueItem {
 	}
 
 	@Override
-	ResourceLocation getCloakTexture() {
+	Identifier getCloakTexture() {
 		return texture;
 	}
 
 	@Override
-	ResourceLocation getCloakGlowTexture() {
+	Identifier getCloakGlowTexture() {
 		return textureGlow;
 	}
 

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "minecraft:blaze_powder",
+    "C": "botania:thorn_chakram",
+    "P": "botania:pixie_dust"
+  },
+  "pattern": [
+    "BBB",
+    "CPC",
+    "BBB"
+  ],
+  "result": {
+    "count": 2,
+    "id": "botania:flare_chakram"
+  }
+}

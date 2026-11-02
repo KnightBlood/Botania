@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "minecraft:dropper",
+    "botania:corporea_spark"
+  ],
+  "result": {
+    "id": "botania:corporea_funnel"
+  }
+}

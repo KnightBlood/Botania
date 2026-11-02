@@ -15,6 +15,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
@@ -34,6 +35,7 @@ public class ThrownItemEntity extends ItemEntity {
 		super(type, world);
 	}
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: entity setters in ctor
 	public ThrownItemEntity(Level world, double x,
 			double y, double z, ItemEntity item) {
 		super(world, x, y, z, item.getItem());
@@ -61,12 +63,11 @@ public class ThrownItemEntity extends ItemEntity {
 			BlockPos blockPos = ((BlockHitResult) hitResult).getBlockPos();
 			BlockState blockState = this.level().getBlockState(blockPos);
 			if (blockState.is(Blocks.NETHER_PORTAL)) {
-				this.handleInsidePortal(blockPos);
+				this.setAsInsidePortal((net.minecraft.world.level.block.Portal) blockState.getBlock(), blockPos);
 				teleported = true;
 			} else if (blockState.is(Blocks.END_GATEWAY)) {
-				BlockEntity blockEntity = this.level().getBlockEntity(blockPos);
-				if (blockEntity instanceof TheEndGatewayBlockEntity gateway && TheEndGatewayBlockEntity.canEntityTeleport(this)) {
-					TheEndGatewayBlockEntity.teleportEntity(this.level(), blockPos, blockState, this, gateway);
+				if (this.canUsePortal(false)) {
+					this.setAsInsidePortal((net.minecraft.world.level.block.Portal) blockState.getBlock(), blockPos);
 				}
 
 				teleported = true;
@@ -78,7 +79,7 @@ public class ThrownItemEntity extends ItemEntity {
 		}
 
 		// Bonk any entities hit
-		if (!level().isClientSide && hitResult.getType() == HitResult.Type.ENTITY) {
+		if (!level().isClientSide() && hitResult.getType() == HitResult.Type.ENTITY) {
 			Entity bonk = ((EntityHitResult) hitResult).getEntity();
 			bonk.hurt(damageSources().magic(), 2.0F);
 			Entity item = new ItemEntity(level(), getX(), getY(), getZ(), getItem());
@@ -88,7 +89,7 @@ public class ThrownItemEntity extends ItemEntity {
 			return;
 		}
 
-		if (!level().isClientSide && getDeltaMovement().length() < 1.0F) {
+		if (!level().isClientSide() && getDeltaMovement().length() < 1.0F) {
 			Entity item = new ItemEntity(level(), getX(), getY(), getZ(), getItem());
 			level().addFreshEntity(item);
 			item.setDeltaMovement(getDeltaMovement());

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "E": "minecraft:ender_eye",
+    "O": "minecraft:obsidian",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "RER",
+    "EOE",
+    "RER"
+  ],
+  "result": {
+    "id": "botania:ender_eye_block"
+  }
+}

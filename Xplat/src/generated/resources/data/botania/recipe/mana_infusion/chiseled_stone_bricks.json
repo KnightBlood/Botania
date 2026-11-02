@@ -1,0 +1,13 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "input": "minecraft:stone_bricks",
+  "mana": 150,
+  "output": {
+    "count": 1,
+    "id": "minecraft:chiseled_stone_bricks"
+  }
+}

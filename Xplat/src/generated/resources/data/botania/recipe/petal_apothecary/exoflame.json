@@ -1,0 +1,16 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/red",
+    "#botania:petals/red",
+    "#botania:petals/gray",
+    "#botania:petals/light_gray",
+    "botania:rune_fire",
+    "botania:rune_summer"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:exoflame"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

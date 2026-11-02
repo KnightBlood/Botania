@@ -8,10 +8,12 @@
  */
 package vazkii.botania.common.entity;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -20,11 +22,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -52,13 +57,15 @@ public class MagicMissileEntity extends ThrowableProjectile {
 		super(type, world);
 	}
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public MagicMissileEntity(LivingEntity owner, boolean evil) {
-		super(BotaniaEntities.MAGIC_MISSILE, owner, owner.level());
+		super(BotaniaEntities.MAGIC_MISSILE, owner.level());
+		setOwner(owner);
 		setEvil(evil);
 	}
 
 	@Override
-	protected void defineSynchedData() {
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {
 		entityData.define(EVIL, false);
 		entityData.define(TARGET, 0);
 	}
@@ -93,7 +100,7 @@ public class MagicMissileEntity extends ThrowableProjectile {
 
 		super.tick();
 
-		if (!level().isClientSide && (!findTarget() || time > 40)) {
+		if (!level().isClientSide() && (!findTarget() || time > 40)) {
 			discard();
 			return;
 		}
@@ -111,7 +118,7 @@ public class MagicMissileEntity extends ThrowableProjectile {
 		for (int i = 0; i < steps; i++) {
 			level().addParticle(data, particlePos.x, particlePos.y, particlePos.z, 0, 0, 0);
 
-			if (level().random.nextInt(steps) <= 1) {
+			if (level().getRandom().nextInt(steps) <= 1) {
 				level().addParticle(data, particlePos.x + (Math.random() - 0.5) * 0.4, particlePos.y + (Math.random() - 0.5) * 0.4, particlePos.z + (Math.random() - 0.5) * 0.4, 0, 0, 0);
 			}
 
@@ -160,15 +167,15 @@ public class MagicMissileEntity extends ThrowableProjectile {
 	}
 
 	@Override
-	public void addAdditionalSaveData(CompoundTag cmp) {
-		super.addAdditionalSaveData(cmp);
-		cmp.putInt(TAG_TIME, time);
+	public void addAdditionalSaveData(ValueOutput output) {
+		super.addAdditionalSaveData(output);
+		output.putInt(TAG_TIME, time);
 	}
 
 	@Override
-	public void readAdditionalSaveData(CompoundTag cmp) {
-		super.readAdditionalSaveData(cmp);
-		time = cmp.getInt(TAG_TIME);
+	public void readAdditionalSaveData(ValueInput input) {
+		super.readAdditionalSaveData(input);
+		time = input.getIntOr(TAG_TIME, 0);
 	}
 
 	public boolean findTarget() {
@@ -185,7 +192,7 @@ public class MagicMissileEntity extends ThrowableProjectile {
 		double range = 12;
 		AABB bounds = new AABB(getX() - range, getY() - range, getZ() - range, getX() + range, getY() + range, getZ() + range);
 		DamageSource source = this.getDamageSource();
-		Predicate<Entity> vulnerableTo = e -> !e.isInvulnerableTo(source);
+		Predicate<Entity> vulnerableTo = e -> e instanceof LivingEntity living && !living.isInvulnerableTo((ServerLevel) level(), source);
 		List<? extends LivingEntity> entities;
 		if (isEvil()) {
 			entities = level().getEntitiesOfClass(Player.class, bounds,
@@ -198,7 +205,7 @@ public class MagicMissileEntity extends ThrowableProjectile {
 		}
 
 		if (!entities.isEmpty()) {
-			target = entities.get(level().random.nextInt(entities.size()));
+			target = entities.get(level().getRandom().nextInt(entities.size()));
 			setTarget(target);
 		}
 
@@ -237,7 +244,7 @@ public class MagicMissileEntity extends ThrowableProjectile {
 	protected void onHitBlock(@NotNull BlockHitResult hit) {
 		super.onHitBlock(hit);
 		BlockState state = level().getBlockState(hit.getBlockPos());
-		if (!level().isClientSide
+		if (!level().isClientSide()
 				&& !(state.getBlock() instanceof BushBlock)
 				&& !state.is(BlockTags.LEAVES)) {
 			discard();
@@ -247,7 +254,7 @@ public class MagicMissileEntity extends ThrowableProjectile {
 	@Override
 	protected void onHitEntity(@NotNull EntityHitResult hit) {
 		super.onHitEntity(hit);
-		if (!level().isClientSide && hit.getEntity() == getTargetEntity()) {
+		if (!level().isClientSide() && hit.getEntity() == getTargetEntity()) {
 			discard();
 		}
 	}

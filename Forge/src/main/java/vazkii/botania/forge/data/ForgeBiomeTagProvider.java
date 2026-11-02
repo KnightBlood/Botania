@@ -3,21 +3,19 @@ package vazkii.botania.forge.data;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.data.tags.KeyTagProvider;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.Tags;
 
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.common.lib.LibMisc;
 
 import java.util.concurrent.CompletableFuture;
 
-public class ForgeBiomeTagProvider extends TagsProvider<Biome> {
-	protected ForgeBiomeTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> holderProvider,
-			ExistingFileHelper existingFileHelper) {
-		super(output, Registries.BIOME, holderProvider, LibMisc.MOD_ID, existingFileHelper);
+public class ForgeBiomeTagProvider extends KeyTagProvider<Biome> {
+	protected ForgeBiomeTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> holderProvider) {
+		super(output, Registries.BIOME, holderProvider, LibMisc.MOD_ID);
 	}
 
 	@Override
@@ -29,6 +27,6 @@ public class ForgeBiomeTagProvider extends TagsProvider<Biome> {
 		tag(BotaniaTags.Biomes.MARIMORPHOSIS_MOUNTAIN_BONUS).addTag(BiomeTags.IS_MOUNTAIN);
 		tag(BotaniaTags.Biomes.MARIMORPHOSIS_PLAINS_BONUS).addTag(Tags.Biomes.IS_PLAINS).addTag(BiomeTags.IS_BEACH);
 		tag(BotaniaTags.Biomes.MARIMORPHOSIS_SWAMP_BONUS).addTag(Tags.Biomes.IS_SWAMP).addTag(BiomeTags.IS_JUNGLE);
-		tag(BotaniaTags.Biomes.MARIMORPHOSIS_TAIGA_BONUS).addTag(Tags.Biomes.IS_CONIFEROUS).addTag(Tags.Biomes.IS_COLD).addTag(Tags.Biomes.IS_SNOWY);
+		tag(BotaniaTags.Biomes.MARIMORPHOSIS_TAIGA_BONUS).addTag(Tags.Biomes.IS_CONIFEROUS_TREE).addTag(Tags.Biomes.IS_COLD).addTag(Tags.Biomes.IS_SNOWY);
 	}
 }

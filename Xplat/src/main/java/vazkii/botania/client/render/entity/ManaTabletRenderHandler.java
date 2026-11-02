@@ -11,12 +11,14 @@ package vazkii.botania.client.render.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -24,30 +26,37 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.client.core.helper.RenderHelper;
+import vazkii.botania.client.render.block_entity.BotaniaRenderContext;
 import vazkii.botania.common.helper.VecHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.xplat.BotaniaConfig;
 
-public final class ManaTabletRenderHandler extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+public final class ManaTabletRenderHandler extends RenderLayer<AvatarRenderState, PlayerModel> {
 
-	public ManaTabletRenderHandler(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> renderer) {
+	public ManaTabletRenderHandler(RenderLayerParent<AvatarRenderState, PlayerModel> renderer) {
 		super(renderer);
 	}
 
 	@Override
-	public void render(PoseStack ms, MultiBufferSource buffers, int light, @NotNull AbstractClientPlayer player, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-		if (BotaniaConfig.client().renderAccessories() && !player.isInvisible()) {
-			renderManaTablet(ms, buffers, player);
+	public void submit(@NotNull PoseStack ms, @NotNull SubmitNodeCollector collector, int light,
+			@NotNull AvatarRenderState state, float yRot, float xRot) {
+		if (!BotaniaConfig.client().renderAccessories() || state.isInvisible) {
+			return;
 		}
-	}
 
-	private void renderManaTablet(PoseStack ms, MultiBufferSource buffers, Player player) {
+		Player player = resolvePlayer(state);
+		if (player == null) {
+			return;
+		}
+
+		BotaniaRenderContext buffers = new BotaniaRenderContext(null);
 		boolean renderedOne = false;
 		for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
 			ItemStack stack = player.getInventory().getItem(i);
 			if (!stack.isEmpty() && stack.is(BotaniaItems.manaTablet)) {
 				ms.pushPose();
-				boolean armor = !player.getItemBySlot(EquipmentSlot.LEGS).isEmpty();
+				boolean armor = !state.legsEquipment.isEmpty();
 
 				getParentModel().body.translateAndRotate(ms);
 				ms.translate(0, 0.65, 0);
@@ -60,15 +69,25 @@ public final class ManaTabletRenderHandler extends RenderLayer<AbstractClientPla
 				}
 
 				ms.scale(0.375F, -0.375F, -0.375F);
-				Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE,
-						0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffers, player.level(), player.getId());
+				RenderHelper.renderItemStatic(stack, ItemDisplayContext.NONE, false,
+						ms, buffers, 0xF000F0, OverlayTexture.NO_OVERLAY, player.level(), player.getId());
 				ms.popPose();
 
 				if (renderedOne) {
-					return;
+					break;
 				}
 				renderedOne = true;
 			}
 		}
+		buffers.flush(collector);
+	}
+
+	private static Player resolvePlayer(AvatarRenderState state) {
+		var level = Minecraft.getInstance().level;
+		if (level == null) {
+			return null;
+		}
+		Entity entity = level.getEntity(state.id);
+		return entity instanceof Player player ? player : null;
 	}
 }

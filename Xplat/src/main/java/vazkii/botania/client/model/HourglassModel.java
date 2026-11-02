@@ -12,15 +12,17 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.model.Model;
+import net.minecraft.util.ARGB;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.util.Unit;
 
 import vazkii.botania.common.helper.VecHelper;
 
-public class HourglassModel extends Model {
+public class HourglassModel extends Model<Unit> {
 
 	private final ModelPart top;
 	private final ModelPart glassT;
@@ -32,7 +34,7 @@ public class HourglassModel extends Model {
 	private final ModelPart sandB;
 
 	public HourglassModel(ModelPart root) {
-		super(RenderType::entityTranslucent);
+		super(root, t -> RenderTypes.entityTranslucent(t));
 
 		top = root.getChild("top");
 		glassT = root.getChild("glass_top");
@@ -63,8 +65,7 @@ public class HourglassModel extends Model {
 		return mesh;
 	}
 
-	@Override
-	public void renderToBuffer(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float a) {
+	public void render(PoseStack ms, VertexConsumer buffer, int light, int overlay, float r, float g, float b, float a) {
 		render(ms, buffer, light, overlay, r, g, b, a, 0, 1, false);
 	}
 
@@ -76,9 +77,9 @@ public class HourglassModel extends Model {
 		}
 
 		float f = 1F / 16F;
-		ring.render(ms, buffer, light, overlay, 1, 1, 1, a);
-		top.render(ms, buffer, light, overlay, 1, 1, 1, a);
-		bottom.render(ms, buffer, light, overlay, 1, 1, 1, a);
+		ring.render(ms, buffer, light, overlay, ARGB.white(a));
+		top.render(ms, buffer, light, overlay, ARGB.white(a));
+		bottom.render(ms, buffer, light, overlay, ARGB.white(a));
 
 		if (fract1 > 0) {
 			ms.pushPose();
@@ -89,7 +90,7 @@ public class HourglassModel extends Model {
 				ms.translate(-2.0F * f, -5.0F * f, -2.0F * f);
 			}
 			ms.scale(1F, fract1, 1F);
-			sandT.render(ms, buffer, light, overlay, r, g, b, a);
+			sandT.render(ms, buffer, light, overlay, ARGB.colorFromFloat(a, r, g, b));
 			ms.popPose();
 		}
 
@@ -102,12 +103,12 @@ public class HourglassModel extends Model {
 				ms.translate(-2.0F * f, 1.0F * f, -2.0F * f);
 			}
 			ms.scale(1F, fract2, 1F);
-			sandB.render(ms, buffer, light, overlay, r, g, b, a);
+			sandB.render(ms, buffer, light, overlay, ARGB.colorFromFloat(a, r, g, b));
 			ms.popPose();
 		}
 
-		glassT.render(ms, buffer, light, overlay, 1, 1, 1, a);
-		glassB.render(ms, buffer, light, overlay, 1, 1, 1, a);
+		glassT.render(ms, buffer, light, overlay, ARGB.white(a));
+		glassB.render(ms, buffer, light, overlay, ARGB.white(a));
 	}
 
 }

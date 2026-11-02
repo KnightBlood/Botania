@@ -10,6 +10,7 @@ package vazkii.botania.api.mana;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Have an Item implement this to be counted as a lens for the mana spreader.

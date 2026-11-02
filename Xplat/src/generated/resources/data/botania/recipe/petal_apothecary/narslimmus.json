@@ -1,0 +1,17 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/lime",
+    "#botania:petals/lime",
+    "#botania:petals/green",
+    "#botania:petals/green",
+    "#botania:petals/black",
+    "botania:rune_summer",
+    "botania:rune_water"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:narslimmus"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

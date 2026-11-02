@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.api.recipe.OrechidRecipe;
 import vazkii.botania.xplat.XplatAbstractions;
 
@@ -46,6 +47,7 @@ public class OrechidManager implements ResourceManagerReloadListener {
 		TOTAL_WEIGHTS_WITHOUT_POSITION.clear();
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <T extends OrechidRecipe> Collection<T> getMatchingRecipes(
 			RecipeManager manager,
 			RecipeType<T> type,
@@ -53,7 +55,12 @@ public class OrechidManager implements ResourceManagerReloadListener {
 		final var byState = BY_TYPE.computeIfAbsent(type, t -> new IdentityHashMap<>());
 		final var list = byState.computeIfAbsent(state, s -> {
 			var builder = ImmutableList.<T>builder();
-			for (var recipe : manager.getAllRecipesFor(type)) {
+			// 26.1: RecipeManager#recipeMap() is gone; filter the flat recipe collection by type.
+			for (var holder : manager.getRecipes()) {
+				if (holder.value().getType() != type) {
+					continue;
+				}
+				var recipe = (T) holder.value();
 				if (recipe.getInput().test(state)) {
 					builder.add(recipe);
 				}
@@ -78,7 +85,7 @@ public class OrechidManager implements ResourceManagerReloadListener {
 	}
 
 	private static int calculateTotalDisplayWeightAtPosition(Level level, RecipeType<? extends OrechidRecipe> type, BlockState state, @Nullable BlockPos pos) {
-		final var recipeList = getMatchingRecipes(level.getRecipeManager(), type, state);
+		final var recipeList = getMatchingRecipes(RecipeHelper.getRecipeManager(level), type, state);
 		if (recipeList.isEmpty()) {
 			return 0;
 		}

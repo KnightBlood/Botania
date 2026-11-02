@@ -10,6 +10,7 @@ package vazkii.botania.common.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.core.Direction;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -76,11 +78,12 @@ public class FloatingSpecialFlowerBlock extends FloatingFlowerBlock {
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+	public void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+		BlockState newState = level.getBlockState(pos);
 		if (hasComparatorOutput && !newState.hasAnalogOutputSignal()) {
 			level.updateNeighbourForOutputSignal(pos, newState.getBlock());
 		}
-		super.onRemove(state, level, pos, newState, movedByPiston);
+		super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
 	}
 
 	@NotNull
@@ -103,7 +106,7 @@ public class FloatingSpecialFlowerBlock extends FloatingFlowerBlock {
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState bs, Level level, BlockPos pos) {
+	public int getAnalogOutputSignal(BlockState bs, Level level, BlockPos pos, Direction direction) {
 		return level.getBlockEntity(pos) instanceof SpecialFlowerBlockEntity flower ? flower.getComparatorSignal() : 0;
 	}
 }

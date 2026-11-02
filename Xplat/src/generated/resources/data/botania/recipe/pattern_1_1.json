@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "botania:craft_pattern",
+  "key": {
+    "P": "botania:placeholder",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "RPP",
+    "PPP",
+    "PPP"
+  ],
+  "result": {
+    "id": "botania:pattern_1_1"
+  }
+}

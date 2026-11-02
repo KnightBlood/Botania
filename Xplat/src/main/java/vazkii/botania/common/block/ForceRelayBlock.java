@@ -8,6 +8,8 @@
  */
 package vazkii.botania.common.block;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -20,12 +22,14 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -40,6 +44,8 @@ import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.*;
 
+import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
+
 public class ForceRelayBlock extends BotaniaBlock {
 
 	public final Map<UUID, GlobalPos> activeBindingAttempts = new HashMap<>();
@@ -49,8 +55,9 @@ public class ForceRelayBlock extends BotaniaBlock {
 	}
 
 	@Override
-	public void onRemove(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving) {
-		if (!world.isClientSide) {
+	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
+		BlockState newState = world.getBlockState(pos);
+		if (!world.isClientSide()) {
 			var data = WorldData.get(world);
 
 			Direction movementContextDirection = ForcePushHelper.getMovementContextDirection();
@@ -89,7 +96,7 @@ public class ForceRelayBlock extends BotaniaBlock {
 	}
 
 	public boolean onUsedByWand(Player player, ItemStack stack, Level world, BlockPos pos) {
-		if (world.isClientSide) {
+		if (world.isClientSide()) {
 			return false;
 		}
 
@@ -122,43 +129,34 @@ public class ForceRelayBlock extends BotaniaBlock {
 
 	public static class WorldData extends SavedData {
 
-		private static final String ID = "PistonRelayPairs";
+		public static final Codec<WorldData> CODEC = BlockPos.CODEC.listOf().xmap(WorldData::fromList, WorldData::toList);
+		// 4-arg ctor for both loaders; no datafix applies to mod saved data, so pass null (NeoForge's
+		// 3-arg convenience overload does exactly this internally, but vanilla only has the 4-arg one).
+		private static final SavedDataType<WorldData> TYPE = new SavedDataType<>(
+				prefix("piston_relay_pairs"), WorldData::new, CODEC, null);
 		public final Map<BlockPos, BlockPos> mapping = new HashMap<>();
 
-		public WorldData(@NotNull CompoundTag cmp) {
-			ListTag list = cmp.getList("list", Tag.TAG_INT_ARRAY);
-			for (int i = 0; i < list.size(); i += 2) {
-				Tag from = list.get(i);
-				Tag to = list.get(i + 1);
-				BlockPos fromPos = BlockPos.CODEC.decode(NbtOps.INSTANCE, from).result().get().getFirst();
-				BlockPos toPos = BlockPos.CODEC.decode(NbtOps.INSTANCE, to).result().get().getFirst();
+		public WorldData() {}
 
-				mapping.put(fromPos, toPos);
+		private static WorldData fromList(List<BlockPos> list) {
+			WorldData data = new WorldData();
+			for (int i = 0; i + 1 < list.size(); i += 2) {
+				data.mapping.put(list.get(i), list.get(i + 1));
 			}
+			return data;
 		}
 
-		@NotNull
-		@Override
-		public CompoundTag save(@NotNull CompoundTag cmp) {
-			ListTag list = new ListTag();
-			for (Map.Entry<BlockPos, BlockPos> e : mapping.entrySet()) {
-				Tag from = BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, e.getKey()).result().get();
-				Tag to = BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, e.getValue()).result().get();
-				list.add(from);
-				list.add(to);
+		private static List<BlockPos> toList(WorldData data) {
+			List<BlockPos> list = new ArrayList<>(data.mapping.size() * 2);
+			for (Map.Entry<BlockPos, BlockPos> e : data.mapping.entrySet()) {
+				list.add(e.getKey());
+				list.add(e.getValue());
 			}
-			cmp.put("list", list);
-			return cmp;
+			return list;
 		}
 
 		public static WorldData get(Level world) {
-			WorldData data = ((ServerLevel) world).getDataStorage().get(WorldData::new, ID);
-			if (data == null) {
-				data = new WorldData(new CompoundTag());
-				data.setDirty();
-				((ServerLevel) world).getDataStorage().set(ID, data);
-			}
-			return data;
+			return ((ServerLevel) world).getDataStorage().computeIfAbsent(TYPE);
 		}
 	}
 }

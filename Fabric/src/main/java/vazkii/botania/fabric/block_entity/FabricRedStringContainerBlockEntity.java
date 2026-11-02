@@ -63,7 +63,8 @@ public class FabricRedStringContainerBlockEntity extends RedStringContainerBlock
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
 		if (cmp.contains("bindX")) {
-			clientPos = new BlockPos(cmp.getInt("bindX"), cmp.getInt("bindY"), cmp.getInt("bindZ"));
+			// 26.1: CompoundTag.getInt returns Optional; use getIntOr.
+			clientPos = new BlockPos(cmp.getIntOr("bindX", 0), cmp.getIntOr("bindY", 0), cmp.getIntOr("bindZ", 0));
 		} else {
 			clientPos = null;
 		}
@@ -72,6 +73,6 @@ public class FabricRedStringContainerBlockEntity extends RedStringContainerBlock
 	@Nullable
 	@Override
 	public BlockPos getBinding() {
-		return level.isClientSide ? clientPos : super.getBinding();
+		return level.isClientSide() ? clientPos : super.getBinding();
 	}
 }

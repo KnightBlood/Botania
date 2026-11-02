@@ -1,0 +1,35 @@
+{
+  "parent": "botania:main/terrasteel_pickup",
+  "criteria": {
+    "terrablade": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "botania:terra_sword",
+              "botania:thorn_chakram"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.botania:terrasteelWeaponCraft.desc"
+    },
+    "icon": {
+      "id": "botania:terra_sword"
+    },
+    "title": {
+      "translate": "advancement.botania:terrasteelWeaponCraft"
+    }
+  },
+  "requirements": [
+    [
+      "terrablade"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

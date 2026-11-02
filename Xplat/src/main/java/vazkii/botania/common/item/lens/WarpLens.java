@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -27,7 +28,7 @@ public class WarpLens extends Lens {
 		Entity entity = burst.entity();
 		Level world = entity.level();
 
-		if (world.isClientSide || pos.getType() != HitResult.Type.BLOCK) {
+		if (world.isClientSide() || pos.getType() != HitResult.Type.BLOCK) {
 			// On the client, we don't know what the force relay mappings really are,
 			// so we can only pretend that we just hit a normal block.
 			return shouldKill;

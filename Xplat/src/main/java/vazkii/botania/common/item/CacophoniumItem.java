@@ -11,17 +11,16 @@ package vazkii.botania.common.item;
 import com.google.common.annotations.VisibleForTesting;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Creeper;
@@ -29,6 +28,8 @@ import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.NoteBlock;
@@ -44,6 +45,7 @@ import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.mixin.MobAccessor;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class CacophoniumItem extends Item {
 
@@ -68,13 +70,13 @@ public class CacophoniumItem extends Item {
 			}
 
 			if (sound != null) {
-				if (!player.level().isClientSide) {
+				if (!player.level().isClientSide()) {
 					ItemNBTHelper.setString(stack, TAG_SOUND, BuiltInRegistries.SOUND_EVENT.getKey(sound).toString());
 					ItemNBTHelper.setString(stack, TAG_SOUND_NAME, entity.getType().getDescriptionId());
 					player.setItemInHand(hand, stack);
 				}
 
-				return InteractionResult.sidedSuccess(player.level().isClientSide);
+				return (player.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 			}
 		}
 
@@ -98,7 +100,7 @@ public class CacophoniumItem extends Item {
 					}
 					stack.shrink(1);
 				}
-				return InteractionResult.sidedSuccess(world.isClientSide());
+				return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 			}
 		}
 
@@ -106,32 +108,32 @@ public class CacophoniumItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> list, TooltipFlag flags) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
 		if (isDOIT(stack)) {
-			list.add(Component.translatable("botaniamisc.justDoIt").withStyle(ChatFormatting.GRAY));
+			builder.accept(Component.translatable("botaniamisc.justDoIt").withStyle(ChatFormatting.GRAY));
 		} else if (getSound(stack) != null) {
-			list.add(Component.translatable(ItemNBTHelper.getString(stack, TAG_SOUND_NAME, "")).withStyle(ChatFormatting.GRAY));
+			builder.accept(Component.translatable(ItemNBTHelper.getString(stack, TAG_SOUND_NAME, "")).withStyle(ChatFormatting.GRAY));
 		}
 	}
 
 	@Override
-	public int getUseDuration(ItemStack stack) {
+	public int getUseDuration(ItemStack stack, LivingEntity user) {
 		return 72000;
 	}
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		if (getSound(stack) != null) {
 			return ItemUtils.startUsingInstantly(world, player, hand);
 		}
-		return InteractionResultHolder.pass(stack);
+		return InteractionResult.PASS;
 	}
 
 	@Override
 	public void onUseTick(Level world, @NotNull LivingEntity living, @NotNull ItemStack stack, int count) {
-		if (!world.isClientSide && count % (isDOIT(stack) ? 20 : 6) == 0) {
+		if (!world.isClientSide() && count % (isDOIT(stack) ? 20 : 6) == 0) {
 			playSound(living.level(), stack, living.getX(), living.getY(), living.getZ(), living.getSoundSource(), 0.9F);
 			living.gameEvent(GameEvent.INSTRUMENT_PLAY);
 		}
@@ -145,7 +147,7 @@ public class CacophoniumItem extends Item {
 		SoundEvent sound = getSound(stack);
 
 		if (sound != null) {
-			world.playSound(null, x, y, z, sound, category, volume, sound == BotaniaSounds.doit ? 1F : (world.random.nextFloat() - world.random.nextFloat()) * 0.2F + 1.0F);
+			world.playSound(null, x, y, z, sound, category, volume, sound == BotaniaSounds.doit ? 1F : (world.getRandom().nextFloat() - world.getRandom().nextFloat()) * 0.2F + 1.0F);
 		}
 	}
 
@@ -156,8 +158,8 @@ public class CacophoniumItem extends Item {
 			return BotaniaSounds.doit;
 		} else {
 			try {
-				return BuiltInRegistries.SOUND_EVENT.get(new ResourceLocation(ItemNBTHelper.getString(stack, TAG_SOUND, "")));
-			} catch (ResourceLocationException ex) {
+				return BuiltInRegistries.SOUND_EVENT.getValue(Identifier.parse(ItemNBTHelper.getString(stack, TAG_SOUND, "")));
+			} catch (IdentifierException ex) {
 				return null;
 			}
 		}

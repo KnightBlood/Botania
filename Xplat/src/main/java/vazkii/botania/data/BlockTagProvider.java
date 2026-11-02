@@ -13,8 +13,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagEntry;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FenceBlock;
@@ -38,6 +41,7 @@ import vazkii.botania.common.lib.LibMisc;
 import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -51,15 +55,29 @@ import static vazkii.botania.common.block.BotaniaFlowerBlocks.labelliaFloating;
 import static vazkii.botania.common.block.BotaniaFlowerBlocks.medumoneFloating;
 import static vazkii.botania.common.block.BotaniaFlowerBlocks.munchdewFloating;
 
-public class BlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
+public class BlockTagProvider extends IntrinsicHolderTagsProvider<Block> implements PublicAddTags<Block> {
 	public static final Predicate<Block> BOTANIA_BLOCK = b -> LibMisc.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(b).getNamespace());
 
 	public BlockTagProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
 		super(packOutput, Registries.BLOCK, lookupProvider, (block) -> block.builtInRegistryHolder().key());
 	}
 
+	/**
+	 * The raw entries of an already declared block tag, used by {@link ItemTagProvider} to mirror a block tag
+	 * into the matching item tag. 26.1 keeps the builder map private, so the entries are read back through
+	 * the protected builder accessor instead.
+	 */
+	public List<TagEntry> rawEntries(TagKey<Block> tag) {
+		List<TagEntry> entries = this.getOrCreateRawBuilder(tag).build();
+		if (entries.isEmpty()) {
+			throw new IllegalStateException("Block tag " + tag.location() + " has no entries; it has to be declared "
+					+ "by the block tag provider before the item tag provider can mirror it");
+		}
+		return entries;
+	}
+
 	@Override
-	protected void addTags(HolderLookup.Provider provider) {
+	public void addTags(HolderLookup.Provider provider) {
 		tag(BlockTags.RAILS).add(BotaniaBlocks.ghostRail);
 		tag(BlockTags.SLABS).add(getModBlocks(b -> b instanceof SlabBlock));
 		tag(BlockTags.WOODEN_SLABS).add(
@@ -184,7 +202,7 @@ public class BlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 				.addTag(BotaniaTags.Blocks.POTTED_SHINY_FLOWERS);
 
 		// Special flowers intentionally excluded due to unwanted behaviors with tree growth and mod compat.
-		tag(BlockTags.TALL_FLOWERS).addTag(BotaniaTags.Blocks.DOUBLE_MYSTICAL_FLOWERS);
+		tag(BlockTags.FLOWERS).addTag(BotaniaTags.Blocks.DOUBLE_MYSTICAL_FLOWERS);
 		tag(BlockTags.SMALL_FLOWERS).addTag(BotaniaTags.Blocks.MYSTICAL_FLOWERS);
 
 		tag(BlockTags.IMPERMEABLE).add(BotaniaBlocks.elfGlass, BotaniaBlocks.manaGlass, BotaniaBlocks.bifrost, BotaniaBlocks.bifrostPerm);
@@ -243,16 +261,17 @@ public class BlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 
 		tag(BotaniaTags.Blocks.WEIGHT_LENS_WHITELIST);
 
-		tag(BlockTags.MUSHROOM_GROW_BLOCK).add(
+		tag(BlockTags.OVERRIDES_MUSHROOM_LIGHT_REQUIREMENT).add(
 				BotaniaBlocks.biomeStoneFungal, BotaniaBlocks.biomeStoneFungalSlab, BotaniaBlocks.biomeStoneFungalStairs, BotaniaBlocks.biomeStoneFungalWall,
 				BotaniaBlocks.biomeBrickFungal, BotaniaBlocks.biomeBrickFungalSlab, BotaniaBlocks.biomeBrickFungalStairs, BotaniaBlocks.biomeBrickFungalWall,
 				BotaniaBlocks.biomeCobblestoneFungal, BotaniaBlocks.biomeCobblestoneFungalSlab, BotaniaBlocks.biomeCobblestoneFungalStairs, BotaniaBlocks.biomeCobblestoneFungalWall,
 				BotaniaBlocks.biomeChiseledBrickFungal, fungalAltar);
 
 		tag(BotaniaTags.Blocks.HORN_OF_THE_WILD_BREAKABLE)
-				.add(Blocks.MOSS_CARPET)
-				.addOptional(new ResourceLocation("biomesoplenty:high_grass"))
-				.addOptional(new ResourceLocation("biomesoplenty:high_grass_plant"));
+				.add(Blocks.MOSS_CARPET);
+		getOrCreateRawBuilder(BotaniaTags.Blocks.HORN_OF_THE_WILD_BREAKABLE)
+				.add(TagEntry.optionalElement(Identifier.parse("biomesoplenty:high_grass")))
+				.add(TagEntry.optionalElement(Identifier.parse("biomesoplenty:high_grass_plant")));
 
 		tag(BlockTags.LEAVES);
 		tag(BotaniaTags.Blocks.HORN_OF_THE_CANOPY_BREAKABLE).addTag(BlockTags.LEAVES);
@@ -265,9 +284,11 @@ public class BlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 
 		tag(BotaniaTags.Blocks.PASTURE_SEED_REPLACEABLE).add(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.MYCELIUM);
 
-		tag(BotaniaTags.Blocks.UNETHICAL_TNT_CHECK).addOptional(new ResourceLocation("ae2:tiny_tnt"));
+		tag(BotaniaTags.Blocks.UNETHICAL_TNT_CHECK);
+		getOrCreateRawBuilder(BotaniaTags.Blocks.UNETHICAL_TNT_CHECK).add(TagEntry.optionalElement(Identifier.parse("ae2:tiny_tnt")));
 
-		tag(BotaniaTags.Blocks.SINGLE_ITEM_INSERT).addOptional(new ResourceLocation("quark:crafter"));
+		tag(BotaniaTags.Blocks.SINGLE_ITEM_INSERT);
+		getOrCreateRawBuilder(BotaniaTags.Blocks.SINGLE_ITEM_INSERT).add(TagEntry.optionalElement(Identifier.parse("quark:crafter")));
 
 		tag(BotaniaTags.Blocks.UNSUPPORTED_PLATFORM_DISGUISE);
 

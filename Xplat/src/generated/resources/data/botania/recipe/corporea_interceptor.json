@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "minecraft:redstone_block",
+    "botania:corporea_spark"
+  ],
+  "result": {
+    "id": "botania:corporea_interceptor"
+  }
+}

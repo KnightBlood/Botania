@@ -13,6 +13,7 @@ import com.google.common.base.Suppliers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,6 +25,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -31,6 +34,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -143,12 +147,12 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 
 		if (self.ticksOpen > 60 && !self.closeNow && newState != AlfheimPortalState.OFF) {
 			self.ticksSinceLastItem++;
-			if (level.isClientSide && BotaniaConfig.client().elfPortalParticlesEnabled()) {
+			if (level.isClientSide() && BotaniaConfig.client().elfPortalParticlesEnabled()) {
 				self.blockParticle(state);
 			}
 
 			List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, aabb);
-			if (!level.isClientSide) {
+			if (!level.isClientSide()) {
 				for (ItemEntity item : items) {
 					if (!item.isAlive()) {
 						continue;
@@ -167,13 +171,13 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 				}
 			}
 
-			if (!level.isClientSide && !self.stacksIn.isEmpty() && self.ticksSinceLastItem >= 4) {
+			if (!level.isClientSide() && !self.stacksIn.isEmpty() && self.ticksSinceLastItem >= 4) {
 				self.resolveRecipes();
 			}
 		}
 
 		if (self.closeNow) {
-			if (!level.isClientSide) {
+			if (!level.isClientSide()) {
 				level.setBlockAndUpdate(worldPosition, BotaniaBlocks.alfPortal.defaultBlockState());
 			}
 			for (int i = 0; i < 36; i++) {
@@ -187,7 +191,7 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 				}
 			}
 
-			if (!level.isClientSide) {
+			if (!level.isClientSide()) {
 				level.setBlockAndUpdate(worldPosition, blockState.setValue(BotaniaStateProperties.ALFPORTAL_STATE, newState));
 			}
 		} else if (self.explode) {
@@ -195,7 +199,7 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 					3f, Level.ExplosionInteraction.TNT);
 			self.explode = false;
 
-			if (!level.isClientSide && self.breadPlayer != null) {
+			if (!level.isClientSide() && self.breadPlayer != null) {
 				Player entity = level.getPlayerByUUID(self.breadPlayer);
 				if (entity instanceof ServerPlayer serverPlayer) {
 					AlfheimPortalBreadTrigger.INSTANCE.trigger(serverPlayer, worldPosition);
@@ -225,7 +229,7 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 
 	private void blockParticle(AlfheimPortalState state) {
 		// Pick one of the inner positions, offsets [-1,+1] and [+1,+3]
-		int rnd = level.random.nextInt(9);
+		int rnd = level.getRandom().nextInt(9);
 		double dh = (rnd / 3) - 1;
 		double dy = (rnd % 3) + 1;
 		double dx = state == AlfheimPortalState.ON_X ? 0 : dh;
@@ -244,7 +248,7 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 			if (newState != AlfheimPortalState.OFF) {
 				level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(BotaniaStateProperties.ALFPORTAL_STATE, newState));
 				if (player instanceof ServerPlayer serverPlayer) {
-					AlfheimPortalTrigger.INSTANCE.trigger(serverPlayer, serverPlayer.serverLevel(), getBlockPos(), stack);
+					AlfheimPortalTrigger.INSTANCE.trigger(serverPlayer, serverPlayer.level(), getBlockPos(), stack);
 				}
 				return true;
 			}
@@ -255,8 +259,8 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 
 	private AABB getPortalAABB(AlfheimPortalState state) {
 		return state == AlfheimPortalState.ON_X
-				? new AABB(worldPosition.offset(0, 1, -1), worldPosition.offset(1, 4, 2))
-				: new AABB(worldPosition.offset(-1, 1, 0), worldPosition.offset(2, 4, 1));
+				? new AABB(Vec3.atLowerCornerOf(worldPosition.offset(0, 1, -1)), Vec3.atLowerCornerOf(worldPosition.offset(1, 4, 2)))
+				: new AABB(Vec3.atLowerCornerOf(worldPosition.offset(-1, 1, 0)), Vec3.atLowerCornerOf(worldPosition.offset(2, 4, 1)));
 	}
 
 	private void addItem(ItemStack stack) {
@@ -271,7 +275,7 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 	public static Collection<ElvenTradeRecipe> elvenTradeRecipes(Level world) {
 		// By virtue of IRecipeType's type parameter,
 		// we know all the recipes in the map must be ElvenTradeRecipe.
-		// However, vanilla's signature on this method is dumb (should be Map<ResourceLocation, T>)
+		// However, vanilla's signature on this method is dumb (should be Map<Identifier, T>)
 		return BotaniaRecipeTypes.getRecipes(world, BotaniaRecipeTypes.ELVEN_TRADE_TYPE).values();
 	}
 
@@ -306,29 +310,22 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag cmp) {
-		super.saveAdditional(cmp);
+	public void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
 
-		cmp.putInt(TAG_STACK_COUNT, stacksIn.size());
-		int i = 0;
+		output.putInt(TAG_STACK_COUNT, stacksIn.size());
+		ValueOutput.TypedOutputList<ItemStack> list = output.list(TAG_STACK, ItemStack.OPTIONAL_CODEC);
 		for (ItemStack stack : stacksIn) {
-			CompoundTag stackcmp = stack.save(new CompoundTag());
-			cmp.put(TAG_STACK + i, stackcmp);
-			i++;
+			list.add(stack);
 		}
 	}
 
 	@Override
-	public void load(@NotNull CompoundTag cmp) {
-		super.load(cmp);
+	public void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
 
-		int count = cmp.getInt(TAG_STACK_COUNT);
 		stacksIn.clear();
-		for (int i = 0; i < count; i++) {
-			CompoundTag stackcmp = cmp.getCompound(TAG_STACK + i);
-			ItemStack stack = ItemStack.of(stackcmp);
-			stacksIn.add(stack);
-		}
+		input.listOrEmpty(TAG_STACK, ItemStack.OPTIONAL_CODEC).forEach(stacksIn::add);
 	}
 
 	@Override
@@ -339,8 +336,8 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
-		ticksOpen = cmp.getInt(TAG_TICKS_OPEN);
-		ticksSinceLastItem = cmp.getInt(TAG_TICKS_SINCE_LAST_ITEM);
+		ticksOpen = cmp.getIntOr(TAG_TICKS_OPEN, 0);
+		ticksSinceLastItem = cmp.getIntOr(TAG_TICKS_SINCE_LAST_ITEM, 0);
 	}
 
 	private static Rotation getStateRotation(AlfheimPortalState state) {
@@ -454,7 +451,7 @@ public class AlfheimPortalBlockEntity extends BotaniaBlockEntity implements Wand
 				if (pool.getCurrentMana() < costPer) {
 					closeNow = closeNow || close;
 					return false;
-				} else if (!level.isClientSide) {
+				} else if (!level.isClientSide()) {
 					consumePools.add(pool);
 					consumed += costPer;
 				}

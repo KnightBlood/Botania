@@ -1,0 +1,10 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:allure",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:cod",
+    "minecraft:quartz",
+    "minecraft:golden_carrot"
+  ]
+}

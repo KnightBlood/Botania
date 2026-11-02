@@ -48,10 +48,10 @@ public class MunchdewBlockEntity extends GeneratingFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide) {
+		if (getLevel().isClientSide()) {
 			if (!ateOnce && cooldown > 0) {
 				if (Math.random() < 0.5) {
-					Vec3 offset = getLevel().getBlockState(getBlockPos()).getOffset(getLevel(), getBlockPos());
+					Vec3 offset = getLevel().getBlockState(getBlockPos()).getOffset(getBlockPos());
 					double x = getBlockPos().getX() + offset.x + 0.2 + Math.random() * 0.6;
 					double y = getBlockPos().getY() + offset.y + 0.6 + Math.random() * 0.3;
 					double z = getBlockPos().getZ() + offset.z + 0.2 + Math.random() * 0.6;
@@ -149,8 +149,8 @@ public class MunchdewBlockEntity extends GeneratingFlowerBlockEntity {
 	public void readFromPacketNBT(CompoundTag cmp) {
 		super.readFromPacketNBT(cmp);
 
-		cooldown = cmp.getInt(TAG_COOLDOWN);
-		ateOnce = cmp.getBoolean(TAG_ATE_ONCE);
+		cooldown = cmp.getIntOr(TAG_COOLDOWN, 0);
+		ateOnce = cmp.getBooleanOr(TAG_ATE_ONCE, false);
 	}
 
 	@Override

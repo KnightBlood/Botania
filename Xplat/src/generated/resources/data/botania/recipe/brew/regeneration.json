@@ -1,0 +1,9 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:regen",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:ghast_tear",
+    "minecraft:glowstone_dust"
+  ]
+}

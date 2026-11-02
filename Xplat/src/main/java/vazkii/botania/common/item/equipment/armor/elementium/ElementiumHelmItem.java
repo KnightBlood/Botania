@@ -8,35 +8,18 @@
  */
 package vazkii.botania.common.item.equipment.armor.elementium;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.Item.Properties;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.mana.ManaDiscountArmor;
-import vazkii.botania.common.handler.PixieHandler;
 
 public class ElementiumHelmItem extends ElementiumArmorItem implements ManaDiscountArmor {
 	public ElementiumHelmItem(Properties props) {
-		super(Type.HELMET, props);
-	}
-
-	@NotNull
-	@Override
-	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot) {
-		Multimap<Attribute, AttributeModifier> ret = super.getDefaultAttributeModifiers(slot);
-		if (slot == getEquipmentSlot()) {
-			ret = HashMultimap.create(ret);
-			ret.put(PixieHandler.PIXIE_SPAWN_CHANCE, PixieHandler.makeModifier(slot, "Armor modifier", 0.11));
-		}
-		return ret;
+		super(ArmorType.HELMET, 0.11, props);
 	}
 
 	@Override

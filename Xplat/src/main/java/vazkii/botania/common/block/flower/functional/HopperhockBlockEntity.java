@@ -9,7 +9,7 @@
 package vazkii.botania.common.block.flower.functional;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -61,7 +62,7 @@ public class HopperhockBlockEntity extends FunctionalFlowerBlockEntity implement
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide || redstoneSignal > 0) {
+		if (getLevel().isClientSide() || redstoneSignal > 0) {
 			return;
 		}
 
@@ -84,7 +85,7 @@ public class HopperhockBlockEntity extends FunctionalFlowerBlockEntity implement
 			}
 			return DelayHelper.canInteractWith(this, item);
 		};
-		List<ItemEntity> items = getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(inPos.offset(-range, -range, -range), inPos.offset(range + 1, range + 1, range + 1)), shouldPickup);
+		List<ItemEntity> items = getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(Vec3.atLowerCornerOf(inPos.offset(-range, -range, -range)), Vec3.atLowerCornerOf(inPos.offset(range + 1, range + 1, range + 1))), shouldPickup);
 
 		for (ItemEntity item : items) {
 			ItemStack stack = item.getItem();
@@ -232,7 +233,7 @@ public class HopperhockBlockEntity extends FunctionalFlowerBlockEntity implement
 	public void readFromPacketNBT(CompoundTag cmp) {
 		super.readFromPacketNBT(cmp);
 
-		filterType = cmp.getInt(TAG_FILTER_TYPE);
+		filterType = cmp.getIntOr(TAG_FILTER_TYPE, 0);
 	}
 
 	public static class WandHud extends BindableFlowerWandHud<HopperhockBlockEntity> {
@@ -241,7 +242,7 @@ public class HopperhockBlockEntity extends FunctionalFlowerBlockEntity implement
 		}
 
 		@Override
-		public void renderHUD(GuiGraphics gui, Minecraft mc) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc) {
 			String filter = I18n.get("botaniamisc.filter" + flower.filterType);
 			int filterWidth = mc.font.width(filter);
 			int filterTextStart = (mc.getWindow().getGuiScaledWidth() - filterWidth) / 2;
@@ -249,7 +250,7 @@ public class HopperhockBlockEntity extends FunctionalFlowerBlockEntity implement
 			int centerY = mc.getWindow().getGuiScaledHeight() / 2;
 
 			super.renderHUD(gui, mc, halfMinWidth, halfMinWidth, 40);
-			gui.drawString(mc.font, filter, filterTextStart, centerY + 30, flower.getColor());
+			gui.text(mc.font, filter, filterTextStart, centerY + 30, flower.getColor());
 		}
 	}
 

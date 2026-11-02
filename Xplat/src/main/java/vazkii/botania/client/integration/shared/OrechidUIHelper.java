@@ -89,10 +89,10 @@ public class OrechidUIHelper {
 		final var type = recipe.getType();
 		final var state = recipe.getInput().getDisplayed().get(0);
 		final int totalWeight = OrechidManager.getTotalDisplayWeightAt(level, type, state, pos);
-		final int weight = pos != null
+		final int Weighted = pos != null
 				? recipe.getWeight(level, pos)
 				: recipe.getWeight();
-		return (double) weight / totalWeight;
+		return (double) Weighted / totalWeight;
 	}
 
 	/**
@@ -162,6 +162,6 @@ public class OrechidUIHelper {
 		if (biomeKey == null) {
 			return "argument.id.invalid";
 		}
-		return String.format("biome.%s.%s", biomeKey.location().getNamespace(), biomeKey.location().getPath());
+		return String.format("biome.%s.%s", biomeKey.identifier().getNamespace(), biomeKey.identifier().getPath());
 	}
 }

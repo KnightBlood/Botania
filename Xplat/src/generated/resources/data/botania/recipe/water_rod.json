@@ -1,0 +1,17 @@
+{
+  "type": "botania:water_bottle_matching_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "minecraft:potion",
+    "R": "botania:rune_water",
+    "T": "botania:livingwood_twig"
+  },
+  "pattern": [
+    "  B",
+    " T ",
+    "R  "
+  ],
+  "result": {
+    "id": "botania:water_rod"
+  }
+}

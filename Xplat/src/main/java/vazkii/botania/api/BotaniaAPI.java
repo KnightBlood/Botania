@@ -12,15 +12,24 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorMaterials;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
@@ -34,6 +43,7 @@ import vazkii.botania.api.configdata.ConfigDataManager;
 import vazkii.botania.api.corporea.CorporeaNodeDetector;
 import vazkii.botania.api.internal.DummyManaNetwork;
 import vazkii.botania.api.internal.ManaNetwork;
+import vazkii.botania.common.helper.IngredientHelper;
 
 import java.util.Collections;
 import java.util.Map;
@@ -70,7 +80,7 @@ public interface BotaniaAPI {
 		return null;
 	}
 
-	default Map<ResourceLocation, Function<DyeColor, Block>> getPaintableBlocks() {
+	default Map<Identifier, Function<DyeColor, Block>> getPaintableBlocks() {
 		return Collections.emptyMap();
 	}
 
@@ -85,86 +95,26 @@ public interface BotaniaAPI {
 	 * @param blockId     The block ID
 	 * @param transformer Function from color to a new block
 	 */
-	default void registerPaintableBlock(ResourceLocation blockId, Function<DyeColor, Block> transformer) {
+	default void registerPaintableBlock(Identifier blockId, Function<DyeColor, Block> transformer) {
 
 	}
 
-	ArmorMaterial DUMMY_ARMOR_MATERIAL = new ArmorMaterial() {
-		@Override
-		public int getDurabilityForType(@NotNull ArmorItem.Type type) {
-			return 0;
-		}
+	TagKey<Item> DUMMY_REPAIR_ITEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MODID, "dummy_repair_items"));
 
-		@Override
-		public int getDefenseForType(@NotNull ArmorItem.Type type) {
-			return 0;
-		}
+	TagKey<Block> DUMMY_INCORRECT_BLOCKS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MODID, "dummy_incorrect_blocks"));
 
-		@Override
-		public int getEnchantmentValue() {
-			return 0;
-		}
+	ArmorMaterial DUMMY_ARMOR_MATERIAL = new ArmorMaterial(
+		0,
+		Map.of(),
+		0,
+		SoundEvents.ARMOR_EQUIP_LEATHER,
+		0.0F,
+		0.0F,
+		DUMMY_REPAIR_ITEMS,
+		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+	);
 
-		@NotNull
-		@Override
-		public SoundEvent getEquipSound() {
-			return SoundEvents.ARMOR_EQUIP_LEATHER;
-		}
-
-		@NotNull
-		@Override
-		public Ingredient getRepairIngredient() {
-			return Ingredient.EMPTY;
-		}
-
-		@Override
-		public String getName() {
-			return "missingno";
-		}
-
-		@Override
-		public float getToughness() {
-			return 0;
-		}
-
-		@Override
-		public float getKnockbackResistance() {
-			return 0;
-		}
-	};
-
-	Tier DUMMY_ITEM_TIER = new Tier() {
-		@Override
-		public int getUses() {
-			return 0;
-		}
-
-		@Override
-		public float getSpeed() {
-			return 0;
-		}
-
-		@Override
-		public float getAttackDamageBonus() {
-			return 0;
-		}
-
-		@Override
-		public int getLevel() {
-			return 0;
-		}
-
-		@Override
-		public int getEnchantmentValue() {
-			return 0;
-		}
-
-		@NotNull
-		@Override
-		public Ingredient getRepairIngredient() {
-			return Ingredient.EMPTY;
-		}
-	};
+	ToolMaterial DUMMY_ITEM_TIER = new ToolMaterial(DUMMY_INCORRECT_BLOCKS, 0, 0.0F, 0.0F, 0, DUMMY_REPAIR_ITEMS);
 
 	default ArmorMaterial getManasteelArmorMaterial() {
 		return DUMMY_ARMOR_MATERIAL;
@@ -182,15 +132,15 @@ public interface BotaniaAPI {
 		return DUMMY_ARMOR_MATERIAL;
 	}
 
-	default Tier getManasteelItemTier() {
+	default ToolMaterial getManasteelItemTier() {
 		return DUMMY_ITEM_TIER;
 	}
 
-	default Tier getElementiumItemTier() {
+	default ToolMaterial getElementiumItemTier() {
 		return DUMMY_ITEM_TIER;
 	}
 
-	default Tier getTerrasteelItemTier() {
+	default ToolMaterial getTerrasteelItemTier() {
 		return DUMMY_ITEM_TIER;
 	}
 

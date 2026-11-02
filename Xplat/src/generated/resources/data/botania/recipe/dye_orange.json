@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:dye",
+  "ingredients": [
+    "#botania:petals/orange"
+  ],
+  "result": {
+    "id": "minecraft:orange_dye"
+  }
+}

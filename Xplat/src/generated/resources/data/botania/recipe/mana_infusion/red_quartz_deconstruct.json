@@ -1,0 +1,14 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "group": "botania:block_deconstruction",
+  "input": "botania:red_quartz",
+  "mana": 25,
+  "output": {
+    "count": 4,
+    "id": "botania:quartz_red"
+  }
+}

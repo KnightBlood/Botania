@@ -1,7 +1,6 @@
 {
-  "replace": false,
   "values": [
-    "#c:plains",
-    "#c:beach"
+    "#c:is_plains",
+    "#c:is_beach"
   ]
 }

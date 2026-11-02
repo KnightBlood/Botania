@@ -1,0 +1,15 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/red",
+    "#botania:petals/orange",
+    "#botania:petals/orange",
+    "botania:rune_earth",
+    "botania:rune_fire"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:thermalily"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

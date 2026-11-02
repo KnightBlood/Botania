@@ -1,0 +1,9 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:water_breathing",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:prismarine_crystals",
+    "minecraft:glowstone_dust"
+  ]
+}

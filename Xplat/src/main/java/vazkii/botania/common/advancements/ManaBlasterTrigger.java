@@ -8,78 +8,54 @@
  */
 package vazkii.botania.common.advancements;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.advancements.critereon.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-import org.jetbrains.annotations.NotNull;
+import java.util.Optional;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class ManaBlasterTrigger extends SimpleCriterionTrigger<ManaBlasterTrigger.Instance> {
-	private static final ResourceLocation ID = prefix("fire_mana_blaster");
+	public static final Identifier ID = prefix("fire_mana_blaster");
 	public static final ManaBlasterTrigger INSTANCE = new ManaBlasterTrigger();
 
 	private ManaBlasterTrigger() {}
 
-	@NotNull
 	@Override
-	public ResourceLocation getId() {
-		return ID;
-	}
-
-	@NotNull
-	@Override
-	public ManaBlasterTrigger.Instance createInstance(@NotNull JsonObject json, ContextAwarePredicate playerPred, DeserializationContext conditions) {
-		return new ManaBlasterTrigger.Instance(playerPred, ItemPredicate.fromJson(json.get("item")),
-				EntityPredicate.fromJson(json.get("user")));
+	public Codec<ManaBlasterTrigger.Instance> codec() {
+		return ManaBlasterTrigger.Instance.CODEC;
 	}
 
 	public void trigger(ServerPlayer player, ItemStack stack) {
 		trigger(player, instance -> instance.test(stack, player));
 	}
 
-	public static class Instance extends AbstractCriterionTriggerInstance {
-		private final ItemPredicate item;
-		private final EntityPredicate user;
+	public static Criterion<ManaBlasterTrigger.Instance> fire(ItemPredicate item, EntityPredicate user) {
+		return INSTANCE.createCriterion(new Instance(Optional.empty(), Optional.ofNullable(item), Optional.ofNullable(user)));
+	}
 
-		public Instance(ContextAwarePredicate entityPred, ItemPredicate count, EntityPredicate user) {
-			super(ID, entityPred);
-			this.item = count;
-			this.user = user;
-		}
+	public record Instance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item,
+			Optional<EntityPredicate> user) implements SimpleCriterionTrigger.SimpleInstance {
+		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
+				i -> i.group(
+						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),
+						ItemPredicate.CODEC.optionalFieldOf("item").forGetter(Instance::item),
+						EntityPredicate.CODEC.optionalFieldOf("user").forGetter(Instance::user)
+				).apply(i, Instance::new)
+		);
 
-		@NotNull
-		@Override
-		public ResourceLocation getCriterion() {
-			return ID;
-		}
-
-		boolean test(ItemStack stack, ServerPlayer entity) {
-			return this.item.matches(stack) && this.user.matches(entity, entity);
-		}
-
-		@Override
-		public JsonObject serializeToJson(SerializationContext context) {
-			JsonObject json = super.serializeToJson(context);
-			if (item != ItemPredicate.ANY) {
-				json.add("item", item.serializeToJson());
-			}
-			if (user != EntityPredicate.ANY) {
-				json.add("user", user.serializeToJson());
-			}
-			return json;
-		}
-
-		public ItemPredicate getItem() {
-			return this.item;
-		}
-
-		public EntityPredicate getUser() {
-			return this.user;
+		public boolean test(ItemStack stack, ServerPlayer entity) {
+			return (this.item.isEmpty() || this.item.get().test(stack))
+					&& (this.user.isEmpty() || this.user.get().matches(entity, entity));
 		}
 	}
 }

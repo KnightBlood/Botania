@@ -8,82 +8,53 @@
  */
 package vazkii.botania.data.recipes;
 
-import com.google.gson.JsonObject;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.crafting.Recipe;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.RecipeSerializer;
+import java.lang.reflect.Proxy;
+import java.util.function.UnaryOperator;
 
-import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Consumer;
-
-public class WrapperResult implements FinishedRecipe {
-	private final FinishedRecipe delegate;
-	@Nullable
-	private final RecipeSerializer<?> type;
-	@Nullable
-	private final Consumer<JsonObject> transform;
-
-	/**
-	 * Wraps recipe consumer with one that swaps the recipe type to a different one.
-	 */
-	public static Consumer<FinishedRecipe> ofType(RecipeSerializer<?> type, Consumer<FinishedRecipe> parent) {
-		return recipe -> parent.accept(new WrapperResult(recipe, type, null));
-	}
+/**
+ * A {@link RecipeOutput} wrapper that swaps the recipes it receives for Botania's
+ * wrapped recipe types. Receives the recipes built by vanilla recipe builders and
+ * delegates the transformed recipes to the parent output.
+ * <p>
+ * Implemented with a dynamic proxy because the NeoForge and Fabric
+ * {@code RecipeOutput} interfaces differ (NeoForge adds a conditional accept
+ * overload through {@code IRecipeOutputExtension}); the wrapper only ever
+ * forwards the vanilla three-argument accept, and Botania's Xplat datagen
+ * never emits conditional recipes.
+ */
+public final class WrapperResult {
+	private WrapperResult() {}
 
 	/**
-	 * Transforms the resulting recipe json with the specified action, eg. adding NBT to an item result.
+	 * Wraps the output's recipes with the given recipe wrapper.
 	 */
-	public static Consumer<FinishedRecipe> transformJson(Consumer<FinishedRecipe> parent, Consumer<JsonObject> transform) {
-		return recipe -> parent.accept(new WrapperResult(recipe, null, transform));
+	@SuppressWarnings("unchecked") // Proxy.invocation handler args are typed Object
+	public static RecipeOutput ofType(UnaryOperator<Recipe<?>> wrapper, RecipeOutput parent) {
+		return (RecipeOutput) Proxy.newProxyInstance(RecipeOutput.class.getClassLoader(), new Class<?>[] {RecipeOutput.class},
+				(proxy, method, args) -> switch (method.getName()) {
+					case "accept" -> {
+						parent.accept((ResourceKey<Recipe<?>>) args[0], transform(wrapper, (Recipe<?>) args[1]), (AdvancementHolder) args[2]);
+						yield null;
+					}
+					case "advancement" -> parent.advancement();
+					case "includeRootAdvancement" -> {
+						parent.includeRootAdvancement();
+						yield null;
+					}
+					// Fabric's AllCraftingRecipeJsonBuildersMixin rewrites recipe keys through this hook
+					// before save() builds the unlock advancement; returning null here produces
+					// ResourceKey[minecraft:recipe / null] and an NPE in RecipeUnlockAdvancementBuilder.
+					case "getRecipeIdentifier" -> args[0];
+					default -> null;
+				});
 	}
 
-	private WrapperResult(FinishedRecipe delegate, @Nullable RecipeSerializer<?> type, @Nullable Consumer<JsonObject> transform) {
-		this.delegate = delegate;
-		this.type = type;
-		this.transform = transform;
-	}
-
-	@Override
-	public void serializeRecipeData(JsonObject json) {
-		delegate.serializeRecipeData(json);
-		if (transform != null) {
-			transform.accept(json);
-		}
-	}
-
-	@Override
-	public JsonObject serializeRecipe() {
-		if (type == null) {
-			return FinishedRecipe.super.serializeRecipe();
-		}
-		JsonObject jsonobject = new JsonObject();
-		jsonobject.addProperty("type", BuiltInRegistries.RECIPE_SERIALIZER.getKey(this.type).toString());
-		this.serializeRecipeData(jsonobject);
-		return jsonobject;
-	}
-
-	@Override
-	public ResourceLocation getId() {
-		return delegate.getId();
-	}
-
-	@Override
-	public RecipeSerializer<?> getType() {
-		return type != null ? type : delegate.getType();
-	}
-
-	@Nullable
-	@Override
-	public JsonObject serializeAdvancement() {
-		return delegate.serializeAdvancement();
-	}
-
-	@Nullable
-	@Override
-	public ResourceLocation getAdvancementId() {
-		return delegate.getAdvancementId();
+	private static Recipe<?> transform(UnaryOperator<Recipe<?>> wrapper, Recipe<?> recipe) {
+		return wrapper != null ? wrapper.apply(recipe) : recipe;
 	}
 }

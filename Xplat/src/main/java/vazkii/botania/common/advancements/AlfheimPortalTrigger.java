@@ -8,79 +8,57 @@
  */
 package vazkii.botania.common.advancements;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.advancements.critereon.*;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.LocationPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-import org.jetbrains.annotations.NotNull;
+import java.util.Optional;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class AlfheimPortalTrigger extends SimpleCriterionTrigger<AlfheimPortalTrigger.Instance> {
-	public static final ResourceLocation ID = prefix("open_elf_portal");
+	public static final Identifier ID = prefix("open_elf_portal");
 	public static final AlfheimPortalTrigger INSTANCE = new AlfheimPortalTrigger();
 
 	private AlfheimPortalTrigger() {}
 
-	@NotNull
 	@Override
-	public ResourceLocation getId() {
-		return ID;
-	}
-
-	@NotNull
-	@Override
-	public Instance createInstance(@NotNull JsonObject json, ContextAwarePredicate playerPred, DeserializationContext conditions) {
-		return new Instance(playerPred, ItemPredicate.fromJson(json.get("wand")), LocationPredicate.fromJson(json.get("location")));
+	public Codec<AlfheimPortalTrigger.Instance> codec() {
+		return AlfheimPortalTrigger.Instance.CODEC;
 	}
 
 	public void trigger(ServerPlayer player, ServerLevel world, BlockPos pos, ItemStack wand) {
 		trigger(player, instance -> instance.test(world, pos, wand));
 	}
 
-	public static class Instance extends AbstractCriterionTriggerInstance {
-		private final ItemPredicate wand;
-		private final LocationPredicate pos;
+	public static Criterion<AlfheimPortalTrigger.Instance> openPortal(ItemPredicate wand, LocationPredicate location) {
+		return INSTANCE.createCriterion(new Instance(Optional.empty(), Optional.ofNullable(wand), Optional.ofNullable(location)));
+	}
 
-		public Instance(ContextAwarePredicate playerPred, ItemPredicate predicate, LocationPredicate pos) {
-			super(ID, playerPred);
-			this.wand = predicate;
-			this.pos = pos;
-		}
+	public record Instance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> wand,
+			Optional<LocationPredicate> location) implements SimpleCriterionTrigger.SimpleInstance {
+		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
+				i -> i.group(
+						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),
+						ItemPredicate.CODEC.optionalFieldOf("wand").forGetter(Instance::wand),
+						LocationPredicate.CODEC.optionalFieldOf("location").forGetter(Instance::location)
+				).apply(i, Instance::new)
+		);
 
-		@NotNull
-		@Override
-		public ResourceLocation getCriterion() {
-			return ID;
-		}
-
-		boolean test(ServerLevel world, BlockPos pos, ItemStack wand) {
-			return this.wand.matches(wand) && this.pos.matches(world, pos.getX(), pos.getY(), pos.getZ());
-		}
-
-		@Override
-		public JsonObject serializeToJson(SerializationContext context) {
-			JsonObject json = super.serializeToJson(context);
-			if (wand != ItemPredicate.ANY) {
-				json.add("wand", wand.serializeToJson());
-			}
-			if (pos != LocationPredicate.ANY) {
-				json.add("location", pos.serializeToJson());
-			}
-			return json;
-		}
-
-		public ItemPredicate getWand() {
-			return this.wand;
-		}
-
-		public LocationPredicate getPos() {
-			return this.pos;
+		public boolean test(ServerLevel world, BlockPos pos, ItemStack wand) {
+			return (this.wand.isEmpty() || this.wand.get().test(wand))
+					&& (this.location.isEmpty() || this.location.get().matches(world, pos.getX(), pos.getY(), pos.getZ()));
 		}
 	}
 }

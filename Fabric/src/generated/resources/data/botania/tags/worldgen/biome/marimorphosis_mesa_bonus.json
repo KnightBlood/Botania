@@ -1,7 +1,6 @@
 {
-  "replace": false,
   "values": [
-    "#c:mesa",
-    "#c:savanna"
+    "#c:is_badlands",
+    "#c:is_savanna"
   ]
 }

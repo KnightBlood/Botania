@@ -5,9 +5,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.util.random.Weighted;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
 
 import vazkii.botania.api.BotaniaAPI;
@@ -19,10 +20,9 @@ import java.util.function.Function;
 public class LooniumStructureConfiguration {
 	public static final int DEFAULT_COST = 35000;
 	public static final int DEFAULT_MAX_NEARBY_MOBS = 10;
-	public static final Codec<LooniumStructureConfiguration> CODEC = ExtraCodecs.validate(
-			RecordCodecBuilder.create(
-					instance -> instance.group(
-							ResourceLocation.CODEC.optionalFieldOf("parent")
+	public static final Codec<LooniumStructureConfiguration> CODEC = RecordCodecBuilder.<LooniumStructureConfiguration>create(
+				instance -> instance.group(
+							Identifier.CODEC.optionalFieldOf("parent")
 									.forGetter(lsc -> Optional.ofNullable(lsc.parent)),
 							ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("manaCost")
 									.forGetter(lsc -> Optional.ofNullable(lsc.manaCost)),
@@ -31,7 +31,7 @@ public class LooniumStructureConfiguration {
 							StructureSpawnOverride.BoundingBoxType.CODEC
 									.optionalFieldOf("boundingBoxType")
 									.forGetter(lsc -> Optional.ofNullable(lsc.boundingBoxType)),
-							WeightedRandomList.codec(LooniumMobSpawnData.CODEC)
+							WeightedList.codec(LooniumMobSpawnData.CODEC)
 									.optionalFieldOf("spawnedMobs")
 									.forGetter(lsc -> Optional.ofNullable(lsc.spawnedMobs)),
 							Codec.list(LooniumMobAttributeModifier.CODEC)
@@ -41,7 +41,9 @@ public class LooniumStructureConfiguration {
 									.optionalFieldOf("effectsToApply")
 									.forGetter(lsc -> Optional.ofNullable(lsc.effectsToApply))
 					).apply(instance, LooniumStructureConfiguration::create)
-			), lsc -> {
+			).validate(LooniumStructureConfiguration::validateConfig);
+		
+		private static DataResult<LooniumStructureConfiguration> validateConfig(LooniumStructureConfiguration lsc) {
 				if (lsc.parent == null && (lsc.manaCost == null || lsc.boundingBoxType == null || lsc.spawnedMobs == null)) {
 					return DataResult.error(() -> "Mana cost, bounding box type, and spawned mobs must be specified if there is no parent configuration");
 				}
@@ -53,19 +55,19 @@ public class LooniumStructureConfiguration {
 							.formatted(DEFAULT_COST));
 				}
 				return DataResult.success(lsc);
-			});
-	public static final ResourceLocation DEFAULT_CONFIG_ID = new ResourceLocation(BotaniaAPI.MODID, "default");
+		}
+	public static final Identifier DEFAULT_CONFIG_ID = Identifier.fromNamespaceAndPath(BotaniaAPI.MODID, "default");
 
 	public final Integer manaCost;
 	public final Integer maxNearbyMobs;
 	public final StructureSpawnOverride.BoundingBoxType boundingBoxType;
-	public final WeightedRandomList<LooniumMobSpawnData> spawnedMobs;
+	public final WeightedList<LooniumMobSpawnData> spawnedMobs;
 	public final List<LooniumMobAttributeModifier> attributeModifiers;
 	public final List<LooniumMobEffectToApply> effectsToApply;
-	public final ResourceLocation parent;
+	public final Identifier parent;
 
-	private LooniumStructureConfiguration(ResourceLocation parent, Integer manaCost, Integer maxNearbyMobs,
-			StructureSpawnOverride.BoundingBoxType boundingBoxType, WeightedRandomList<LooniumMobSpawnData> spawnedMobs,
+	private LooniumStructureConfiguration(Identifier parent, Integer manaCost, Integer maxNearbyMobs,
+			StructureSpawnOverride.BoundingBoxType boundingBoxType, WeightedList<LooniumMobSpawnData> spawnedMobs,
 			List<LooniumMobAttributeModifier> attributeModifiers, List<LooniumMobEffectToApply> effectsToApply) {
 		this.manaCost = manaCost;
 		this.maxNearbyMobs = maxNearbyMobs;
@@ -80,12 +82,12 @@ public class LooniumStructureConfiguration {
 		return new Builder();
 	}
 
-	public static Builder forParent(ResourceLocation parent) {
+	public static Builder forParent(Identifier parent) {
 		return builder().parent(parent);
 	}
 
 	public LooniumStructureConfiguration getEffectiveConfig(
-			Function<ResourceLocation, LooniumStructureConfiguration> parentSupplier) {
+			Function<Identifier, LooniumStructureConfiguration> parentSupplier) {
 		if (parent == null) {
 			return this;
 		}
@@ -116,10 +118,10 @@ public class LooniumStructureConfiguration {
 	// Codecs don't support setting null as intentional default value for optional fields, so we do this.
 	// (blame com.mojang.datafixers.util.Either::getLeft using Optional::of instead Optional.ofNullable)
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-	private static LooniumStructureConfiguration create(Optional<ResourceLocation> parent,
+	private static LooniumStructureConfiguration create(Optional<Identifier> parent,
 			Optional<Integer> manaCost, Optional<Integer> maxNearbyMobs,
 			Optional<StructureSpawnOverride.BoundingBoxType> boundingBoxType,
-			Optional<WeightedRandomList<LooniumMobSpawnData>> spawnedMobs,
+			Optional<WeightedList<LooniumMobSpawnData>> spawnedMobs,
 			Optional<List<LooniumMobAttributeModifier>> attributeModifiers,
 			Optional<List<LooniumMobEffectToApply>> effectsToApply) {
 		return new LooniumStructureConfiguration(
@@ -129,17 +131,17 @@ public class LooniumStructureConfiguration {
 	}
 
 	public static class Builder {
-		private ResourceLocation parent;
+		private Identifier parent;
 		private Integer manaCost;
 		private Integer maxNearbyMobs;
 		private StructureSpawnOverride.BoundingBoxType boundingBoxType;
-		private WeightedRandomList<LooniumMobSpawnData> spawnedMobs;
+		private WeightedList<LooniumMobSpawnData> spawnedMobs;
 		private List<LooniumMobAttributeModifier> attributeModifiers;
 		private List<LooniumMobEffectToApply> effectsToApply;
 
 		private Builder() {}
 
-		private Builder parent(ResourceLocation parent) {
+		private Builder parent(Identifier parent) {
 			this.parent = parent;
 			return this;
 		}
@@ -160,7 +162,12 @@ public class LooniumStructureConfiguration {
 		}
 
 		public Builder spawnedMobs(LooniumMobSpawnData... spawnedMobs) {
-			this.spawnedMobs = WeightedRandomList.create(spawnedMobs);
+			// 26.1: WeightedList.create(...) was removed; build it explicitly instead.
+			WeightedList.Builder<LooniumMobSpawnData> list = WeightedList.builder();
+			for (LooniumMobSpawnData msd : spawnedMobs) {
+				list.add(msd, msd.weight);
+			}
+			this.spawnedMobs = list.build();
 			return this;
 		}
 

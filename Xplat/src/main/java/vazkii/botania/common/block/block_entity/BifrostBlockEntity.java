@@ -9,8 +9,12 @@
 package vazkii.botania.common.block.block_entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.NotNull;
@@ -33,15 +37,15 @@ public class BifrostBlockEntity extends BotaniaBlockEntity {
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
-		tag.putInt(TAG_TICKS, ticks);
+	public void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
+		output.putInt(TAG_TICKS, ticks);
 	}
 
 	@Override
-	public void load(@NotNull CompoundTag tag) {
-		super.load(tag);
-		ticks = tag.getInt(TAG_TICKS);
+	public void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
+		ticks = input.getIntOr(TAG_TICKS, 0);
 	}
 
 }

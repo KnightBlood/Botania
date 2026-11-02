@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "group": "wooden_fence_gate",
+  "key": {
+    "B": "botania:dreamwood_planks",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "SBS",
+    "SBS"
+  ],
+  "result": {
+    "id": "botania:dreamwood_fence_gate"
+  }
+}

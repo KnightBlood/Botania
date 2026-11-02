@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": "botania:lens_normal",
+    "P": "minecraft:prismarine_crystals",
+    "R": "botania:rune_water"
+  },
+  "pattern": [
+    "PPP",
+    "PLP",
+    "PRP"
+  ],
+  "result": {
+    "id": "botania:lens_weight"
+  }
+}

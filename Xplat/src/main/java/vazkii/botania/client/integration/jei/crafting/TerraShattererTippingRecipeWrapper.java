@@ -16,7 +16,7 @@ import mezz.jei.api.gui.ingredient.ICraftingGridHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICraftingCategoryExtension;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +32,7 @@ import java.util.List;
 public class TerraShattererTippingRecipeWrapper implements ICraftingCategoryExtension {
 	private final List<List<ItemStack>> inputs;
 	private final ItemStack output;
-	private final ResourceLocation name;
+	private final Identifier name;
 
 	public TerraShattererTippingRecipeWrapper(TerraShattererTippingRecipe recipe) {
 		inputs = ImmutableList.of(ImmutableList.of(new ItemStack(BotaniaItems.terraPick)), ImmutableList.of(new ItemStack(BotaniaItems.elementiumPick)));
@@ -50,7 +50,7 @@ public class TerraShattererTippingRecipeWrapper implements ICraftingCategoryExte
 
 	@Nullable
 	@Override
-	public ResourceLocation getRegistryName() {
+	public Identifier getRegistryName() {
 		return name;
 	}
 }

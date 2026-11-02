@@ -1,7 +1,7 @@
 package vazkii.botania.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 
 import io.netty.buffer.Unpooled;
@@ -20,5 +20,5 @@ public interface BotaniaPacket {
 	 * These are sent using vanilla's custom plugin channel system and thus are written to every single packet.
 	 * So this ID tends to be more terse.
 	 */
-	ResourceLocation getFabricId();
+	Identifier getFabricId();
 }

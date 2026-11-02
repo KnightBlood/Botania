@@ -1,0 +1,9 @@
+{
+  "type": "botania:brew",
+  "brew": "botania:resistance",
+  "ingredients": [
+    "minecraft:nether_wart",
+    "minecraft:iron_ingot",
+    "minecraft:leather"
+  ]
+}

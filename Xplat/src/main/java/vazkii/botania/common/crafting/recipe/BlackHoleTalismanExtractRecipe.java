@@ -10,13 +10,15 @@ package vazkii.botania.common.crafting.recipe;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 
 import org.jetbrains.annotations.NotNull;
@@ -26,17 +28,17 @@ import vazkii.botania.common.item.BlackHoleTalismanItem;
 import vazkii.botania.common.item.BotaniaItems;
 
 public class BlackHoleTalismanExtractRecipe extends CustomRecipe {
-	public static final NoOpRecipeSerializer<BlackHoleTalismanExtractRecipe> SERIALIZER = new NoOpRecipeSerializer<>(BlackHoleTalismanExtractRecipe::new);
+	public static final RecipeSerializer<BlackHoleTalismanExtractRecipe> SERIALIZER = NoOpRecipeSerializer.create(BlackHoleTalismanExtractRecipe::new);
 
-	public BlackHoleTalismanExtractRecipe(ResourceLocation id) {
-		super(id, CraftingBookCategory.MISC);
+	public BlackHoleTalismanExtractRecipe(Identifier id) {
+		// MC 26.1: CustomRecipe no-arg constructor
 	}
 
 	@Override
-	public boolean matches(@NotNull CraftingContainer inv, @NotNull Level world) {
+	public boolean matches(@NotNull CraftingInput inv, @NotNull Level world) {
 		boolean foundTalisman = false;
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (!stack.isEmpty()) {
 				if (stack.is(BotaniaItems.blackHoleTalisman) && !foundTalisman) {
@@ -59,10 +61,10 @@ public class BlackHoleTalismanExtractRecipe extends CustomRecipe {
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registries) {
+	public ItemStack assemble(@NotNull CraftingInput inv) {
 		ItemStack talisman = ItemStack.EMPTY;
 
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			if (!stack.isEmpty()) {
 				talisman = stack;
@@ -80,20 +82,16 @@ public class BlackHoleTalismanExtractRecipe extends CustomRecipe {
 		return ItemStack.EMPTY;
 	}
 
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height > 0;
-	}
 
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends CustomRecipe> getSerializer() {
 		return SERIALIZER;
 	}
 
 	@NotNull
 	@Override
-	public NonNullList<ItemStack> getRemainingItems(@NotNull CraftingContainer inv) {
+	public NonNullList<ItemStack> getRemainingItems(CraftingInput inv) {
 		return RecipeUtils.getRemainingItemsSub(inv, s -> {
 			if (s.is(BotaniaItems.blackHoleTalisman)) {
 				int count = BlackHoleTalismanItem.getBlockCount(s);

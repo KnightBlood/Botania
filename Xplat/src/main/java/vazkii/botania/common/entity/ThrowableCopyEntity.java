@@ -15,6 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
@@ -29,11 +30,13 @@ public abstract class ThrowableCopyEntity extends Projectile {
 		super(entityType, level);
 	}
 
+	@SuppressWarnings("this-escape") // same pattern as [VanillaCopy] source
 	protected ThrowableCopyEntity(EntityType<? extends ThrowableCopyEntity> entityType, double d, double e, double f, Level level) {
 		this(entityType, level);
 		this.setPos(d, e, f);
 	}
 
+	@SuppressWarnings("this-escape") // same pattern as [VanillaCopy] source
 	protected ThrowableCopyEntity(EntityType<? extends ThrowableCopyEntity> entityType, LivingEntity livingEntity, Level level) {
 		this(entityType, livingEntity.getX(), livingEntity.getEyeY() - 0.10000000149011612D, livingEntity.getZ(), level);
 		this.setOwner(livingEntity);
@@ -59,12 +62,11 @@ public abstract class ThrowableCopyEntity extends Projectile {
 			BlockPos blockPos = ((BlockHitResult) hitResult).getBlockPos();
 			BlockState blockState = this.level().getBlockState(blockPos);
 			if (blockState.is(Blocks.NETHER_PORTAL)) {
-				this.handleInsidePortal(blockPos);
+				this.setAsInsidePortal((net.minecraft.world.level.block.Portal) blockState.getBlock(), blockPos);
 				bl = true;
 			} else if (blockState.is(Blocks.END_GATEWAY)) {
-				BlockEntity blockEntity = this.level().getBlockEntity(blockPos);
-				if (blockEntity instanceof TheEndGatewayBlockEntity gateway && TheEndGatewayBlockEntity.canEntityTeleport(this)) {
-					TheEndGatewayBlockEntity.teleportEntity(this.level(), blockPos, blockState, this, gateway);
+				if (this.canUsePortal(false)) {
+					this.setAsInsidePortal((net.minecraft.world.level.block.Portal) blockState.getBlock(), blockPos);
 				}
 
 				bl = true;
@@ -75,7 +77,7 @@ public abstract class ThrowableCopyEntity extends Projectile {
 			this.onHit(hitResult);
 		}
 
-		this.checkInsideBlocks();
+		this.applyEffectsFromBlocks();
 		Vec3 vec3 = this.getDeltaMovement();
 		double d = this.getX() + vec3.x;
 		double e = this.getY() + vec3.y;
@@ -96,13 +98,14 @@ public abstract class ThrowableCopyEntity extends Projectile {
 		this.setDeltaMovement(vec3.scale((double) j));
 		if (!this.isNoGravity()) {
 			Vec3 vec32 = this.getDeltaMovement();
-			this.setDeltaMovement(vec32.x, vec32.y - (double) this.getGravity(), vec32.z);
+			this.setDeltaMovement(vec32.x, vec32.y - this.getGravity(), vec32.z);
 		}
 
 		this.setPos(d, e, f);
 	}
 
-	protected float getGravity() {
-		return 0.03F;
+	@Override
+	protected double getDefaultGravity() {
+		return 0.03D;
 	}
 }

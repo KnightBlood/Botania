@@ -16,7 +16,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.player.Player;
 
 import vazkii.botania.common.world.IslandPos;
@@ -33,6 +34,7 @@ import vazkii.botania.common.world.SkyblockChunkGenerator;
 import vazkii.botania.common.world.SkyblockSavedData;
 import vazkii.botania.common.world.SkyblockWorldEvents;
 
+import java.util.Set;
 import java.util.UUID;
 
 public class SkyblockCommand {
@@ -45,7 +47,7 @@ public class SkyblockCommand {
 		// This isn't what we consider the "primary" name. It's just here to be a reminder for old /botania-skyblock-spread users.
 		// However some Mojang code seems to assume that aliases are made alphabetically...
 		LiteralArgumentBuilder<CommandSourceStack> commandBuilder = Commands.literal("botania-skyblock")
-				.requires(s -> s.hasPermission(2))
+				.requires(s -> s.permissions().hasPermission(Permissions.COMMANDS_MODERATOR))
 				.then(Commands.literal("help")
 						.executes(SkyblockCommand::printHelp))
 				.then(Commands.literal("island")
@@ -104,7 +106,7 @@ public class SkyblockCommand {
 		BlockPos blockPos = pos.getCenter();
 
 		player.teleportTo(world, blockPos.getX() + 0.5, blockPos.getY(),
-				blockPos.getZ() + 0.5, player.getYRot(), player.getXRot());
+				blockPos.getZ() + 0.5, Set.of(), player.getYRot(), player.getXRot(), false);
 		ctx.getSource().sendSuccess(() -> feedback, true);
 		return Command.SINGLE_SUCCESS;
 	}

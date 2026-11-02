@@ -38,7 +38,7 @@ public class MysticalFlowerFeature extends Feature<MysticalFlowerConfig> {
 		MysticalFlowerConfig config = ctx.config();
 		WorldGenLevel level = ctx.level();
 		BlockPos pos = ctx.origin();
-		BlockState state = config.toPlace().getState(ctx.random(), pos);
+		BlockState state = config.toPlace().getState(level, ctx.random(), pos);
 		if (state.canSurvive(level, pos)) {
 			if (state.getBlock().getClass() == BotaniaFlowerBlock.class
 					&& ctx.random().nextFloat() < config.tallChance()) {

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "minecraft:cobblestone",
+    "F": "botania:rune_fire",
+    "T": "botania:livingwood_twig",
+    "W": "botania:rune_water"
+  },
+  "pattern": [
+    " FC",
+    " TW",
+    "T  "
+  ],
+  "result": {
+    "id": "botania:cobble_rod"
+  }
+}

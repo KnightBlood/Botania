@@ -1,0 +1,14 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/black",
+    "#botania:petals/black",
+    "#botania:petals/purple",
+    "#botania:petals/gray"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:nightshade_motif"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

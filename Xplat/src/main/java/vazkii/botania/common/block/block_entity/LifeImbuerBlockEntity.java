@@ -11,6 +11,7 @@ package vazkii.botania.common.block.block_entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,7 +42,7 @@ public class LifeImbuerBlockEntity extends BotaniaBlockEntity implements ManaRec
 
 			if (be instanceof LifeImbuerBlockEntity claw && claw.mana > 5) {
 				claw.receiveMana(-6);
-				if (level.isClientSide && Math.random() > 0.5) {
+				if (level.isClientSide() && Math.random() > 0.5) {
 					WispParticleData data = WispParticleData.wisp((float) Math.random() / 3F, 0.6F - (float) Math.random() * 0.3F, 0.1F, 0.6F - (float) Math.random() * 0.3F, 2F);
 					level.addParticle(data, up.getX() + 0.3 + Math.random() * 0.5, up.getY() - 0.3 + Math.random() * 0.25, up.getZ() + Math.random(), 0, -(-0.025F - 0.005F * (float) Math.random()), 0);
 				}
@@ -59,7 +60,7 @@ public class LifeImbuerBlockEntity extends BotaniaBlockEntity implements ManaRec
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
-		mana = cmp.getInt(TAG_MANA);
+		mana = cmp.getIntOr(TAG_MANA, 0);
 	}
 
 	@Override

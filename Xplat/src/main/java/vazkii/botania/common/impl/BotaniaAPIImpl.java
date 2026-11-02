@@ -9,14 +9,23 @@
 package vazkii.botania.common.impl;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
+import vazkii.botania.common.lib.BotaniaTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
@@ -48,163 +57,71 @@ import java.util.function.Supplier;
 
 public class BotaniaAPIImpl implements BotaniaAPI {
 
-	private enum ArmorMaterial implements net.minecraft.world.item.ArmorMaterial {
-		MANASTEEL("manasteel", 16,
-				Map.of(
-						ArmorItem.Type.BOOTS, 2,
-						ArmorItem.Type.LEGGINGS, 5,
-						ArmorItem.Type.CHESTPLATE, 6,
-						ArmorItem.Type.HELMET, 2
-				),
-				18, () -> BotaniaSounds.equipManasteel, () -> BotaniaItems.manaSteel, 0),
-		MANAWEAVE("manaweave", 5,
-				Map.of(
-						ArmorItem.Type.BOOTS, 1,
-						ArmorItem.Type.LEGGINGS, 2,
-						ArmorItem.Type.CHESTPLATE, 3,
-						ArmorItem.Type.HELMET, 1
-				),
-				18, () -> BotaniaSounds.equipManaweave, () -> BotaniaItems.manaweaveCloth, 0),
-		ELEMENTIUM("elementium", 18,
-				Map.of(
-						ArmorItem.Type.BOOTS, 2,
-						ArmorItem.Type.LEGGINGS, 5,
-						ArmorItem.Type.CHESTPLATE, 6,
-						ArmorItem.Type.HELMET, 2
-				),
-				18, () -> BotaniaSounds.equipElementium, () -> BotaniaItems.elementium, 0),
-		TERRASTEEL("terrasteel", 34,
-				Map.of(
-						ArmorItem.Type.BOOTS, 3,
-						ArmorItem.Type.LEGGINGS, 6,
-						ArmorItem.Type.CHESTPLATE, 8,
-						ArmorItem.Type.HELMET, 3
-				),
-				26, () -> BotaniaSounds.equipTerrasteel, () -> BotaniaItems.terrasteel, 3);
-
-		private final String name;
-		private final int durabilityMultiplier;
-		private final Map<ArmorItem.Type, Integer> damageReduction;
-		private final int enchantability;
-		private final Supplier<SoundEvent> equipSound;
-		private final Supplier<Item> repairItem;
-		private final float toughness;
-
-		ArmorMaterial(String name, int durabilityMultiplier, Map<ArmorItem.Type, Integer> damageReduction,
-				int enchantability, Supplier<SoundEvent> equipSound, Supplier<Item> repairItem, float toughness) {
-			this.name = name;
-			this.durabilityMultiplier = durabilityMultiplier;
-			this.damageReduction = damageReduction;
-			this.enchantability = enchantability;
-			this.equipSound = equipSound;
-			this.repairItem = repairItem;
-			this.toughness = toughness;
-		}
-
-		@Override
-		public int getDurabilityForType(ArmorItem.Type slot) {
-			// [VanillaCopy] ArmorMaterials
-			int base = switch (slot) {
-				case BOOTS -> 13;
-				case LEGGINGS -> 15;
-				case CHESTPLATE -> 16;
-				case HELMET -> 11;
-			};
-			return durabilityMultiplier * base;
-		}
-
-		@Override
-		public int getDefenseForType(ArmorItem.Type slot) {
-			return this.damageReduction.get(slot);
-		}
-
-		@Override
-		public int getEnchantmentValue() {
-			return enchantability;
-		}
-
-		@NotNull
-		@Override
-		public SoundEvent getEquipSound() {
-			return equipSound.get();
-		}
-
-		@NotNull
-		@Override
-		public Ingredient getRepairIngredient() {
-			return Ingredient.of(repairItem.get());
-		}
-
-		@NotNull
-		@Override
-		public String getName() {
-			return name;
-		}
-
-		@Override
-		public float getToughness() {
-			return toughness;
-		}
-
-		@Override
-		public float getKnockbackResistance() {
-			return 0;
-		}
-	}
-
-	private enum ItemTier implements Tier {
-		MANASTEEL(300, 6.2F, 2, 3, 20, () -> BotaniaItems.manaSteel),
-		ELEMENTIUM(720, 6.2F, 2, 3, 20, () -> BotaniaItems.elementium),
-		TERRASTEEL(2300, 9, 4, 4, 26, () -> BotaniaItems.terrasteel);
-
-		private final int maxUses;
-		private final float efficiency;
-		private final float attackDamage;
-		private final int harvestLevel;
-		private final int enchantability;
-		private final Supplier<Item> repairItem;
-
-		ItemTier(int maxUses, float efficiency, float attackDamage, int harvestLevel, int enchantability, Supplier<Item> repairItem) {
-			this.maxUses = maxUses;
-			this.efficiency = efficiency;
-			this.attackDamage = attackDamage;
-			this.harvestLevel = harvestLevel;
-			this.enchantability = enchantability;
-			this.repairItem = repairItem;
-		}
-
-		@Override
-		public int getUses() {
-			return maxUses;
-		}
-
-		@Override
-		public float getSpeed() {
-			return efficiency;
-		}
-
-		@Override
-		public float getAttackDamageBonus() {
-			return attackDamage;
-		}
-
-		@Override
-		public int getLevel() {
-			return harvestLevel;
-		}
-
-		@Override
-		public int getEnchantmentValue() {
-			return enchantability;
-		}
-
-		@Override
-		public Ingredient getRepairIngredient() {
-			return Ingredient.of(repairItem.get());
-		}
-	}
-
 	private ConfigDataManager configDataManager = new ConfigDataManagerImpl();
+
+	private static final ArmorMaterial MANASTEEL = new ArmorMaterial(
+		16,
+		Map.of(
+			ArmorType.BOOTS, 2,
+			ArmorType.LEGGINGS, 5,
+			ArmorType.CHESTPLATE, 6,
+			ArmorType.HELMET, 2
+		),
+		18,
+		Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_manasteel"))),
+		0.0F,
+		0.0F,
+		ItemTags.WOODEN_TOOL_MATERIALS,
+		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+	);
+
+	private static final ArmorMaterial MANAWEAVE = new ArmorMaterial(
+		5,
+		Map.of(
+			ArmorType.BOOTS, 1,
+			ArmorType.LEGGINGS, 2,
+			ArmorType.CHESTPLATE, 3,
+			ArmorType.HELMET, 1
+		),
+		18,
+		Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_manaweave"))),
+		0.0F,
+		0.0F,
+		ItemTags.WOODEN_TOOL_MATERIALS,
+		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+	);
+
+	private static final ArmorMaterial ELEMENTIUM = new ArmorMaterial(
+		18,
+		Map.of(
+			ArmorType.BOOTS, 2,
+			ArmorType.LEGGINGS, 5,
+			ArmorType.CHESTPLATE, 6,
+			ArmorType.HELMET, 2
+		),
+		18,
+		Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_elementium"))),
+		0.0F,
+		0.0F,
+		ItemTags.WOODEN_TOOL_MATERIALS,
+		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+	);
+
+	private static final ArmorMaterial TERRASTEEL = new ArmorMaterial(
+		34,
+		Map.of(
+			ArmorType.BOOTS, 3,
+			ArmorType.LEGGINGS, 6,
+			ArmorType.CHESTPLATE, 8,
+			ArmorType.HELMET, 3
+		),
+		26,
+		Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_terrasteel"))),
+		3.0F,
+		0.0F,
+		ItemTags.WOODEN_TOOL_MATERIALS,
+		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+	);
 
 	@Override
 	public int apiVersion() {
@@ -215,42 +132,42 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Registry<Brew> getBrewRegistry() {
-		return (Registry<Brew>) BuiltInRegistries.REGISTRY.get(BotaniaRegistries.BREWS.location());
+		return (Registry<Brew>) BuiltInRegistries.REGISTRY.getValue(BotaniaRegistries.BREWS.identifier());
 	}
 
 	@Override
-	public net.minecraft.world.item.ArmorMaterial getManasteelArmorMaterial() {
-		return ArmorMaterial.MANASTEEL;
+	public ArmorMaterial getManasteelArmorMaterial() {
+		return MANASTEEL;
 	}
 
 	@Override
-	public net.minecraft.world.item.ArmorMaterial getElementiumArmorMaterial() {
-		return ArmorMaterial.ELEMENTIUM;
+	public ArmorMaterial getElementiumArmorMaterial() {
+		return ELEMENTIUM;
 	}
 
 	@Override
-	public net.minecraft.world.item.ArmorMaterial getManaweaveArmorMaterial() {
-		return ArmorMaterial.MANAWEAVE;
+	public ArmorMaterial getManaweaveArmorMaterial() {
+		return MANAWEAVE;
 	}
 
 	@Override
-	public net.minecraft.world.item.ArmorMaterial getTerrasteelArmorMaterial() {
-		return ArmorMaterial.TERRASTEEL;
+	public ArmorMaterial getTerrasteelArmorMaterial() {
+		return TERRASTEEL;
 	}
 
 	@Override
-	public Tier getManasteelItemTier() {
-		return ItemTier.MANASTEEL;
+	public ToolMaterial getManasteelItemTier() {
+				return new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL, 300, 6.2F, 2, 20, BotaniaTags.Items.INGOTS_MANASTEEL);
 	}
 
 	@Override
-	public Tier getElementiumItemTier() {
-		return ItemTier.ELEMENTIUM;
+	public ToolMaterial getElementiumItemTier() {
+		return new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL, 720, 6.2F, 2, 20, BotaniaTags.Items.INGOTS_ELEMENTIUM);
 	}
 
 	@Override
-	public Tier getTerrasteelItemTier() {
-		return ItemTier.TERRASTEEL;
+	public ToolMaterial getTerrasteelItemTier() {
+		return new ToolMaterial(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 2300, 9, 4, 26, BotaniaTags.Items.INGOTS_TERRASTEEL);
 	}
 
 	@Override
@@ -279,15 +196,15 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 		world.addParticle(data, x, y, z, 0, 0, 0);
 	}
 
-	private final Map<ResourceLocation, Function<DyeColor, Block>> paintableBlocks = new ConcurrentHashMap<>();
+	private final Map<Identifier, Function<DyeColor, Block>> paintableBlocks = new ConcurrentHashMap<>();
 
 	@Override
-	public Map<ResourceLocation, Function<DyeColor, Block>> getPaintableBlocks() {
+	public Map<Identifier, Function<DyeColor, Block>> getPaintableBlocks() {
 		return Collections.unmodifiableMap(paintableBlocks);
 	}
 
 	@Override
-	public void registerPaintableBlock(ResourceLocation block, Function<DyeColor, Block> transformer) {
+	public void registerPaintableBlock(Identifier block, Function<DyeColor, Block> transformer) {
 		paintableBlocks.put(block, transformer);
 	}
 

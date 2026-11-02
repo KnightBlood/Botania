@@ -1,7 +1,7 @@
 package vazkii.botania.mixin;
 
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.animal.MushroomCow;
+import net.minecraft.world.entity.animal.cow.MushroomCow;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,14 +11,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface MushroomCowAccessor {
 	@Accessor
 	@Nullable
-	MobEffect getEffect();
+	SuspiciousStewEffects getStewEffects();
 
 	@Accessor
-	void setEffect(@Nullable MobEffect effect);
-
-	@Accessor
-	int getEffectDuration();
-
-	@Accessor
-	void setEffectDuration(int effectDuration);
+	void setStewEffects(@Nullable SuspiciousStewEffects effects);
 }

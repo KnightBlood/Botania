@@ -8,68 +8,52 @@
  */
 package vazkii.botania.common.advancements;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.advancements.critereon.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-import org.jetbrains.annotations.NotNull;
+import java.util.Optional;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class RelicBindTrigger extends SimpleCriterionTrigger<RelicBindTrigger.Instance> {
-	public static final ResourceLocation ID = prefix("relic_bind");
+	public static final Identifier ID = prefix("relic_bind");
 	public static final RelicBindTrigger INSTANCE = new RelicBindTrigger();
 
 	private RelicBindTrigger() {}
 
-	@NotNull
 	@Override
-	public ResourceLocation getId() {
-		return ID;
-	}
-
-	@NotNull
-	@Override
-	public Instance createInstance(@NotNull JsonObject json, @NotNull ContextAwarePredicate playerPred, DeserializationContext conditions) {
-		return new Instance(playerPred, ItemPredicate.fromJson(json.get("relic")));
+	public Codec<RelicBindTrigger.Instance> codec() {
+		return RelicBindTrigger.Instance.CODEC;
 	}
 
 	public void trigger(ServerPlayer player, ItemStack relic) {
 		trigger(player, instance -> instance.test(relic));
 	}
 
-	public static class Instance extends AbstractCriterionTriggerInstance {
-		private final ItemPredicate predicate;
+	public static Criterion<RelicBindTrigger.Instance> bindRelic(ItemPredicate relic) {
+		return INSTANCE.createCriterion(new Instance(Optional.empty(), Optional.ofNullable(relic)));
+	}
 
-		public Instance(ContextAwarePredicate playerPred, ItemPredicate predicate) {
-			super(ID, playerPred);
-			this.predicate = predicate;
-		}
+	public record Instance(Optional<ContextAwarePredicate> player,
+			Optional<ItemPredicate> relic) implements SimpleCriterionTrigger.SimpleInstance {
+		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
+				i -> i.group(
+						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),
+						ItemPredicate.CODEC.optionalFieldOf("relic").forGetter(Instance::relic)
+				).apply(i, Instance::new)
+		);
 
-		@NotNull
-		@Override
-		public ResourceLocation getCriterion() {
-			return ID;
-		}
-
-		boolean test(ItemStack stack) {
-			return predicate.matches(stack);
-		}
-
-		@Override
-		public JsonObject serializeToJson(SerializationContext context) {
-			JsonObject json = super.serializeToJson(context);
-			if (predicate != ItemPredicate.ANY) {
-				json.add("relic", predicate.serializeToJson());
-			}
-			return json;
-		}
-
-		public ItemPredicate getPredicate() {
-			return this.predicate;
+		public boolean test(ItemStack stack) {
+			return this.relic.isEmpty() || this.relic.get().test(stack);
 		}
 	}
 }

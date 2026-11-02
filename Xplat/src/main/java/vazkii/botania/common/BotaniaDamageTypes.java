@@ -30,7 +30,7 @@ public class BotaniaDamageTypes {
 	public static class Sources {
 
 		private static Holder.Reference<DamageType> getHolder(RegistryAccess ra, ResourceKey<DamageType> key) {
-			return ra.registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(key);
+			return ra.lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key);
 		}
 
 		private static DamageSource source(RegistryAccess ra, ResourceKey<DamageType> resourceKey) {

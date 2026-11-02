@@ -14,9 +14,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.Mth;
@@ -25,6 +24,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,6 +34,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.client.core.helper.RenderHelper;
+import vazkii.botania.client.render.ColorHandler;
 import vazkii.botania.common.item.AstrolabeItem;
 
 import java.util.List;
@@ -88,22 +89,20 @@ public final class AstrolabePreviewHandler {
 	}
 
 	private static void renderBlockAt(PoseStack ms, VertexConsumer buffer, BlockState state, BlockPos pos) {
-		double renderPosX = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition().x();
-		double renderPosY = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition().y();
-		double renderPosZ = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition().z();
+		double renderPosX = Minecraft.getInstance().getEntityRenderDispatcher().camera.position().x();
+		double renderPosY = Minecraft.getInstance().getEntityRenderDispatcher().camera.position().y();
+		double renderPosZ = Minecraft.getInstance().getEntityRenderDispatcher().camera.position().z();
 
 		ms.pushPose();
 		ms.translate(-renderPosX, -renderPosY, -renderPosZ);
 
-		BlockRenderDispatcher brd = Minecraft.getInstance().getBlockRenderer();
-		ms.translate(pos.getX(), pos.getY(), pos.getZ());
-		BakedModel model = brd.getBlockModel(state);
-		int color = Minecraft.getInstance().getBlockColors().getColor(state, null, null, 0);
+		BlockStateModel model = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(state);
+		int color = ColorHandler.getBlockColor(state, null, null, 0);
 		float r = (float) (color >> 16 & 255) / 255.0F;
 		float g = (float) (color >> 8 & 255) / 255.0F;
 		float b = (float) (color & 255) / 255.0F;
 		// always use entity translucent layer so blending is turned on
-		brd.getModelRenderer().renderModel(ms.last(), buffer, state, model, r, g, b, 0xF000F0, OverlayTexture.NO_OVERLAY);
+		RenderHelper.renderBlockModel(ms, buffer, state, model, r, g, b, 0xF000F0, OverlayTexture.NO_OVERLAY);
 
 		ms.popPose();
 	}

@@ -8,14 +8,20 @@
  */
 package vazkii.botania.common.block.block_entity;
 
+import net.minecraft.nbt.NbtOps;
+
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -30,6 +36,8 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.FireworkRocketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.FireworkExplosion;
+import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
@@ -60,7 +68,7 @@ import java.util.Map;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class TinyPotatoBlockEntity extends ExposedSimpleInventoryBlockEntity implements Nameable {
-	private static final ResourceLocation BIRTHDAY_ADVANCEMENT = prefix("challenge/tiny_potato_birthday");
+	private static final Identifier BIRTHDAY_ADVANCEMENT = prefix("challenge/tiny_potato_birthday");
 	private static final String TAG_NAME = "name";
 	private static final int JUMP_EVENT = 0;
 	private static final Map<String, String> GENDER = new HashMap<>(Map.ofEntries(
@@ -107,7 +115,7 @@ public class TinyPotatoBlockEntity extends ExposedSimpleInventoryBlockEntity imp
 	}
 
 	public void interact(Player player, InteractionHand hand, ItemStack stack, Direction side) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			int index = side.get3DDataValue();
 			ItemStack stackAt = getItemHandler().getItem(index);
 			if (!stackAt.isEmpty() && stack.isEmpty()) {
@@ -147,7 +155,7 @@ public class TinyPotatoBlockEntity extends ExposedSimpleInventoryBlockEntity imp
 			}
 			if (!tater.isEmpty()) {
 				String taterGender = manyTater ? "children" : "son";
-				if (!manyTater && tater.hasCustomHoverName()) {
+				if (!manyTater && tater.getCustomName() != null) {
 					StringBuilder childNameBuilder = new StringBuilder();
 					TinyPotatoBlockItem.isEnchantedName(tater.getHoverName(), childNameBuilder);
 					taterGender = GENDER.getOrDefault(childNameBuilder.toString(), taterGender);
@@ -183,8 +191,8 @@ public class TinyPotatoBlockEntity extends ExposedSimpleInventoryBlockEntity imp
 			self.jumpTicks--;
 		}
 
-		if (!level.isClientSide) {
-			if (level.random.nextInt(100) == 0) {
+		if (!level.isClientSide()) {
+			if (level.getRandom().nextInt(100) == 0) {
 				self.jump();
 			}
 			if (self.nextDoIt > 0) {
@@ -235,28 +243,18 @@ public class TinyPotatoBlockEntity extends ExposedSimpleInventoryBlockEntity imp
 
 				if (messageIndex == messageTimes.size() - 1) {
 					if (isTinyPotatoBirthday()) {
-						CompoundTag explosion = new CompoundTag();
-						explosion.putByte("Type", (byte) FireworkRocketItem.Shape.LARGE_BALL.getId());
-						explosion.putBoolean("Flicker", true);
-						explosion.putBoolean("Trail", true);
-						explosion.putIntArray("Colors", List.of(
-								cakeColor.getFireworkColor(),
-								0xD260A5, 0xE4AFCD, 0xFEFEFE, 0x57CEF8
-						));
-
-						ListTag explosions = new ListTag();
-						explosions.add(explosion);
+						var explosion = new FireworkExplosion(FireworkExplosion.Shape.LARGE_BALL,
+								IntList.of(cakeColor.getFireworkColor(), 0xD260A5, 0xE4AFCD, 0xFEFEFE, 0x57CEF8),
+								IntList.of(), true, true);
 
 						ItemStack rocket = new ItemStack(Items.FIREWORK_ROCKET);
-						CompoundTag rocketFireworks = rocket.getOrCreateTagElement("Fireworks");
-						rocketFireworks.putByte("Flight", (byte) 0);
-						rocketFireworks.put("Explosions", explosions);
+						rocket.set(DataComponents.FIREWORKS, new Fireworks(0, List.of(explosion)));
 
 						level.addFreshEntity(new FireworkRocketEntity(level, facingPos.getX() + 0.5, facingPos.getY() + 0.5, facingPos.getZ() + 0.5, rocket));
 						level.removeBlock(facingPos, false);
 						level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, facingPos, Block.getId(facingState));
 						// Usage of vanilla sound event: Subtitle is "Eating", generic sounds are meant to be reused.
-						level.playSound(null, getBlockPos(), SoundEvents.GENERIC_EAT, SoundSource.BLOCKS, 1F, 0.5F + (float) Math.random() * 0.5F);
+						level.playSound(null, getBlockPos(), SoundEvents.GENERIC_EAT.value(), SoundSource.BLOCKS, 1F, 0.5F + (float) Math.random() * 0.5F);
 
 						for (var player : players) {
 							PlayerHelper.grantCriterion((ServerPlayer) player, BIRTHDAY_ADVANCEMENT, "code_triggered");
@@ -274,7 +272,7 @@ public class TinyPotatoBlockEntity extends ExposedSimpleInventoryBlockEntity imp
 	@Override
 	public void setChanged() {
 		super.setChanged();
-		if (level != null && !level.isClientSide) {
+		if (level != null && !level.isClientSide()) {
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 		}
 	}
@@ -282,13 +280,16 @@ public class TinyPotatoBlockEntity extends ExposedSimpleInventoryBlockEntity imp
 	@Override
 	public void writePacketNBT(CompoundTag cmp) {
 		super.writePacketNBT(cmp);
-		cmp.putString(TAG_NAME, Component.Serializer.toJson(name));
+		cmp.put(TAG_NAME, ComponentSerialization.CODEC.encodeStart(NbtOps.INSTANCE, name).getOrThrow());
 	}
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
 		super.readPacketNBT(cmp);
-		name = Component.Serializer.fromJson(cmp.getString(TAG_NAME));
+		Tag nameTag = cmp.get(TAG_NAME);
+		if (nameTag != null) {
+			name = ComponentSerialization.CODEC.parse(NbtOps.INSTANCE, nameTag).result().orElse(name);
+		}
 	}
 
 	@Override

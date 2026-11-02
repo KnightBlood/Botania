@@ -8,64 +8,91 @@
  */
 package vazkii.botania.common.crafting.recipe;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.ArmorItem;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.PlacementInfo;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
-import org.jetbrains.annotations.NotNull;
+/**
+ * A shaped crafting recipe that keeps the custom data (such as the phantom ink) of the armor that
+ * is used in the crafting grid.
+ */
+public class ArmorUpgradeRecipe implements CraftingRecipe {
+	public static final MapCodec<ArmorUpgradeRecipe> CODEC = ShapedRecipe.MAP_CODEC.xmap(
+			ArmorUpgradeRecipe::new, recipe -> recipe.delegate);
 
-public class ArmorUpgradeRecipe extends ShapedRecipe {
-	public ArmorUpgradeRecipe(ShapedRecipe compose) {
-		super(compose.getId(), compose.getGroup(), compose.category(), compose.getWidth(), compose.getHeight(),
-				compose.getIngredients(),
-				// XXX: Hacky, but compose should always be a vanilla shaped recipe which doesn't do anything with the
-				// RegistryAccess
-				compose.getResultItem(RegistryAccess.EMPTY));
+	public static final StreamCodec<RegistryFriendlyByteBuf, ArmorUpgradeRecipe> STREAM_CODEC = ShapedRecipe.STREAM_CODEC.map(
+			ArmorUpgradeRecipe::new, recipe -> recipe.delegate);
+
+	public static final RecipeSerializer<ArmorUpgradeRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
+
+	private final ShapedRecipe delegate;
+
+	public ArmorUpgradeRecipe(ShapedRecipe delegate) {
+		this.delegate = delegate;
 	}
 
-	@NotNull
+	public static ArmorUpgradeRecipe wrap(Recipe<?> recipe) {
+		return new ArmorUpgradeRecipe((ShapedRecipe) recipe);
+	}
+
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registries) {
-		ItemStack out = super.assemble(inv, registries);
-		for (int i = 0; i < inv.getContainerSize(); i++) {
-			ItemStack stack = inv.getItem(i);
-			if (stack.hasTag() && stack.getItem() instanceof ArmorItem) {
-				out.setTag(stack.getTag());
+	public boolean matches(CraftingInput input, Level level) {
+		return delegate.matches(input, level);
+	}
+
+	@Override
+	public ItemStack assemble(CraftingInput input) {
+		ItemStack out = delegate.assemble(input);
+		for (int i = 0; i < input.size(); i++) {
+			ItemStack stack = input.getItem(i);
+			if (stack.has(DataComponents.EQUIPPABLE) && stack.has(DataComponents.CUSTOM_DATA)) {
+				out.set(DataComponents.CUSTOM_DATA, stack.get(DataComponents.CUSTOM_DATA));
 				break;
 			}
 		}
 		return out;
 	}
 
-	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends CraftingRecipe> getSerializer() {
 		return SERIALIZER;
 	}
 
-	public static final RecipeSerializer<ArmorUpgradeRecipe> SERIALIZER = new Serializer();
+	@Override
+	public CraftingBookCategory category() {
+		return delegate.category();
+	}
 
-	private static class Serializer implements RecipeSerializer<ArmorUpgradeRecipe> {
-		@Override
-		public ArmorUpgradeRecipe fromJson(@NotNull ResourceLocation recipeId, @NotNull JsonObject json) {
-			return new ArmorUpgradeRecipe(SHAPED_RECIPE.fromJson(recipeId, json));
-		}
+	@Override
+	public NonNullList<ItemStack> getRemainingItems(CraftingInput input) {
+		return delegate.getRemainingItems(input);
+	}
 
-		@Override
-		public ArmorUpgradeRecipe fromNetwork(@NotNull ResourceLocation recipeId, @NotNull FriendlyByteBuf buffer) {
-			return new ArmorUpgradeRecipe(SHAPED_RECIPE.fromNetwork(recipeId, buffer));
-		}
+	@Override
+	public String group() {
+		return delegate.group();
+	}
 
-		@Override
-		public void toNetwork(@NotNull FriendlyByteBuf buffer, @NotNull ArmorUpgradeRecipe recipe) {
-			SHAPED_RECIPE.toNetwork(buffer, recipe);
-		}
+	@Override
+	public boolean showNotification() {
+		return delegate.showNotification();
+	}
+
+	@Override
+	public PlacementInfo placementInfo() {
+		return delegate.placementInfo();
 	}
 }

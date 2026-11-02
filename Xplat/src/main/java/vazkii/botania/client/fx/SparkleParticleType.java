@@ -8,25 +8,34 @@
  */
 package vazkii.botania.client.fx;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.RandomSource;
 
 import org.jetbrains.annotations.NotNull;
 
 public class SparkleParticleType extends ParticleType<SparkleParticleData> {
 	public SparkleParticleType() {
-		super(false, SparkleParticleData.DESERIALIZER);
+		super(false);
 	}
 
 	@NotNull
 	@Override
-	public Codec<SparkleParticleData> codec() {
-		return SparkleParticleData.CODEC;
+	public MapCodec<SparkleParticleData> codec() {
+		return MapCodec.assumeMapUnsafe(SparkleParticleData.CODEC);
+	}
+
+	@NotNull
+	@Override
+	public StreamCodec<? super RegistryFriendlyByteBuf, SparkleParticleData> streamCodec() {
+		return StreamCodec.ofMember(SparkleParticleData::writeToNetwork, SparkleParticleData::fromNetwork);
 	}
 
 	public static class Factory implements ParticleProvider<SparkleParticleData> {
@@ -37,7 +46,7 @@ public class SparkleParticleType extends ParticleType<SparkleParticleData> {
 		}
 
 		@Override
-		public Particle createParticle(SparkleParticleData data, ClientLevel world, double x, double y, double z, double mx, double my, double mz) {
+		public Particle createParticle(SparkleParticleData data, ClientLevel world, double x, double y, double z, double mx, double my, double mz, RandomSource random) {
 			return new FXSparkle(world, x, y, z, data.size, data.r, data.g, data.b, data.m, data.fake, data.noClip, data.corrupt, sprite);
 		}
 	}

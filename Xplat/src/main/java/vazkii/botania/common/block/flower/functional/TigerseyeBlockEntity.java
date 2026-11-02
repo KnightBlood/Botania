@@ -19,6 +19,7 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.api.block_entity.FunctionalFlowerBlockEntity;
 import vazkii.botania.api.block_entity.RadiusDescriptor;
@@ -44,18 +45,18 @@ public class TigerseyeBlockEntity extends FunctionalFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide) {
+		if (getLevel().isClientSide()) {
 			return;
 		}
 
-		for (Creeper entity : getLevel().getEntitiesOfClass(Creeper.class, new AABB(getEffectivePos().offset(-RANGE, -RANGE_Y, -RANGE), getEffectivePos().offset(RANGE + 1, RANGE_Y + 1, RANGE + 1)))) {
+		for (Creeper entity : getLevel().getEntitiesOfClass(Creeper.class, new AABB(Vec3.atLowerCornerOf(getEffectivePos().offset(-RANGE, -RANGE_Y, -RANGE)), Vec3.atLowerCornerOf(getEffectivePos().offset(RANGE + 1, RANGE_Y + 1, RANGE + 1))))) {
 			((CreeperAccessor) entity).setCurrentFuseTime(2);
 			entity.setTarget(null);
 
 			if (getMana() >= COST) {
 				if (pacifyCreeper(entity)) {
 					XplatAbstractions.INSTANCE.tigersEyeComponent(entity).setPacified();
-					entity.playSound(BotaniaSounds.tigerseyePacify, 1.0F, (level.random.nextFloat() - level.random.nextFloat()) * 0.2F + 1.0F);
+					entity.playSound(BotaniaSounds.tigerseyePacify, 1.0F, (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.2F + 1.0F);
 					level.blockEvent(getBlockPos(), getBlockState().getBlock(), SUCCESS_EVENT, entity.getId());
 					addMana(-COST);
 					sync();
@@ -98,18 +99,18 @@ public class TigerseyeBlockEntity extends FunctionalFlowerBlockEntity {
 	@Override
 	public boolean triggerEvent(int id, int payload) {
 		if (id == SUCCESS_EVENT) {
-			if (level.isClientSide) {
+			if (level.isClientSide()) {
 				Entity e = level.getEntity(payload);
 				if (e != null) {
 					float r = (getColor() >> 16 & 0xFF) / 255F;
 					float g = (getColor() >> 8 & 0xFF) / 255F;
 					float b = (getColor() & 0xFF) / 255F;
-					SparkleParticleData data = SparkleParticleData.sparkle(level.random.nextFloat(), r, g, b, 10);
+					SparkleParticleData data = SparkleParticleData.sparkle(level.getRandom().nextFloat(), r, g, b, 10);
 
 					for (int i = 0; i < 50; i++) {
-						double x = e.getX() + level.random.nextDouble() - 0.5;
-						double y = e.getY() + e.getBbHeight() * level.random.nextDouble();
-						double z = e.getZ() + level.random.nextDouble() - 0.5;
+						double x = e.getX() + level.getRandom().nextDouble() - 0.5;
+						double y = e.getY() + e.getBbHeight() * level.getRandom().nextDouble();
+						double z = e.getZ() + level.getRandom().nextDouble() - 0.5;
 						level.addParticle(data, x, y, z, 0, 0, 0);
 					}
 				}

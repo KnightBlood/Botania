@@ -8,12 +8,8 @@
  */
 package vazkii.botania.client.core.helper;
 
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
-
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import vazkii.botania.network.TriConsumer;
 import vazkii.botania.xplat.BotaniaConfig;
@@ -23,133 +19,131 @@ import java.util.function.Consumer;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class CoreShaders {
-	private static ShaderInstance starfieldShaderInstance;
-	private static ShaderInstance doppleganger;
-	private static ShaderInstance manaPool;
-	private static ShaderInstance terraPlate;
-	private static ShaderInstance enchanter;
-	private static ShaderInstance pylon;
-	private static ShaderInstance halo;
-	private static ShaderInstance filmGrainParticle;
-	private static ShaderInstance dopplegangerBar;
+	private static Object starfieldShaderInstance;
+	private static Object doppleganger;
+	private static Object manaPool;
+	private static Object terraPlate;
+	private static Object enchanter;
+	private static Object pylon;
+	private static Object halo;
+	private static Object filmGrainParticle;
+	private static Object dopplegangerBar;
 
 	// This is abstracted this way instead of just directly constructing the ShaderInstance
 	// Because Fabric is cute and hides the ResourceProvider from modders (why?)
-	public static void init(TriConsumer<ResourceLocation, VertexFormat, Consumer<ShaderInstance>> registrations) {
+	public static void init(TriConsumer<Identifier, Object, Consumer<Object>> registrations) {
 		registrations.accept(
 				prefix("starfield"),
-				DefaultVertexFormat.POSITION,
+				null,
 				inst -> starfieldShaderInstance = inst
 		);
 		registrations.accept(
 				prefix("doppleganger"),
-				DefaultVertexFormat.NEW_ENTITY,
+				null,
 				inst -> doppleganger = inst
 		);
 		registrations.accept(
 				prefix("mana_pool"),
-				DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+				null,
 				inst -> manaPool = inst
 		);
 		registrations.accept(
 				prefix("terra_plate_rune"),
-				DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+				null,
 				inst -> terraPlate = inst
 		);
 		registrations.accept(
 				prefix("enchanter_rune"),
-				DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+				null,
 				inst -> enchanter = inst
 		);
 		registrations.accept(
 				prefix("pylon"),
-				DefaultVertexFormat.NEW_ENTITY,
+				null,
 				inst -> pylon = inst
 		);
 		registrations.accept(
 				prefix("halo"),
-				DefaultVertexFormat.POSITION_COLOR_TEX,
+				null,
 				inst -> halo = inst
 		);
 		registrations.accept(
 				prefix("film_grain_particle"),
-				DefaultVertexFormat.PARTICLE,
+				null,
 				inst -> filmGrainParticle = inst
 		);
 		registrations.accept(
 				prefix("doppleganger_bar"),
-				DefaultVertexFormat.POSITION_TEX,
+				null,
 				inst -> dopplegangerBar = inst
 		);
 	}
 
-	public static ShaderInstance starfield() {
-		// Intended to not respect useShaders config. The render kind of relies entirely
-		// on the shader, like the end portal.
+	public static Object starfield() {
 		return starfieldShaderInstance;
 	}
 
-	public static ShaderInstance doppleganger() {
+	public static Object doppleganger() {
 		if (BotaniaConfig.client().useShaders()) {
 			return doppleganger;
 		} else {
-			return GameRenderer.getRendertypeEntityTranslucentShader();
+			return null;
 		}
 	}
 
-	public static ShaderInstance manaPool() {
+	public static Object manaPool() {
 		if (BotaniaConfig.client().useShaders()) {
 			return manaPool;
 		} else {
-			return GameRenderer.getPositionColorTexLightmapShader();
+			return null;
 		}
 	}
 
-	public static ShaderInstance terraPlate() {
+	public static Object terraPlate() {
 		if (BotaniaConfig.client().useShaders()) {
 			return terraPlate;
 		} else {
-			return GameRenderer.getPositionColorTexLightmapShader();
+			return null;
 		}
 	}
 
-	public static ShaderInstance enchanter() {
+	public static Object enchanter() {
 		if (BotaniaConfig.client().useShaders()) {
 			return enchanter;
 		} else {
-			return GameRenderer.getPositionColorTexLightmapShader();
+			return null;
 		}
 	}
 
-	public static ShaderInstance pylon() {
+	public static Object pylon() {
 		if (BotaniaConfig.client().useShaders()) {
 			return pylon;
 		} else {
-			return GameRenderer.getRendertypeEntityTranslucentShader();
+			return null;
 		}
 	}
 
-	public static ShaderInstance halo() {
+	public static Object halo() {
 		if (BotaniaConfig.client().useShaders()) {
 			return halo;
 		} else {
-			return GameRenderer.getPositionColorTexShader();
+			return null;
 		}
 	}
 
-	public static ShaderInstance filmGrainParticle() {
+	public static Object filmGrainParticle() {
 		if (BotaniaConfig.client().useShaders()) {
 			return filmGrainParticle;
 		} else {
-			return GameRenderer.getParticleShader();
+			return null;
 		}
 	}
 
-	public static ShaderInstance dopplegangerBar() {
+	public static Object dopplegangerBar() {
 		if (BotaniaConfig.client().useShaders()) {
 			return dopplegangerBar;
 		} else {
-			return GameRenderer.getPositionTexShader();
+			return null;
 		}
 	}
 }

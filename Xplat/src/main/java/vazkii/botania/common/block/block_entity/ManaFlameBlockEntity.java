@@ -36,7 +36,7 @@ public class ManaFlameBlockEntity extends BotaniaBlockEntity {
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
-		color = cmp.getInt(TAG_COLOR);
+		color = cmp.getIntOr(TAG_COLOR, 0);
 	}
 
 }

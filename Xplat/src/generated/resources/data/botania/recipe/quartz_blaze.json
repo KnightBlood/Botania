@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:blaze_powder",
+    "Q": "minecraft:quartz"
+  },
+  "pattern": [
+    "QQQ",
+    "QCQ",
+    "QQQ"
+  ],
+  "result": {
+    "count": 8,
+    "id": "botania:quartz_blaze"
+  }
+}

@@ -15,11 +15,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -45,8 +45,10 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 public class RenderLexicon {
 	private static BotaniaBookModel model = null;
 	private static final boolean SHOULD_MISSPELL = Math.random() < 0.004;
-	public static final Material TEXTURE = new Material(InventoryMenu.BLOCK_ATLAS, prefix("item/lexicon_3d"));
-	public static final Material ELVEN_TEXTURE = new Material(InventoryMenu.BLOCK_ATLAS, prefix("item/lexicon_elven_3d"));
+	// MC 26.1: standalone texture ids are resolved verbatim against the resource manager
+	// (no automatic "textures/....png" decoration), so the full asset path is required here.
+	public static final Identifier TEXTURE = prefix("textures/item/lexicon_3d.png");
+	public static final Identifier ELVEN_TEXTURE = prefix("textures/item/lexicon_elven_3d.png");
 
 	private static final String[] QUOTES = new String[] {
 			"\"Neat!\" - Direwolf20",
@@ -73,8 +75,12 @@ public class RenderLexicon {
 		return model;
 	}
 
+	// MC 26.1: ItemInHandRenderer.renderItem no longer takes a leftHanded flag or a MultiBufferSource.
+	// Handedness is now encoded in ItemDisplayContext, and we draw through the immediate buffer source
+	// since the SubmitNodeCollector pipeline has no direct VertexConsumer access.
 	public static boolean renderHand(ItemStack stack, ItemDisplayContext type,
-			boolean leftHanded, PoseStack ms, MultiBufferSource buffers, int light) {
+			PoseStack ms, int light) {
+		boolean leftHanded = type == ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
 		if (!BotaniaConfig.client().lexicon3dModel()
 				|| !type.firstPerson()
 				|| stack.isEmpty()
@@ -82,6 +88,7 @@ public class RenderLexicon {
 			return false;
 		}
 		try {
+			MultiBufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
 			doRender(stack, leftHanded, ms, buffers, light, ClientTickHandler.partialTicks);
 			return true;
 		} catch (Throwable throwable) {
@@ -126,9 +133,9 @@ public class RenderLexicon {
 		var model = getModel();
 		model.setupAnim(ClientTickHandler.total(), Mth.clamp(leftPageAngle, 0.0F, 1.0F), Mth.clamp(rightPageAngle, 0.0F, 1.0F), opening);
 
-		Material mat = LexicaBotaniaItem.isElven(stack) ? ELVEN_TEXTURE : TEXTURE;
-		VertexConsumer buffer = mat.buffer(buffers, RenderType::entitySolid);
-		model.renderToBuffer(ms, buffer, light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+		Identifier tex = LexicaBotaniaItem.isElven(stack) ? ELVEN_TEXTURE : TEXTURE;
+		VertexConsumer buffer = buffers.getBuffer(RenderTypes.entitySolid(tex));
+		model.renderToBuffer(ms, buffer, light, OverlayTexture.NO_OVERLAY, -1);
 
 		if (ticks < 3) {
 			Font font = Minecraft.getInstance().font;
@@ -137,7 +144,7 @@ public class RenderLexicon {
 			ms.scale(0.0030F, 0.0030F, -0.0030F);
 
 			if (misspelling == -1 && mc.level != null) {
-				misspelling = mc.level.random.nextInt(MISSPELLINGS.length);
+				misspelling = mc.level.getRandom().nextInt(MISSPELLINGS.length);
 			}
 
 			String title = LexicaBotaniaItem.getTitle(stack).getString();
@@ -152,7 +159,7 @@ public class RenderLexicon {
 			font.drawInBatch(edition, 0, 0, 0xA07100, false, ms.last().pose(), buffers, Font.DisplayMode.NORMAL, 0, light);
 
 			if (quote == -1 && mc.level != null) {
-				quote = mc.level.random.nextInt(QUOTES.length);
+				quote = mc.level.getRandom().nextInt(QUOTES.length);
 			}
 
 			String quoteStr = QUOTES[quote];

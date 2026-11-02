@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -39,7 +40,7 @@ public class EntityHelper {
 	 * Adds an infinite-duration effect to a mob or player. The effect is not applied if the target already has the
 	 * same effect at a higher level with any duration, or at the same level with infinite duration.
 	 */
-	public static void addStaticEffect(LivingEntity living, MobEffect mobEffect, int amplifier) {
+	public static void addStaticEffect(LivingEntity living, Holder<MobEffect> mobEffect, int amplifier) {
 		MobEffectInstance effect = living.getEffect(mobEffect);
 		if (effect == null || effect.getAmplifier() < amplifier
 				|| effect.getAmplifier() == amplifier && !effect.isInfiniteDuration()) {
@@ -52,7 +53,7 @@ public class EntityHelper {
 	 * Replaces an infinite-duration effect on a mob or player with a finite-duration version of itself.
 	 * The effect is only replaced if it has the expected level and infinite duration.
 	 */
-	public static void convertStaticEffectToFinite(LivingEntity living, MobEffect mobEffect, int expectedAmplifier, int duration) {
+	public static void convertStaticEffectToFinite(LivingEntity living, Holder<MobEffect> mobEffect, int expectedAmplifier, int duration) {
 		MobEffectInstance effect = living.getEffect(mobEffect);
 		if (effect != null && effect.getAmplifier() == expectedAmplifier && effect.isInfiniteDuration()) {
 			living.removeEffect(mobEffect);
@@ -64,7 +65,7 @@ public class EntityHelper {
 	 * Removes an infinite-duration effect from a mob or player.
 	 * The effect is only removed if it has the expected level and infinite duration.
 	 */
-	public static void removeStaticEffect(LivingEntity living, MobEffect mobEffect, int expectedAmplifier) {
+	public static void removeStaticEffect(LivingEntity living, Holder<MobEffect> mobEffect, int expectedAmplifier) {
 		MobEffectInstance effect = living.getEffect(mobEffect);
 		if (effect != null && effect.getAmplifier() == expectedAmplifier && effect.isInfiniteDuration()) {
 			living.removeEffect(mobEffect);
@@ -72,16 +73,16 @@ public class EntityHelper {
 	}
 
 	/**
-	 * Creates a "post-teleport" chunk loading ticket for the specified entity if it is located at least two chunks
+	 * Adds a short-lived chunk loading ticket for the specified entity if it is located at least two chunks
 	 * away from the specified source position in one of the cardinal directions.
-	 * The post-teleport ticket only keeps the target chunk loaded for a bit to potentially reduce loading/unloading
+	 * The ticket only keeps the target chunk loaded for a bit to potentially reduce loading/unloading
 	 * related lag spikes, but does not necessarily make the target chunk entity-/redstone-processing.
 	 */
 	public static void addTeleportTicketIfFarAway(Entity entity, BlockPos sourcePos) {
-		ChunkPos entityChunk = new ChunkPos(entity.blockPosition());
-		ChunkPos sourceChunk = new ChunkPos(sourcePos);
+		ChunkPos entityChunk = ChunkPos.containing(entity.blockPosition());
+		ChunkPos sourceChunk = new ChunkPos(sourcePos.getX() >> 4, sourcePos.getZ() >> 4);
 		if (entity.level() instanceof ServerLevel serverLevel && entityChunk.getChessboardDistance(sourceChunk) > 2) {
-			serverLevel.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, entityChunk, 0, entity.getId());
+			serverLevel.getChunkSource().addTicketWithRadius(TicketType.PORTAL, entityChunk, 0);
 		}
 	}
 

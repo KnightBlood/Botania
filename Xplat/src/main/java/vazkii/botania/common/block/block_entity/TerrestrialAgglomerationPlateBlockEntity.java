@@ -14,7 +14,7 @@ import com.google.common.base.Suppliers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.SimpleContainer;
@@ -23,6 +23,7 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -30,6 +31,7 @@ import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.api.internal.VanillaPacketDispatcher;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
@@ -70,8 +72,8 @@ public class TerrestrialAgglomerationPlateBlockEntity extends BotaniaBlockEntity
 			'0', PatchouliAPI.get().tagMatcher(BotaniaTags.Blocks.TERRA_PLATE_BASE),
 			'L', PatchouliAPI.get().tagMatcher(
 					XplatAbstractions.INSTANCE.isFabric()
-							? TagKey.create(Registries.BLOCK, new ResourceLocation("c", "lapis_blocks"))
-							: TagKey.create(Registries.BLOCK, new ResourceLocation("forge", "storage_blocks/lapis")))
+							? TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("c", "lapis_blocks"))
+							: TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("forge", "storage_blocks/lapis")))
 	));
 
 	private static final String TAG_MANA = "mana";
@@ -111,10 +113,11 @@ public class TerrestrialAgglomerationPlateBlockEntity extends BotaniaBlockEntity
 
 				if (self.mana >= recipe.getMana()) {
 					Player player = getCraftingPlayer(itemEntities);
-					ItemStack result = recipe.assemble(inv, level.registryAccess());
+					ItemStack result = recipe.assemble(RecipeHelper.adapt(inv));
 					if (player != null) {
-						player.triggerRecipeCrafted(recipe, List.of(result));
-						result.onCraftedBy(level, player, result.getCount());
+						BotaniaRecipeTypes.getHolder(level, BotaniaRecipeTypes.TERRA_PLATE_TYPE, recipe)
+								.ifPresent(h -> player.triggerRecipeCrafted(h, List.of(result)));
+						result.getItem().onCraftedBy(result, player);
 					}
 					for (ItemStack item : items) {
 						item.setCount(0);
@@ -159,7 +162,7 @@ public class TerrestrialAgglomerationPlateBlockEntity extends BotaniaBlockEntity
 	}
 
 	private List<ItemEntity> getItemEntities() {
-		return level.getEntitiesOfClass(ItemEntity.class, new AABB(worldPosition, worldPosition.offset(1, 1, 1)), EntitySelector.ENTITY_STILL_ALIVE);
+		return level.getEntitiesOfClass(ItemEntity.class, new AABB(Vec3.atLowerCornerOf(worldPosition), Vec3.atLowerCornerOf(worldPosition.offset(1, 1, 1))), EntitySelector.ENTITY_STILL_ALIVE);
 	}
 
 	private SimpleContainer getInventory(List<ItemEntity> itemEntities) {
@@ -203,7 +206,9 @@ public class TerrestrialAgglomerationPlateBlockEntity extends BotaniaBlockEntity
 		if (items.isEmpty()) {
 			return null;
 		}
-		return level.getRecipeManager().getRecipeFor(BotaniaRecipeTypes.TERRA_PLATE_TYPE, items, level).orElse(null);
+		return RecipeHelper.getRecipeManager(level)
+			.getRecipeFor(BotaniaRecipeTypes.TERRA_PLATE_TYPE, RecipeHelper.adapt(items), level)
+			.map(RecipeHolder::value).orElse(null);
 	}
 
 	private boolean isActive() {
@@ -221,7 +226,7 @@ public class TerrestrialAgglomerationPlateBlockEntity extends BotaniaBlockEntity
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
-		mana = cmp.getInt(TAG_MANA);
+		mana = cmp.getIntOr(TAG_MANA, 0);
 	}
 
 	@Override
@@ -263,7 +268,7 @@ public class TerrestrialAgglomerationPlateBlockEntity extends BotaniaBlockEntity
 
 	@Override
 	public ManaSpark getAttachedSpark() {
-		List<Entity> sparks = level.getEntitiesOfClass(Entity.class, new AABB(worldPosition.above(), worldPosition.above().offset(1, 1, 1)), Predicates.instanceOf(ManaSpark.class));
+		List<Entity> sparks = level.getEntitiesOfClass(Entity.class, new AABB(Vec3.atLowerCornerOf(worldPosition.above()), Vec3.atLowerCornerOf(worldPosition.above().offset(1, 1, 1))), Predicates.instanceOf(ManaSpark.class));
 		if (sparks.size() == 1) {
 			Entity e = sparks.get(0);
 			return (ManaSpark) e;

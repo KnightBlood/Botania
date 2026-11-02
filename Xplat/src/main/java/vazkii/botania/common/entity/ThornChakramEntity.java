@@ -9,6 +9,7 @@
 package vazkii.botania.common.entity;
 
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -26,7 +27,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -51,20 +56,22 @@ public class ThornChakramEntity extends ThrowableProjectile implements ItemSuppl
 		super(type, world);
 	}
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public ThornChakramEntity(LivingEntity e, Level world, ItemStack stack) {
-		super(BotaniaEntities.THORN_CHAKRAM, e, world);
+		super(BotaniaEntities.THORN_CHAKRAM, world);
+		setOwner(e);
 		this.stack = stack.copy();
 	}
 
 	@Override
-	protected void defineSynchedData() {
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {
 		entityData.define(BOUNCES, 0);
 		entityData.define(FLARE, false);
 		entityData.define(RETURN_TO, -1);
 	}
 
 	@Override
-	public boolean ignoreExplosion() {
+	public boolean ignoreExplosion(Explosion explosion) {
 		return true;
 	}
 
@@ -92,7 +99,7 @@ public class ThornChakramEntity extends ThrowableProjectile implements ItemSuppl
 		}
 
 		// Client FX
-		if (level().isClientSide && isFire()) {
+		if (level().isClientSide() && isFire()) {
 			double r = 0.1;
 			double m = 0.1;
 			for (int i = 0; i < 3; i++) {
@@ -101,7 +108,7 @@ public class ThornChakramEntity extends ThrowableProjectile implements ItemSuppl
 		}
 
 		// Server state control
-		if (!level().isClientSide && (getTimesBounced() >= MAX_BOUNCES || tickCount > 60)) {
+		if (!level().isClientSide() && (getTimesBounced() >= MAX_BOUNCES || tickCount > 60)) {
 			Entity thrower = getOwner();
 			if (thrower == null) {
 				dropAndKill();
@@ -152,7 +159,7 @@ public class ThornChakramEntity extends ThrowableProjectile implements ItemSuppl
 			setDeltaMovement(movementVec);
 			bounced = true;
 
-			if (!level().isClientSide) {
+			if (!level().isClientSide()) {
 				setTimesBounced(getTimesBounced() + 1);
 			}
 		}
@@ -161,7 +168,7 @@ public class ThornChakramEntity extends ThrowableProjectile implements ItemSuppl
 	@Override
 	protected void onHitEntity(@NotNull EntityHitResult hit) {
 		super.onHitEntity(hit);
-		if (!level().isClientSide && hit.getEntity() instanceof LivingEntity hitEntity && hit.getEntity() != getOwner()) {
+		if (!level().isClientSide() && hit.getEntity() instanceof LivingEntity hitEntity && hit.getEntity() != getOwner()) {
 			Entity thrower = getOwner();
 			DamageSource src = damageSources().generic();
 			if (thrower instanceof Player) {
@@ -171,16 +178,16 @@ public class ThornChakramEntity extends ThrowableProjectile implements ItemSuppl
 			}
 			hitEntity.hurt(src, 12);
 			if (isFire()) {
-				hitEntity.setSecondsOnFire(5);
-			} else if (level().random.nextInt(3) == 0) {
+				hitEntity.igniteForSeconds(5);
+			} else if (level().getRandom().nextInt(3) == 0) {
 				hitEntity.addEffect(new MobEffectInstance(MobEffects.POISON, 60, 0));
 			}
 		}
 	}
 
 	@Override
-	protected float getGravity() {
-		return 0F;
+	protected double getDefaultGravity() {
+		return 0D;
 	}
 
 	private int getTimesBounced() {
@@ -212,21 +219,17 @@ public class ThornChakramEntity extends ThrowableProjectile implements ItemSuppl
 	}
 
 	@Override
-	public void addAdditionalSaveData(CompoundTag compound) {
-		super.addAdditionalSaveData(compound);
-		if (!stack.isEmpty()) {
-			compound.put("fly_stack", stack.save(new CompoundTag()));
-		}
-		compound.putBoolean("flare", isFire());
+	public void addAdditionalSaveData(ValueOutput output) {
+		super.addAdditionalSaveData(output);
+		output.store("fly_stack", ItemStack.OPTIONAL_CODEC, stack);
+		output.putBoolean("flare", isFire());
 	}
 
 	@Override
-	public void readAdditionalSaveData(CompoundTag compound) {
-		super.readAdditionalSaveData(compound);
-		if (compound.contains("fly_stack")) {
-			stack = ItemStack.of(compound.getCompound("fly_stack"));
-		}
-		setFire(compound.getBoolean("flare"));
+	public void readAdditionalSaveData(ValueInput input) {
+		super.readAdditionalSaveData(input);
+		stack = input.read("fly_stack", ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+		setFire(input.getBooleanOr("flare", false));
 	}
 
 	@NotNull

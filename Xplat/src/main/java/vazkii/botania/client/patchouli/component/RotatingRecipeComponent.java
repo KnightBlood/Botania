@@ -12,12 +12,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.annotations.SerializedName;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.patchouli.api.IVariable;
 
 import java.util.List;
@@ -37,7 +39,7 @@ public class RotatingRecipeComponent extends RotatingItemListComponentBase {
 	@Override
 	protected List<Ingredient> makeIngredients() {
 		Level world = Minecraft.getInstance().level;
-		Map<ResourceLocation, ? extends Recipe<?>> map;
+		Map<Identifier, ? extends Recipe<?>> map;
 		if ("runic_altar".equals(recipeType)) {
 			map = BotaniaRecipeTypes.getRecipes(world, BotaniaRecipeTypes.RUNE_TYPE);
 		} else if ("petal_apothecary".equals(recipeType)) {
@@ -45,16 +47,16 @@ public class RotatingRecipeComponent extends RotatingItemListComponentBase {
 		} else {
 			throw new IllegalArgumentException("Type must be 'runic_altar' or 'petal_apothecary'!");
 		}
-		Recipe<?> recipe = map.get(new ResourceLocation(recipeName));
+		Recipe<?> recipe = map.get(Identifier.parse(recipeName));
 		if (recipe == null) {
 			return ImmutableList.of();
 		}
-		return recipe.getIngredients();
+		return RecipeHelper.getIngredients(recipe);
 	}
 
 	@Override
-	public void onVariablesAvailable(UnaryOperator<IVariable> lookup) {
-		recipeName = lookup.apply(IVariable.wrap(recipeName)).asString();
-		recipeType = lookup.apply(IVariable.wrap(recipeType)).asString();
+	public void onVariablesAvailable(UnaryOperator<IVariable> lookup, HolderLookup.Provider registries) {
+		recipeName = lookup.apply(IVariable.wrap(recipeName, registries)).asString();
+		recipeType = lookup.apply(IVariable.wrap(recipeType, registries)).asString();
 	}
 }

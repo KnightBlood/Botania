@@ -14,23 +14,25 @@ import net.minecraft.world.item.Items;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import vazkii.botania.common.item.BotaniaItems;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackFabricMixin {
 	@Shadow
-	public abstract boolean is(Item item);
+	public abstract Item getItem();
 
-	@Inject(at = @At("HEAD"), method = "is(Lnet/minecraft/world/item/Item;)Z", cancellable = true)
-	private void isBotaniaShears(Item item, CallbackInfoReturnable<Boolean> cir) {
-		if (item == Items.SHEARS) {
-			if (is(BotaniaItems.manasteelShears) || is(BotaniaItems.elementiumShears)) {
-				cir.setReturnValue(true);
+	// 26.1: ItemStack.is(Item) moved to TypedInstance.is(T), a default interface method
+	// that lives outside the ItemStack class, so injecting into it is impossible.
+	// Instead we add an override of is(Object) (the erased is(T) signature) directly to
+	// ItemStack, replicating TypedInstance's default impl plus the Botania shears special case.
+	public boolean is(Object obj) {
+		if (obj == Items.SHEARS) {
+			Item item = getItem();
+			if (item == BotaniaItems.manasteelShears || item == BotaniaItems.elementiumShears) {
+				return true;
 			}
 		}
+		return getItem() == obj;
 	}
 }

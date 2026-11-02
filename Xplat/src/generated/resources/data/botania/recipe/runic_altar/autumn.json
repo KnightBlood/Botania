@@ -1,0 +1,16 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    "botania:rune_fire",
+    "botania:rune_air",
+    "#minecraft:leaves",
+    "#minecraft:leaves",
+    "#minecraft:leaves",
+    "minecraft:spider_eye"
+  ],
+  "mana": 8000,
+  "output": {
+    "count": 1,
+    "id": "botania:rune_autumn"
+  }
+}

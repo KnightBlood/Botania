@@ -10,6 +10,7 @@ package vazkii.botania.common.block.block_entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -17,6 +18,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
@@ -27,6 +29,7 @@ import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class AvatarBlockEntity extends SimpleInventoryBlockEntity implements Avatar, ManaReceiver {
@@ -71,7 +74,7 @@ public class AvatarBlockEntity extends SimpleInventoryBlockEntity implements Ava
 		ListTag boostCooldowns = new ListTag();
 		for (Map.Entry<UUID, Integer> e : this.boostCooldowns.entrySet()) {
 			CompoundTag cmp = new CompoundTag();
-			cmp.putUUID("id", e.getKey());
+			cmp.putIntArray("id", UUIDUtil.uuidToIntArray(e.getKey()));
 			cmp.putInt("cooldown", e.getValue());
 			boostCooldowns.add(cmp);
 		}
@@ -81,16 +84,16 @@ public class AvatarBlockEntity extends SimpleInventoryBlockEntity implements Ava
 	@Override
 	public void readPacketNBT(CompoundTag tag) {
 		super.readPacketNBT(tag);
-		enabled = tag.getBoolean(TAG_ENABLED);
-		ticksElapsed = tag.getInt(TAG_TICKS_ELAPSED);
-		mana = tag.getInt(TAG_MANA);
+		enabled = tag.getBooleanOr(TAG_ENABLED, false);
+		ticksElapsed = tag.getIntOr(TAG_TICKS_ELAPSED, 0);
+		mana = tag.getIntOr(TAG_MANA, 0);
 		boostCooldowns.clear();
-		ListTag boostCooldowns = tag.getList(TAG_COOLDOWNS, Tag.TAG_COMPOUND);
+		ListTag boostCooldowns = tag.getListOrEmpty(TAG_COOLDOWNS);
 		for (Tag nbt : boostCooldowns) {
 			CompoundTag cmp = ((CompoundTag) nbt);
-			UUID id = cmp.getUUID("id");
-			int cooldown = cmp.getInt("cooldown");
-			this.boostCooldowns.put(id, cooldown);
+			Optional<UUID> id = cmp.getIntArray("id").map(UUIDUtil::uuidFromIntArray);
+			int cooldown = cmp.getIntOr("cooldown", 0);
+			id.ifPresent(uuid -> this.boostCooldowns.put(uuid, cooldown));
 		}
 	}
 
@@ -107,7 +110,7 @@ public class AvatarBlockEntity extends SimpleInventoryBlockEntity implements Ava
 	@Override
 	public void setChanged() {
 		super.setChanged();
-		if (level != null && !level.isClientSide) {
+		if (level != null && !level.isClientSide()) {
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 		}
 	}

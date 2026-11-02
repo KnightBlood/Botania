@@ -18,6 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
@@ -43,7 +44,7 @@ public class ShulkMeNotBlockEntity extends GeneratingFlowerBlockEntity {
 		super.tickFlower();
 
 		Level world = getLevel();
-		if (world.isClientSide) {
+		if (world.isClientSide()) {
 			return;
 		}
 		int generate = getMaxMana();

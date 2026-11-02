@@ -13,6 +13,7 @@ import com.google.common.base.Preconditions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -20,14 +21,25 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 
 public abstract class SimpleInventoryBlockEntity extends BotaniaBlockEntity implements Clearable {
 
-	private final SimpleContainer itemHandler = createItemHandler();
+	private final SimpleContainer itemHandler;
 
+	@SuppressWarnings("this-escape") // same as 1.20.1: subclasses are expected to override createItemHandler
 	protected SimpleInventoryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
-		itemHandler.addListener(i -> setChanged());
+		SimpleContainer inner = createItemHandler();
+		this.itemHandler = new SimpleContainer(inner.getContainerSize()) {
+			@Override
+			public void setChanged() {
+				// SimpleContainer#addListener was removed in 26.1; propagate changes via setChanged
+				SimpleInventoryBlockEntity.this.setChanged();
+			}
+		};
 	}
 
 	private static void copyToInv(NonNullList<ItemStack> src, Container dest) {
@@ -47,14 +59,17 @@ public abstract class SimpleInventoryBlockEntity extends BotaniaBlockEntity impl
 
 	@Override
 	public void readPacketNBT(CompoundTag tag) {
+		ValueInput input = TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag);
 		NonNullList<ItemStack> tmp = NonNullList.withSize(inventorySize(), ItemStack.EMPTY);
-		ContainerHelper.loadAllItems(tag, tmp);
+		ContainerHelper.loadAllItems(input, tmp);
 		copyToInv(tmp, itemHandler);
 	}
 
 	@Override
 	public void writePacketNBT(CompoundTag tag) {
-		ContainerHelper.saveAllItems(tag, copyFromInv(itemHandler));
+		TagValueOutput output = TagValueOutput.createWithoutContext(ProblemReporter.DISCARDING);
+		ContainerHelper.saveAllItems(output, copyFromInv(itemHandler));
+		tag.merge(output.buildResult());
 	}
 
 	// NB: Cannot be named the same as the corresponding method in vanilla's interface -- causes obf issues with MCP

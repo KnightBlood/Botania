@@ -10,7 +10,7 @@ package vazkii.botania.network.clientbound;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 
@@ -21,7 +21,7 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public record ItemAgePacket(int entityId, int timeCounter) implements BotaniaPacket {
 
-	public static final ResourceLocation ID = prefix("ia");
+	public static final Identifier ID = prefix("ia");
 
 	@Override
 	public void encode(FriendlyByteBuf buf) {
@@ -30,7 +30,7 @@ public record ItemAgePacket(int entityId, int timeCounter) implements BotaniaPac
 	}
 
 	@Override
-	public ResourceLocation getFabricId() {
+	public Identifier getFabricId() {
 		return ID;
 	}
 

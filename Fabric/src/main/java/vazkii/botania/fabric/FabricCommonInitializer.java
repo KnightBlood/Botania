@@ -17,23 +17,23 @@ import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.MinecartComparatorLogicRegistry;
-import net.fabricmc.fabric.api.registry.CompostingChanceRegistry;
+import net.fabricmc.fabric.api.registry.CompostableRegistry;
 import net.fabricmc.fabric.api.registry.FlattenableBlockRegistry;
-import net.fabricmc.fabric.api.registry.FuelRegistry;
+import net.fabricmc.fabric.api.registry.FuelValueEvents;
 import net.fabricmc.fabric.api.registry.TillableBlockRegistry;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -48,7 +48,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
@@ -106,6 +106,7 @@ import vazkii.botania.common.item.material.EnderAirItem;
 import vazkii.botania.common.item.relic.*;
 import vazkii.botania.common.item.rod.*;
 import vazkii.botania.common.lib.BotaniaTags;
+import vazkii.botania.common.lib.RegistrationBackfill;
 import vazkii.botania.common.loot.BotaniaLootModifiers;
 import vazkii.botania.common.loot.LootHandler;
 import vazkii.botania.common.world.BotaniaFeatures;
@@ -116,6 +117,7 @@ import vazkii.botania.fabric.integration.corporea.FabricTransferCorporeaNodeDete
 import vazkii.botania.fabric.integration.tr_energy.FluxfieldTRStorage;
 import vazkii.botania.fabric.internal_caps.RedStringContainerStorage;
 import vazkii.botania.fabric.network.FabricPacketHandler;
+import vazkii.botania.fabric.xplat.FabricXplatImpl;
 import vazkii.botania.xplat.XplatAbstractions;
 import vazkii.patchouli.api.PatchouliAPI;
 
@@ -133,7 +135,7 @@ public class FabricCommonInitializer implements ModInitializer {
 		registryInit();
 
 		PaintableData.init();
-		CompostingData.init(CompostingChanceRegistry.INSTANCE::add);
+		CompostingData.init(CompostableRegistry.INSTANCE::add);
 		DefaultCorporeaMatchers.init();
 		PlayerHelper.setFakePlayerClass(FakePlayer.class);
 
@@ -157,21 +159,25 @@ public class FabricCommonInitializer implements ModInitializer {
 				List.of(BotaniaAPI.instance(), XplatAbstractions.instance(),
 						CorporeaHelper.instance(), ManaItemHandler.instance()));
 
-		FiberBotaniaConfig.setup();
+		ClothBotaniaConfig.setup();
 		EquipmentHandler.init();
+		// 26.1: keep a static server reference for APIs that need it (e.g. FuelValues).
+		ServerLifecycleEvents.SERVER_STARTED.register(FabricXplatImpl::setCurrentServer);
+		ServerLifecycleEvents.SERVER_STOPPED.register(server -> FabricXplatImpl.setCurrentServer(null));
+
 		FabricPacketHandler.init();
 	}
 
 	private void registryInit() {
 		// Core item/block/BE
 		BotaniaSounds.init(bind(BuiltInRegistries.SOUND_EVENT));
-		BotaniaBlocks.registerBlocks(bind(BuiltInRegistries.BLOCK));
-		BotaniaBlocks.registerItemBlocks(boundForItem);
+		BotaniaBlocks.registerBlocks(RegistrationBackfill.blockRegistrar(bind(BuiltInRegistries.BLOCK)));
+		BotaniaBlocks.registerItemBlocks(RegistrationBackfill.itemRegistrar(boundForItem));
 		BotaniaBlockFlammability.register();
 		BotaniaBlockEntities.registerTiles(bind(BuiltInRegistries.BLOCK_ENTITY_TYPE));
-		BotaniaItems.registerItems(boundForItem);
-		BotaniaFlowerBlocks.registerBlocks(bind(BuiltInRegistries.BLOCK));
-		BotaniaFlowerBlocks.registerItemBlocks(boundForItem);
+		BotaniaItems.registerItems(RegistrationBackfill.itemRegistrar(boundForItem));
+		BotaniaFlowerBlocks.registerBlocks(RegistrationBackfill.blockRegistrar(bind(BuiltInRegistries.BLOCK)));
+		BotaniaFlowerBlocks.registerItemBlocks(RegistrationBackfill.itemRegistrar(boundForItem));
 		BotaniaFlowerBlocks.registerTEs(bind(BuiltInRegistries.BLOCK_ENTITY_TYPE));
 		BotaniaBlocks.addDispenserBehaviours();
 		BotaniaBlocks.addAxeStripping();
@@ -184,23 +190,24 @@ public class FabricCommonInitializer implements ModInitializer {
 		}
 
 		int blazeTime = 2400;
-		FuelRegistry.INSTANCE.add(BotaniaBlocks.blazeBlock.asItem(), blazeTime * (XplatAbstractions.INSTANCE.gogLoaded() ? 5 : 10));
+		// 26.1: FuelRegistry was removed; fuel values are data-driven, injected via event.
+		FuelValueEvents.BUILD.register((builder, ctx) -> builder.add(BotaniaBlocks.blazeBlock,
+				blazeTime * (XplatAbstractions.INSTANCE.gogLoaded() ? 5 : 10)));
 
 		// GUI and Recipe
 		BotaniaItems.registerMenuTypes(bind(BuiltInRegistries.MENU));
 		BotaniaItems.registerRecipeSerializers(bind(BuiltInRegistries.RECIPE_SERIALIZER));
-		BotaniaBannerPatterns.submitRegistrations(bind(BuiltInRegistries.BANNER_PATTERN));
 		BotaniaRecipeTypes.submitRecipeTypes(bind(BuiltInRegistries.RECIPE_TYPE));
 		BotaniaRecipeTypes.submitRecipeSerializers(bind(BuiltInRegistries.RECIPE_SERIALIZER));
 
 		// Entities
 		BotaniaEntities.registerEntities(bind(BuiltInRegistries.ENTITY_TYPE));
 		BotaniaEntities.registerAttributes(FabricDefaultAttributeRegistry::register);
-		PixieHandler.registerAttribute(bind(BuiltInRegistries.ATTRIBUTE));
+		PixieHandler.init();
 		MinecartComparatorLogicRegistry.register(BotaniaEntities.POOL_MINECART, (minecart, state, pos) -> minecart.getComparatorLevel());
 
 		// Potions
-		BotaniaMobEffects.registerPotions(bind(BuiltInRegistries.MOB_EFFECT));
+		BotaniaMobEffects.init();
 
 		BotaniaBrews.submitRegistrations(bind(BREW_REGISTRY));
 
@@ -227,22 +234,29 @@ public class FabricCommonInitializer implements ModInitializer {
 		Registry.register(
 				BuiltInRegistries.CREATIVE_MODE_TAB,
 				BotaniaRegistries.BOTANIA_TAB_KEY,
-				FabricItemGroup.builder()
+				FabricCreativeModeTab.builder()
 						.title(Component.translatable("itemGroup.botania").withStyle((style -> style.withColor(ChatFormatting.WHITE))))
 						.icon(() -> new ItemStack(BotaniaItems.lexicon))
-						.backgroundSuffix("botania.png")
+						.backgroundTexture(Identifier.withDefaultNamespace("textures/gui/container/creative_inventory/tab_botania.png"))
 						.build()
 		);
-		ItemGroupEvents.modifyEntriesEvent(BotaniaRegistries.BOTANIA_TAB_KEY)
+		CreativeModeTabEvents.modifyOutputEvent(BotaniaRegistries.BOTANIA_TAB_KEY)
 				.register(entries -> {
-					for (Item item : this.itemsToAddToCreativeTab) {
-						if (item instanceof CustomCreativeTabContents cc) {
-							cc.addToCreativeTab(item, entries);
-						} else if (item instanceof BlockItem bi && bi.getBlock() instanceof CustomCreativeTabContents cc) {
-							cc.addToCreativeTab(item, entries);
-						} else {
-							entries.accept(item);
+					BotaniaAPI.LOGGER.info("Creative tab build: {} items pending", this.itemsToAddToCreativeTab.size());
+					try {
+						for (Item item : this.itemsToAddToCreativeTab) {
+							if (item instanceof CustomCreativeTabContents cc) {
+								cc.addToCreativeTab(item, entries);
+							} else if (item instanceof BlockItem bi && bi.getBlock() instanceof CustomCreativeTabContents cc) {
+								cc.addToCreativeTab(item, entries);
+							} else {
+								entries.accept(item);
+							}
 						}
+						BotaniaAPI.LOGGER.info("Creative tab add done: display={}, search={}",
+								entries.getDisplayStacks().size(), entries.getSearchTabStacks().size());
+					} catch (Throwable t) {
+						BotaniaAPI.LOGGER.error("Creative tab add failed", t);
 					}
 				});
 	}
@@ -257,27 +271,28 @@ public class FabricCommonInitializer implements ModInitializer {
 		CommandRegistrationCallback.EVENT.register(this::registerCommands);
 		EntitySleepEvents.ALLOW_SLEEPING.register(SleepingHandler::trySleep);
 		EntityTrackingEvents.START_TRACKING.register(DaffomillBlockEntity::onItemTrack);
-		LootTableEvents.MODIFY.register((resourceManager, manager, id, tableBuilder, lootTableSource) -> LootHandler.lootLoad(id, tableBuilder::withPool));
+		// 26.1 loot-api-v3: first arg is the table's ResourceKey; no manager arg.
+		LootTableEvents.MODIFY.register((id, tableBuilder, lootTableSource, registries) -> LootHandler.lootLoad(id.identifier(), tableBuilder::withPool));
 		ManaNetworkCallback.EVENT.register(ManaNetworkHandler.instance::onNetworkEvent);
 		ServerEntityEvents.ENTITY_LOAD.register(TigerseyeBlockEntity::pacifyAfterLoad);
 		ServerLifecycleEvents.SERVER_STARTED.register(this::serverAboutToStart);
 		ServerLifecycleEvents.SERVER_STOPPING.register(this::serverStopping);
 		ServerPlayConnectionEvents.DISCONNECT.register(((handler, server) -> FlugelTiaraItem.playerLoggedOut(handler.player)));
 		ServerPlayerEvents.AFTER_RESPAWN.register(ResoluteIvyItem::onPlayerRespawn);
-		ServerTickEvents.END_WORLD_TICK.register(CommonTickHandler::onTick);
-		ServerTickEvents.END_WORLD_TICK.register(GrassSeedsItem::onTickEnd);
-		ServerTickEvents.END_WORLD_TICK.register(TerraTruncatorItem::onTickEnd);
+		ServerTickEvents.END_LEVEL_TICK.register(CommonTickHandler::onTick);
+		ServerTickEvents.END_LEVEL_TICK.register(GrassSeedsItem::onTickEnd);
+		ServerTickEvents.END_LEVEL_TICK.register(TerraTruncatorItem::onTickEnd);
 		UseBlockCallback.EVENT.register(RedStringInterceptorBlock::onInteract);
 		UseBlockCallback.EVENT.register(RingOfLokiItem::onPlayerInteract);
 		UseItemCallback.EVENT.register(EnderAirItem::onPlayerInteract);
 	}
 
-	private static <T> BiConsumer<T, ResourceLocation> bind(Registry<? super T> registry) {
+	private static <T> BiConsumer<T, Identifier> bind(Registry<? super T> registry) {
 		return (t, id) -> Registry.register(registry, id, t);
 	}
 
 	private final Set<Item> itemsToAddToCreativeTab = new LinkedHashSet<>();
-	private final BiConsumer<Item, ResourceLocation> boundForItem =
+	private final BiConsumer<Item, Identifier> boundForItem =
 			(t, id) -> {
 				this.itemsToAddToCreativeTab.add(t);
 				Registry.register(BuiltInRegistries.ITEM, id, t);

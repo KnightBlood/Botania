@@ -11,6 +11,7 @@ package vazkii.botania.common.block.flower.functional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -42,7 +43,7 @@ public class BubbellBlockEntity extends FunctionalFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (getLevel().isClientSide) {
+		if (getLevel().isClientSide()) {
 			return;
 		}
 
@@ -88,7 +89,7 @@ public class BubbellBlockEntity extends FunctionalFlowerBlockEntity {
 	@Override
 	public void readFromPacketNBT(CompoundTag cmp) {
 		super.readFromPacketNBT(cmp);
-		range = cmp.getInt(TAG_RANGE);
+		range = cmp.getIntOr(TAG_RANGE, 0);
 	}
 
 	@Override

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:metamorphic_mountain_stone",
+  "result": {
+    "id": "botania:metamorphic_mountain_stone_wall"
+  }
+}

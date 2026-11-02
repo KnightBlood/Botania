@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:metamorphic_plains_stone",
+  "result": {
+    "id": "botania:chiseled_metamorphic_plains_bricks"
+  }
+}

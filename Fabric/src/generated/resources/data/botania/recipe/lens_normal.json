@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": [
+      "minecraft:glass",
+      "minecraft:glass_pane"
+    ],
+    "S": "#botania:manasteel_ingots"
+  },
+  "pattern": [
+    " S ",
+    "SGS",
+    " S "
+  ],
+  "result": {
+    "id": "botania:lens_normal"
+  }
+}

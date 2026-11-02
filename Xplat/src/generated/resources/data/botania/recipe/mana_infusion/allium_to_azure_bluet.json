@@ -1,0 +1,14 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "group": "botania:flower_cycle",
+  "input": "minecraft:allium",
+  "mana": 400,
+  "output": {
+    "count": 1,
+    "id": "minecraft:azure_bluet"
+  }
+}

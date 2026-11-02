@@ -9,16 +9,11 @@
 package vazkii.botania.client.render.block_entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -27,22 +22,21 @@ import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.client.core.handler.ClientTickHandler;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.block.block_entity.corporea.CorporeaCrystalCubeBlockEntity;
 import vazkii.botania.common.helper.VecHelper;
 import vazkii.botania.mixin.ItemEntityAccessor;
 
-public class CorporeaCrystalCubeBlockEntityRenderer implements BlockEntityRenderer<CorporeaCrystalCubeBlockEntity> {
+public class CorporeaCrystalCubeBlockEntityRenderer extends BotaniaBlockEntityRenderer<CorporeaCrystalCubeBlockEntity> {
 	// Ugly but there's no other way to get the model besides grabbing it from the event
-	public static BakedModel cubeModel = null;
+	public static BlockStateModel cubeModel = null;
 	private ItemEntity entity = null;
-	private final BlockRenderDispatcher blockRenderDispatcher;
 
 	public CorporeaCrystalCubeBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-		this.blockRenderDispatcher = ctx.getBlockRenderDispatcher();
 	}
 
 	@Override
-	public void render(@Nullable CorporeaCrystalCubeBlockEntity cube, float f, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@Nullable CorporeaCrystalCubeBlockEntity cube, float f, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		ItemStack stack = ItemStack.EMPTY;
 		if (cube != null) {
 			if (entity == null) {
@@ -72,15 +66,14 @@ public class CorporeaCrystalCubeBlockEntityRenderer implements BlockEntityRender
 			ms.translate(0F, 0.96F, 0F);
 			ms.scale(0.64F, 0.64F, 0.64F);
 			ms.mulPose(VecHelper.rotateZ(180F));
-			Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entity).render(entity, 0, f, ms, buffers, light);
+			buffers.renderEntity(entity, f, ms, 0, 0, 0);
 			ms.popPose();
 		}
 
 		if (cubeModel != null) {
 			ms.pushPose();
 			ms.translate(-0.5F, 0.25F, -0.5F);
-			VertexConsumer buffer = buffers.getBuffer(Sheets.translucentCullBlockSheet());
-			blockRenderDispatcher.getModelRenderer().renderModel(ms.last(), buffer, null, cubeModel, 1, 1, 1, light, overlay);
+			RenderHelper.renderBlockModel(ms, buffers, null, cubeModel, 1, 1, 1, light, overlay);
 			ms.popPose();
 		}
 

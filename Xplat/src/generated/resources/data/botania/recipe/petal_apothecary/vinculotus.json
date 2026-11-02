@@ -1,0 +1,19 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/black",
+    "#botania:petals/black",
+    "#botania:petals/purple",
+    "#botania:petals/purple",
+    "#botania:petals/green",
+    "botania:rune_water",
+    "botania:rune_sloth",
+    "botania:rune_lust",
+    "botania:redstone_root"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:vinculotus"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

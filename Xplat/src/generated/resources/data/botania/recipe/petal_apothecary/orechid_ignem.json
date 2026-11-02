@@ -1,0 +1,19 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/red",
+    "#botania:petals/red",
+    "#botania:petals/white",
+    "#botania:petals/white",
+    "#botania:petals/pink",
+    "botania:rune_pride",
+    "botania:rune_greed",
+    "botania:redstone_root",
+    "botania:pixie_dust"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:orechid_ignem"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

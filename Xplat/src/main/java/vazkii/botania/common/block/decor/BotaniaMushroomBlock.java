@@ -17,6 +17,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.MushroomBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,12 +37,12 @@ public class BotaniaMushroomBlock extends MushroomBlock implements CustomApothec
 	public final DyeColor color;
 
 	public BotaniaMushroomBlock(DyeColor color, Properties builder) {
-		super(builder, TreeFeatures.HUGE_BROWN_MUSHROOM /* Doesn't matter, we override the grow method */);
+		super(TreeFeatures.HUGE_BROWN_MUSHROOM /* Doesn't matter, we override the grow method */, builder);
 		this.color = color;
 	}
 
 	@Override
-	public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, boolean isClient) {
+	public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
 		return false;
 	}
 
@@ -66,7 +67,7 @@ public class BotaniaMushroomBlock extends MushroomBlock implements CustomApothec
 	public boolean canSurvive(BlockState state, LevelReader worldIn, BlockPos pos) {
 		BlockPos blockpos = pos.below();
 		BlockState blockstate = worldIn.getBlockState(blockpos);
-		if (!blockstate.is(BlockTags.MUSHROOM_GROW_BLOCK)) {
+		if (!blockstate.is(BlockTags.OVERRIDES_MUSHROOM_LIGHT_REQUIREMENT)) {
 			return this.mayPlaceOn(blockstate, worldIn, blockpos);
 		} else {
 			return true;

@@ -13,7 +13,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -24,6 +23,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -49,7 +50,7 @@ public class ShadedMesaRodItem extends Item {
 	private static final TagKey<EntityType<?>> BLACKLIST = BotaniaTags.Entities.SHADED_MESA_BLACKLIST;
 	private static final float RANGE = 3F;
 	private static final int COST = 2;
-	private static final Predicate<Entity> CAN_TARGET = e -> !e.isSpectator() && e.isAlive() && !e.getType().is(BLACKLIST);
+	private static final Predicate<Entity> CAN_TARGET = e -> !e.isSpectator() && e.isAlive() && !e.getType().builtInRegistryHolder().is(BLACKLIST);
 
 	private static final String TAG_TICKS_TILL_EXPIRE = "ticksTillExpire";
 	private static final String TAG_TICKS_COOLDOWN = "ticksCooldown";
@@ -75,7 +76,7 @@ public class ShadedMesaRodItem extends Item {
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean held) {
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
 		if (!(entity instanceof Player)) {
 			return;
 		}
@@ -124,7 +125,7 @@ public class ShadedMesaRodItem extends Item {
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		int targetID = ItemNBTHelper.getInt(stack, TAG_TARGET, -1);
 		int ticksCooldown = ItemNBTHelper.getInt(stack, TAG_TICKS_COOLDOWN, 0);
@@ -173,8 +174,8 @@ public class ShadedMesaRodItem extends Item {
 			}
 
 			if (target != null) {
-				if (target.getType().is(BLACKLIST)) {
-					return InteractionResultHolder.fail(stack);
+				if (target.getType().builtInRegistryHolder().is(BLACKLIST)) {
+					return InteractionResult.FAIL;
 				}
 
 				if (ManaItemHandler.instance().requestManaExactForTool(stack, player, COST, true)) {
@@ -186,8 +187,8 @@ public class ShadedMesaRodItem extends Item {
 
 					if (target instanceof LivingEntity living) {
 						living.fallDistance = 0.0F;
-						if (living.getEffect(MobEffects.MOVEMENT_SLOWDOWN) == null) {
-							living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
+						if (living.getEffect(MobEffects.SLOWNESS) == null) {
+							living.addEffect(new MobEffectInstance(MobEffects.SLOWNESS,
 									targetIsPlayer ? 20 : 2, targetIsPlayer ? 1 : 3, true, true));
 						}
 					}
@@ -220,10 +221,10 @@ public class ShadedMesaRodItem extends Item {
 				}
 
 				ItemNBTHelper.setInt(stack, TAG_TICKS_TILL_EXPIRE, 5);
-				return InteractionResultHolder.consume(stack);
+				return InteractionResult.CONSUME.heldItemTransformedTo(stack);
 			}
 		}
-		return InteractionResultHolder.pass(stack);
+		return InteractionResult.PASS;
 	}
 
 	private static void leftClick(Player player) {
@@ -256,7 +257,7 @@ public class ShadedMesaRodItem extends Item {
 						item.setPickUpDelay(20);
 						float mot = ManaItemHandler.instance().hasProficiency(player, stack) ? 2.25F : 1.5F;
 						item.setDeltaMovement(moveVector.x * mot, moveVector.y, moveVector.z * mot);
-						if (!player.level().isClientSide) {
+						if (!player.level().isClientSide()) {
 							ThrownItemEntity thrown = new ThrownItemEntity(item.level(), item.getX(), item.getY(), item.getZ(), item);
 							item.level().addFreshEntity(thrown);
 						}
@@ -264,7 +265,7 @@ public class ShadedMesaRodItem extends Item {
 					} else {
 						if (target instanceof LivingEntity living) {
 							living.setLastHurtByMob(player);
-							living.setLastHurtByPlayer(player);
+							living.setLastHurtByPlayer(player, 100);
 						}
 						target.setDeltaMovement(moveVector.multiply(3, 1.5, 3));
 					}
@@ -274,3 +275,4 @@ public class ShadedMesaRodItem extends Item {
 		}
 	}
 }
+

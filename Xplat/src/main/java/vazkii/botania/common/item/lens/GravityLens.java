@@ -17,7 +17,7 @@ public class GravityLens extends Lens {
 	@Override
 	public void apply(ItemStack stack, BurstProperties props) {
 		props.gravity = 0.0015F;
-		props.ticksBeforeManaLoss *= 1.2F;
+		props.ticksBeforeManaLoss = (int) (props.ticksBeforeManaLoss * 1.2F);
 	}
 
 }

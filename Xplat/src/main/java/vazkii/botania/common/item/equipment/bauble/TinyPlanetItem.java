@@ -19,11 +19,14 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.api.internal.ManaBurst;
 import vazkii.botania.api.mana.TinyPlanetExcempt;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.render.AccessoryRenderRegistry;
 import vazkii.botania.client.render.AccessoryRenderer;
 import vazkii.botania.common.block.BotaniaBlocks;
@@ -33,6 +36,7 @@ import java.util.List;
 
 public class TinyPlanetItem extends BaubleItem {
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public TinyPlanetItem(Properties props) {
 		super(props);
 		Proxy.INSTANCE.runOnClient(() -> () -> AccessoryRenderRegistry.register(this, new Renderer()));
@@ -53,7 +57,11 @@ public class TinyPlanetItem extends BaubleItem {
 			bipedModel.head.translateAndRotate(ms);
 			ms.translate(-0.25, -0.4, 0);
 			ms.scale(0.5F, -0.5F, -0.5F);
-			Minecraft.getInstance().getBlockRenderer().renderSingleBlock(BotaniaBlocks.tinyPlanet.defaultBlockState(), ms, buffers, light, OverlayTexture.NO_OVERLAY);
+			// 26.1: Minecraft.getBlockRenderer() was removed; use the model set + RenderHelper
+			BlockState state = BotaniaBlocks.tinyPlanet.defaultBlockState();
+			RenderHelper.renderBlockModel(ms, buffers, state,
+					Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(state),
+					1, 1, 1, light, OverlayTexture.NO_OVERLAY);
 		}
 	}
 

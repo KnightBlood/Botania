@@ -8,11 +8,11 @@
  */
 package vazkii.botania.common.world;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -23,12 +23,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -42,6 +44,7 @@ import vazkii.botania.common.block.block_entity.ManaFlameBlockEntity;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.equipment.tool.ToolCommons;
 import vazkii.botania.network.clientbound.GogWorldPacket;
+import vazkii.botania.common.loot.BotaniaLootTables;
 import vazkii.botania.xplat.BotaniaConfig;
 import vazkii.botania.xplat.XplatAbstractions;
 
@@ -51,8 +54,8 @@ public final class SkyblockWorldEvents {
 
 	private SkyblockWorldEvents() {}
 
-	private static final TagKey<Block> PEBBLE_SOURCES = TagKey.create(Registries.BLOCK, new ResourceLocation("gardenofglass:pebble_sources"));
-	private static final ResourceLocation PEBBLES_TABLE = new ResourceLocation(BotaniaAPI.GOG_MODID, "pebbles");
+	private static final TagKey<Block> PEBBLE_SOURCES = TagKey.create(Registries.BLOCK, Identifier.parse("gardenofglass:pebble_sources"));
+	private static final Identifier PEBBLES_TABLE = Identifier.fromNamespaceAndPath(BotaniaAPI.GOG_MODID, "pebbles");
 
 	public static void syncGogStatus(ServerPlayer e) {
 		boolean isGog = SkyblockChunkGenerator.isWorldSkyblock(e.level());
@@ -62,12 +65,12 @@ public final class SkyblockWorldEvents {
 	}
 
 	public static void onPlayerJoin(ServerPlayer player) {
-		ServerLevel world = player.serverLevel();
+		ServerLevel world = player.level();
 		if (SkyblockChunkGenerator.isWorldSkyblock(world)) {
 			SkyblockSavedData data = SkyblockSavedData.get(world);
 			if (!data.skyblocks.containsValue(Util.NIL_UUID)) {
 				IslandPos islandPos = data.getSpawn();
-				world.setDefaultSpawnPos(islandPos.getCenter(), 0);
+				world.setRespawnData(LevelData.RespawnData.of(world.dimension(), islandPos.getCenter(), 0, 0));
 				spawnPlayer(player, islandPos);
 				BotaniaAPI.LOGGER.info("Created the spawn GoG island");
 			}
@@ -86,10 +89,10 @@ public final class SkyblockWorldEvents {
 					SoundEvent sound = st.getBreakSound();
 					player.playSound(sound, st.getVolume() * 0.4F, st.getPitch() + (float) (Math.random() * 0.2 - 0.1));
 
-					if (world.isClientSide) {
+					if (world.isClientSide()) {
 						player.swing(hand);
 					} else if (world instanceof ServerLevel level) {
-						var table = level.getServer().getLootData().getLootTable(PEBBLES_TABLE);
+						var table = level.getServer().reloadableRegistries().getLootTable(BotaniaLootTables.key(PEBBLES_TABLE));
 						var context = new LootParams.Builder(level)
 								.withParameter(LootContextParams.BLOCK_STATE, state)
 								.withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(hit.getBlockPos()))
@@ -107,7 +110,7 @@ public final class SkyblockWorldEvents {
 				if (rtr.getType() == HitResult.Type.BLOCK) {
 					BlockPos pos = rtr.getBlockPos();
 					if (world.getBlockState(pos).is(Blocks.WATER)) {
-						if (!world.isClientSide) {
+						if (!world.isClientSide()) {
 							equipped.shrink(1);
 
 							if (equipped.isEmpty()) {
@@ -129,9 +132,10 @@ public final class SkyblockWorldEvents {
 		BlockPos pos = islandPos.getCenter();
 
 		if (player instanceof ServerPlayer pmp) {
-			createSkyblock(pmp.serverLevel(), pos);
+			createSkyblock(pmp.level(), pos);
 			pmp.teleportTo(pos.getX() + 0.5, pos.getY() + 1.6, pos.getZ() + 0.5);
-			pmp.setRespawnPosition(pmp.level().dimension(), pos, 0, true, false);
+			pmp.setRespawnPosition(new ServerPlayer.RespawnConfig(
+					LevelData.RespawnData.of(pmp.level().dimension(), pos, 0, 0), true), false);
 			if (BotaniaConfig.common().gogSpawnWithLexicon()) {
 				player.getInventory().add(new ItemStack(BotaniaItems.lexicon));
 			}
@@ -147,7 +151,7 @@ public final class SkyblockWorldEvents {
 		BlockPos offset;
 		//noinspection DataFlowIssue (null NBT was already filtered above)
 		var infoOptional = structureBlockInfos.stream()
-				.filter(info -> "spawn_point".equals(info.nbt().getString("metadata")))
+				.filter(info -> "spawn_point".equals(info.nbt().getStringOr("metadata", "")))
 				.findFirst();
 		if (infoOptional.isPresent()) {
 			offset = infoOptional.get().pos();
@@ -162,17 +166,17 @@ public final class SkyblockWorldEvents {
 				startPoint,
 				startPoint,
 				new StructurePlaceSettings().addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK),
-				level.random,
+				level.getRandom(),
 				Block.UPDATE_ALL);
 		for (var info : structureBlockInfos) {
 			//noinspection DataFlowIssue (null NBT was already filtered above)
-			if ("light".equals(info.nbt().getString("metadata"))) {
+			if ("light".equals(info.nbt().getStringOr("metadata", ""))) {
 				BlockPos lightPos = startPoint.offset(info.pos());
 				if (level.setBlockAndUpdate(lightPos, BotaniaBlocks.manaFlame.defaultBlockState())
 						&& level.getBlockEntity(lightPos) instanceof ManaFlameBlockEntity flame) {
-					int r = 70 + level.random.nextInt(185);
-					int g = 70 + level.random.nextInt(185);
-					int b = 70 + level.random.nextInt(185);
+					int r = 70 + level.getRandom().nextInt(185);
+					int g = 70 + level.getRandom().nextInt(185);
+					int b = 70 + level.getRandom().nextInt(185);
 					int color = r << 16 | g << 8 | b;
 					flame.setColor(color);
 				}

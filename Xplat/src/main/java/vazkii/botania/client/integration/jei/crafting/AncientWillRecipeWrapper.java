@@ -15,7 +15,7 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICraftingCategoryExtension;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class AncientWillRecipeWrapper implements ICraftingCategoryExtension {
-	private final ResourceLocation name;
+	private final Identifier name;
 
 	public AncientWillRecipeWrapper(AncientWillRecipe recipe) {
 		this.name = recipe.getId();
@@ -39,7 +39,7 @@ public class AncientWillRecipeWrapper implements ICraftingCategoryExtension {
 
 	@Nullable
 	@Override
-	public ResourceLocation getRegistryName() {
+	public Identifier getRegistryName() {
 		return name;
 	}
 

@@ -65,7 +65,7 @@ public class PlatformBlockEntity extends BotaniaBlockEntity implements Wandable,
 		if (camoState == Blocks.BARRIER.defaultBlockState()) {
 			return false;
 		}
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			if (player == null || !player.getAbilities().instabuild) {
 				stack.shrink(1);
 			}
@@ -86,8 +86,8 @@ public class PlatformBlockEntity extends BotaniaBlockEntity implements Wandable,
 
 		if (level != null) {
 			level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-			if (!level.isClientSide) {
-				level.blockUpdated(worldPosition, getBlockState().getBlock());
+			if (!level.isClientSide()) {
+				level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
 				setChanged();
 			}
 		}
@@ -130,13 +130,13 @@ public class PlatformBlockEntity extends BotaniaBlockEntity implements Wandable,
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
-		HolderGetter<Block> holderGetter = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
-		BlockState state = NbtUtils.readBlockState(holderGetter, cmp.getCompound(TAG_CAMO));
+		HolderGetter<Block> holderGetter = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK;
+		BlockState state = NbtUtils.readBlockState(holderGetter, cmp.getCompoundOrEmpty(TAG_CAMO));
 		if (state.isAir()) {
 			state = null;
 		}
 		setCamoState(state);
-		if (level != null && level.isClientSide) {
+		if (level != null && level.isClientSide()) {
 			level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 0);
 		}
 	}

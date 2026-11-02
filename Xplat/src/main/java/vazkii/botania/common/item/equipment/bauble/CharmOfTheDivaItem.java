@@ -15,7 +15,7 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.TickTask;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Creeper;
@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.api.mana.ManaItemHandler;
 import vazkii.botania.client.render.AccessoryRenderRegistry;
 import vazkii.botania.client.render.AccessoryRenderer;
@@ -46,6 +47,7 @@ public class CharmOfTheDivaItem extends BaubleItem {
 	public static final int MANA_COST = 250;
 	public static final int CHARM_RANGE = 20;
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public CharmOfTheDivaItem(Properties props) {
 		super(props);
 		Proxy.INSTANCE.runOnClient(() -> () -> AccessoryRenderRegistry.register(this, new Renderer()));
@@ -54,7 +56,8 @@ public class CharmOfTheDivaItem extends BaubleItem {
 	private static Predicate<Mob> getCharmTargetPredicate(Player player, Mob mobToCharm) {
 		return mob -> mob != mobToCharm && mob.isAlive() && mob.canBeSeenAsEnemy() && !mob.isPassengerOfSameVehicle(mobToCharm)
 				&& (!(mob instanceof TamableAnimal tamable) || !tamable.isOwnedBy(player))
-				&& (mob instanceof Enemy || mob instanceof NeutralMob neutralMob && (neutralMob.isAngryAt(player)
+				&& (mob instanceof Enemy || mob instanceof NeutralMob neutralMob && (neutralMob.isAngryAt(player,
+																						(ServerLevel) player.level())
 						|| mob.getTarget() instanceof TamableAnimal targetTamable && targetTamable.isOwnedBy(player)));
 	}
 
@@ -87,16 +90,16 @@ public class CharmOfTheDivaItem extends BaubleItem {
 
 	public static void onEntityDamaged(Player player, LivingEntity entity) {
 		if (entity instanceof Mob target
-				&& !target.level().isClientSide
+				&& !target.level().isClientSide()
 				// TODO 1.21: Use an actual boss identification method (likely via entity tag)
-				&& target.canChangeDimensions()
+				&& target.canUsePortal(true)
 				&& Math.random() < 0.6) {
 			MinecraftServer server = player.level().getServer();
 			ItemStack amulet = EquipmentHandler.findOrEmpty(BotaniaItems.divaCharm, player);
 
 			if (server != null && !amulet.isEmpty()) {
 				// schedule for immediate execution after everything else in this tick
-				server.tell(new TickTask(0, () -> charmMobs(amulet, player, target)));
+				server.execute(() -> charmMobs(amulet, player, target));
 			}
 		}
 	}
@@ -107,8 +110,7 @@ public class CharmOfTheDivaItem extends BaubleItem {
 			bipedModel.head.translateAndRotate(ms);
 			ms.translate(0.15, -0.42, -0.35);
 			ms.scale(0.4F, -0.4F, -0.4F);
-			Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE,
-					light, OverlayTexture.NO_OVERLAY, ms, buffers, living.level(), living.getId());
+			RenderHelper.renderItemStatic(stack, ItemDisplayContext.NONE, false, ms, buffers, light, OverlayTexture.NO_OVERLAY, living.level(), living.getId());
 		}
 	}
 }

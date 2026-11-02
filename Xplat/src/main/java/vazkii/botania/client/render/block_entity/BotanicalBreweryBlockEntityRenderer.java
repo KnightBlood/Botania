@@ -10,8 +10,6 @@ package vazkii.botania.client.render.block_entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +19,7 @@ import vazkii.botania.client.model.BotaniaModelLayers;
 import vazkii.botania.client.model.BotanicalBreweryModel;
 import vazkii.botania.common.block.block_entity.BreweryBlockEntity;
 
-public class BotanicalBreweryBlockEntityRenderer implements BlockEntityRenderer<BreweryBlockEntity> {
+public class BotanicalBreweryBlockEntityRenderer extends BotaniaBlockEntityRenderer<BreweryBlockEntity> {
 	final BotanicalBreweryModel model;
 
 	public BotanicalBreweryBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
@@ -29,7 +27,7 @@ public class BotanicalBreweryBlockEntityRenderer implements BlockEntityRenderer<
 	}
 
 	@Override
-	public void render(@Nullable BreweryBlockEntity brewery, float f, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@Nullable BreweryBlockEntity brewery, float f, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		ms.pushPose();
 
 		ms.scale(1F, -1F, -1F);

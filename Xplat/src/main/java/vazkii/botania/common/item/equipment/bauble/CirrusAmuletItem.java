@@ -9,21 +9,20 @@
 package vazkii.botania.common.item.equipment.bauble;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import vazkii.botania.client.core.handler.MiscellaneousModels;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.render.AccessoryRenderRegistry;
 import vazkii.botania.client.render.AccessoryRenderer;
 import vazkii.botania.common.item.BotaniaItems;
@@ -42,6 +41,7 @@ public class CirrusAmuletItem extends BaubleItem {
 	private static int timesJumped;
 	private static boolean jumpDown;
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public CirrusAmuletItem(Properties props) {
 		super(props);
 		Proxy.INSTANCE.runOnClient(() -> () -> AccessoryRenderRegistry.register(this, new Renderer()));
@@ -61,7 +61,7 @@ public class CirrusAmuletItem extends BaubleItem {
 						timesJumped = 1;
 						jumpDown = true;
 					}
-					if (playerSp.input.jumping) {
+					if (playerSp.input.keyPresses.jump()) {
 						if (!jumpDown && timesJumped < ((CirrusAmuletItem) stack.getItem()).getMaxAllowedJumps()) {
 							playerSp.jumpFromGround();
 							ClientXplatAbstractions.INSTANCE.sendToServer(JumpPacket.INSTANCE);
@@ -81,7 +81,7 @@ public class CirrusAmuletItem extends BaubleItem {
 	}
 
 	public static boolean popJumping(Player entity) {
-		if (entity.level().isClientSide) {
+		if (entity.level().isClientSide()) {
 			return timesJumped > 0;
 		}
 		return JUMPING_PLAYERS.remove(entity);
@@ -95,12 +95,10 @@ public class CirrusAmuletItem extends BaubleItem {
 			ms.translate(-0.3, 0.4, armor ? 0.05 : 0.12);
 			ms.scale(0.5F, -0.5F, -0.5F);
 
-			BakedModel model = stack.is(BotaniaItems.superCloudPendant)
+			BlockStateModel model = stack.is(BotaniaItems.superCloudPendant)
 					? MiscellaneousModels.INSTANCE.nimbusGem
 					: MiscellaneousModels.INSTANCE.cirrusGem;
-			VertexConsumer buffer = buffers.getBuffer(Sheets.cutoutBlockSheet());
-			Minecraft.getInstance().getBlockRenderer().getModelRenderer()
-					.renderModel(ms.last(), buffer, null, model, 1, 1, 1, light, OverlayTexture.NO_OVERLAY);
+			RenderHelper.renderBlockModel(ms, buffers, null, model, 1, 1, 1, light, OverlayTexture.NO_OVERLAY);
 		}
 	}
 

@@ -10,7 +10,7 @@ package vazkii.botania.network.serverbound;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -27,7 +27,7 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class DodgePacket implements BotaniaPacket {
 	public static final DodgePacket INSTANCE = new DodgePacket();
-	public static final ResourceLocation ID = prefix("do");
+	public static final Identifier ID = prefix("do");
 
 	public static DodgePacket decode(FriendlyByteBuf buf) {
 		return INSTANCE;
@@ -39,7 +39,7 @@ public class DodgePacket implements BotaniaPacket {
 	}
 
 	@Override
-	public ResourceLocation getFabricId() {
+	public Identifier getFabricId() {
 		return ID;
 	}
 

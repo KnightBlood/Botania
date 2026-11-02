@@ -12,7 +12,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -23,7 +23,7 @@ public class BotaniaParticles {
 	public static final ParticleType<WispParticleData> WISP = new WispParticleType();
 	public static final ParticleType<SparkleParticleData> SPARKLE = new SparkleParticleType();
 
-	public static void registerParticles(BiConsumer<ParticleType<?>, ResourceLocation> r) {
+	public static void registerParticles(BiConsumer<ParticleType<?>, Identifier> r) {
 		r.accept(WISP, prefix("wisp"));
 		r.accept(SPARKLE, prefix("sparkle"));
 	}

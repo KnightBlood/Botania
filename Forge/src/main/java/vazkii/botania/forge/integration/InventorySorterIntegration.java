@@ -1,16 +1,15 @@
 package vazkii.botania.forge.integration;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 
 import vazkii.botania.common.item.BotaniaItems;
 
 public class InventorySorterIntegration {
-	public static void init() {
-		FMLJavaModLoadingContext.get().getModEventBus()
-				.addListener(InventorySorterIntegration::sendImc);
+	public static void init(IEventBus modBus) {
+		modBus.addListener(InventorySorterIntegration::sendImc);
 	}
 
 	private static void sendImc(InterModEnqueueEvent evt) {

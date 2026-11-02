@@ -3,9 +3,9 @@ package vazkii.botania.fabric.data;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.storage.loot.Deserializers;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 
@@ -21,14 +21,14 @@ public class FabricBlockLootProvider implements DataProvider {
 	private final PackOutput.PathProvider pathProvider;
 
 	public FabricBlockLootProvider(PackOutput packOutput) {
-		this.pathProvider = packOutput.createPathProvider(PackOutput.Target.DATA_PACK, "loot_tables/blocks");
+		this.pathProvider = packOutput.createPathProvider(PackOutput.Target.DATA_PACK, Registries.LOOT_TABLE.identifier().getPath() + "/blocks");
 	}
 
 	@Override
 	public CompletableFuture<?> run(CachedOutput cache) {
-		var tables = new HashMap<ResourceLocation, LootTable.Builder>();
+		var tables = new HashMap<Identifier, LootTable.Builder>();
 		for (var b : BuiltInRegistries.BLOCK) {
-			ResourceLocation id = BuiltInRegistries.BLOCK.getKey(b);
+			Identifier id = BuiltInRegistries.BLOCK.getKey(b);
 			if (!LibMisc.MOD_ID.equals(id.getNamespace())) {
 				continue;
 			}
@@ -40,7 +40,9 @@ public class FabricBlockLootProvider implements DataProvider {
 
 		for (var e : tables.entrySet()) {
 			Path path = pathProvider.json(e.getKey());
-			output.add(DataProvider.saveStable(cache, Deserializers.createLootTableSerializer().create().toJsonTree(e.getValue().setParamSet(LootContextParamSets.BLOCK).build()), path));
+			// 26.1: Deserializers was removed; save via the LootTable DIRECT_CODEC
+			// (mirrors Xplat BlockLootProvider).
+			output.add(DataProvider.saveStable(cache, LootTable.DIRECT_CODEC, e.getValue().setParamSet(LootContextParamSets.BLOCK).build(), path));
 		}
 		return CompletableFuture.allOf(output.toArray(CompletableFuture[]::new));
 	}

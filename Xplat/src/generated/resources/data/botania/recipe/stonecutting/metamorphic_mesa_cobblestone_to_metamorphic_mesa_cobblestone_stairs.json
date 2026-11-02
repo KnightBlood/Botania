@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "botania:metamorphic_mesa_cobblestone",
+  "result": {
+    "id": "botania:metamorphic_mesa_cobblestone_stairs"
+  }
+}

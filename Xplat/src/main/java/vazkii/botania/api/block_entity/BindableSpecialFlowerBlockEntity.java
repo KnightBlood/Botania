@@ -9,7 +9,7 @@
 package vazkii.botania.api.block_entity;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -69,7 +69,7 @@ public abstract class BindableSpecialFlowerBlockEntity<T> extends SpecialFlowerB
 		//the typical setPlacedBy method that player-placements do.
 		if (Bound.UNBOUND_POS.equals(bindingPos)) {
 			setBindingPos(null);
-		} else if (ticksExisted == 1 && !level.isClientSide) {
+		} else if (ticksExisted == 1 && !level.isClientSide()) {
 			//Situations to consider:
 			// the flower has been placed in the void, and there is nothing for it to bind to;
 			// the flower has been placed next to a bind target, and I want to automatically bind to it;
@@ -155,7 +155,7 @@ public abstract class BindableSpecialFlowerBlockEntity<T> extends SpecialFlowerB
 		super.writeToPacketNBT(cmp);
 
 		if (bindingPos != null) {
-			cmp.put(TAG_BINDING, NbtUtils.writeBlockPos(bindingPos));
+			cmp.store(TAG_BINDING, BlockPos.CODEC, bindingPos);
 		}
 	}
 
@@ -164,14 +164,14 @@ public abstract class BindableSpecialFlowerBlockEntity<T> extends SpecialFlowerB
 		super.readFromPacketNBT(cmp);
 
 		if (cmp.contains(TAG_BINDING)) {
-			bindingPos = NbtUtils.readBlockPos(cmp.getCompound(TAG_BINDING));
+			bindingPos = cmp.read(TAG_BINDING, BlockPos.CODEC).orElse(null);
 		} else {
 			//In older versions of the mod (1.16, early 1.17), GeneratingFlowerBlockEntity and SpecialFlowerBlockEntity
 			//implemented their own copies of the binding logic. Read data from the old locations.
 			if (cmp.contains("collectorX")) {
-				bindingPos = new BlockPos(cmp.getInt("collectorX"), cmp.getInt("collectorY"), cmp.getInt("collectorZ"));
+				bindingPos = new BlockPos(cmp.getIntOr("collectorX", 0), cmp.getIntOr("collectorY", 0), cmp.getIntOr("collectorZ", 0));
 			} else if (cmp.contains("poolX")) {
-				bindingPos = new BlockPos(cmp.getInt("poolX"), cmp.getInt("poolY"), cmp.getInt("poolZ"));
+				bindingPos = new BlockPos(cmp.getIntOr("poolX", 0), cmp.getIntOr("poolY", 0), cmp.getIntOr("poolZ", 0));
 			}
 			//These versions of the mod also sometimes used a binding with a Y of -1 to signify an unbound flower.
 			//Currently, `null` is always used for unbound flowers. Coerce these positions to `null`.
@@ -206,7 +206,7 @@ public abstract class BindableSpecialFlowerBlockEntity<T> extends SpecialFlowerB
 			this.flower = flower;
 		}
 
-		public void renderHUD(GuiGraphics gui, Minecraft mc, int minLeft, int minRight, int minDown) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc, int minLeft, int minRight, int minDown) {
 			String name = I18n.get(flower.getBlockState().getBlock().getDescriptionId());
 			int color = flower.getColor();
 
@@ -226,7 +226,7 @@ public abstract class BindableSpecialFlowerBlockEntity<T> extends SpecialFlowerB
 		}
 
 		@Override
-		public void renderHUD(GuiGraphics gui, Minecraft mc) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc) {
 			renderHUD(gui, mc, 0, 0, 0);
 		}
 	}

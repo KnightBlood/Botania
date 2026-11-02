@@ -11,7 +11,11 @@ package vazkii.botania.common.crafting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,7 +23,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.block.Block;
@@ -34,6 +40,70 @@ import vazkii.botania.common.helper.ItemNBTHelper;
 import java.util.*;
 
 public class StateIngredientHelper {
+	/**
+	 * Codec for state ingredients, matching the JSON representation used by
+	 * {@link #deserialize(JsonObject)} and {@link StateIngredient#serialize()}.
+	 */
+	public static final Codec<StateIngredient> CODEC = new Codec<>() {
+		// DFU 9: Encoder's abstract method is encode(A, ops, prefix); encodeStart is now a default method.
+		@Override
+		@SuppressWarnings("unchecked")
+		public <T> DataResult<T> encode(StateIngredient input, DynamicOps<T> ops, T prefix) {
+			return DataResult.success((T) input.serialize());
+		}
+
+		@Override
+		public <T> DataResult<Pair<StateIngredient, T>> decode(DynamicOps<T> ops, T input) {
+			if (input instanceof JsonObject json) {
+				try {
+					return DataResult.success(Pair.of(deserialize(json), input));
+				} catch (RuntimeException e) {
+					return DataResult.error(() -> "Invalid state ingredient: " + e.getMessage());
+				}
+			}
+			return DataResult.error(() -> "Expected a JSON object for a state ingredient");
+		}
+	};
+
+	/**
+	 * Codec for block states, matching the JSON representation used by
+	 * {@link #serializeBlockState(BlockState)} and {@link #readBlockState(JsonObject)}.
+	 */
+	public static final Codec<BlockState> BLOCK_STATE_CODEC = new Codec<>() {
+		@Override
+		@SuppressWarnings("unchecked")
+		public <T> DataResult<T> encode(BlockState input, DynamicOps<T> ops, T prefix) {
+			return DataResult.success((T) serializeBlockState(input));
+		}
+
+		@Override
+		public <T> DataResult<Pair<BlockState, T>> decode(DynamicOps<T> ops, T input) {
+			if (input instanceof JsonObject json) {
+				try {
+					return DataResult.success(Pair.of(readBlockState(json), input));
+				} catch (RuntimeException e) {
+					return DataResult.error(() -> "Invalid block state: " + e.getMessage());
+				}
+			}
+			return DataResult.error(() -> "Expected a JSON object for a block state");
+		}
+	};
+
+	/**
+	 * Stream codec for state ingredients.
+	 */
+	public static final StreamCodec<RegistryFriendlyByteBuf, StateIngredient> STREAM_CODEC = new StreamCodec<>() {
+		@Override
+		public StateIngredient decode(RegistryFriendlyByteBuf buffer) {
+			return read(buffer);
+		}
+
+		@Override
+		public void encode(RegistryFriendlyByteBuf buffer, StateIngredient ingredient) {
+			ingredient.write(buffer);
+		}
+	};
+
 	public static StateIngredient of(Block block) {
 		return new BlockStateIngredient(block);
 	}
@@ -46,7 +116,7 @@ public class StateIngredientHelper {
 		return of(tag.location());
 	}
 
-	public static StateIngredient of(ResourceLocation id) {
+	public static StateIngredient of(Identifier id) {
 		return new TagStateIngredient(id);
 	}
 
@@ -83,19 +153,19 @@ public class StateIngredientHelper {
 	public static StateIngredient deserialize(JsonObject object) {
 		switch (GsonHelper.getAsString(object, "type")) {
 			case "tag":
-				return new TagStateIngredient(new ResourceLocation(GsonHelper.getAsString(object, "tag")));
+				return new TagStateIngredient(Identifier.parse(GsonHelper.getAsString(object, "tag")));
 			case "block":
-				return new BlockStateIngredient(BuiltInRegistries.BLOCK.get(new ResourceLocation(GsonHelper.getAsString(object, "block"))));
+				return new BlockStateIngredient(BuiltInRegistries.BLOCK.getValue(Identifier.parse(GsonHelper.getAsString(object, "block"))));
 			case "state":
 				return new BlockStateStateIngredient(readBlockState(object));
 			case "blocks":
 				List<Block> blocks = new ArrayList<>();
 				for (JsonElement element : GsonHelper.getAsJsonArray(object, "blocks")) {
-					blocks.add(BuiltInRegistries.BLOCK.get(new ResourceLocation(element.getAsString())));
+					blocks.add(BuiltInRegistries.BLOCK.getValue(Identifier.parse(element.getAsString())));
 				}
 				return new BlocksStateIngredient(blocks);
 			case "tag_excluding":
-				ResourceLocation tag = new ResourceLocation(GsonHelper.getAsString(object, "tag"));
+				Identifier tag = Identifier.parse(GsonHelper.getAsString(object, "tag"));
 				List<StateIngredient> ingr = new ArrayList<>();
 				for (JsonElement element : GsonHelper.getAsJsonArray(object, "exclude")) {
 					ingr.add(deserialize(GsonHelper.convertToJsonObject(element, "exclude entry")));
@@ -193,11 +263,11 @@ public class StateIngredientHelper {
 		CompoundTag nbt = (CompoundTag) new Dynamic<>(JsonOps.INSTANCE, object).convert(NbtOps.INSTANCE).getValue();
 		ItemNBTHelper.renameTag(nbt, "name", "Name");
 		ItemNBTHelper.renameTag(nbt, "properties", "Properties");
-		String name = nbt.getString("Name");
-		ResourceLocation id = ResourceLocation.tryParse(name);
+		String name = nbt.getStringOr("Name", "");
+		Identifier id = Identifier.tryParse(name);
 		if (id == null || BuiltInRegistries.BLOCK.getOptional(id).isEmpty()) {
 			throw new IllegalArgumentException("Invalid or unknown block ID: " + name);
 		}
-		return NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), nbt);
+		return NbtUtils.readBlockState(BuiltInRegistries.BLOCK, nbt);
 	}
 }

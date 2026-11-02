@@ -9,7 +9,6 @@
 package vazkii.botania.common.item;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -17,15 +16,21 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -61,27 +66,27 @@ public class ManaBlasterItem extends Item {
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		int effCd = COOLDOWN;
-		MobEffectInstance effect = player.getEffect(MobEffects.DIG_SPEED);
+		MobEffectInstance effect = player.getEffect(MobEffects.HASTE);
 		if (effect != null) {
 			effCd = Math.max(2, COOLDOWN - (effect.getAmplifier() + 1) * 8);
 		}
 
 		if (player.isSecondaryUseActive() && hasClip(stack)) {
 			rotatePos(stack);
-			world.playSound(null, player.getX(), player.getY(), player.getZ(), BotaniaSounds.manaBlasterCycle, SoundSource.PLAYERS, 0.6F, (1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.2F) * 0.7F);
-			if (!world.isClientSide) {
+			world.playSound(null, player.getX(), player.getY(), player.getZ(), BotaniaSounds.manaBlasterCycle, SoundSource.PLAYERS, 0.6F, (1.0F + (world.getRandom().nextFloat() - world.getRandom().nextFloat()) * 0.2F) * 0.7F);
+			if (!world.isClientSide()) {
 				ItemStack lens = getLens(stack);
 				ItemsRemainingRenderHandler.send(player, lens, -2);
 				setCooldown(stack, effCd);
 			}
-			return InteractionResultHolder.sidedSuccess(stack, world.isClientSide);
+			return world.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(stack) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(stack);
 		} else if (getCooldown(stack) <= 0) {
 			ManaBurstEntity burst = getBurst(player, stack, true, hand);
 			if (burst != null && ManaItemHandler.instance().requestManaExact(stack, player, burst.getMana(), true)) {
-				if (!world.isClientSide) {
+				if (!world.isClientSide()) {
 					world.playSound(null, player.getX(), player.getY(), player.getZ(), BotaniaSounds.manaBlaster, SoundSource.PLAYERS, 1F, 1);
 					world.addFreshEntity(burst);
 					ManaBlasterTrigger.INSTANCE.trigger((ServerPlayer) player, stack);
@@ -90,12 +95,12 @@ public class ManaBlasterItem extends Item {
 					player.setDeltaMovement(player.getDeltaMovement().subtract(burst.getDeltaMovement().multiply(0.1, 0.3, 0.1)));
 				}
 			} else {
-				player.playSound(BotaniaSounds.manaBlasterMisfire, 0.6F, (1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.2F) * 0.7F);
+				player.playSound(BotaniaSounds.manaBlasterMisfire, 0.6F, (1.0F + (world.getRandom().nextFloat() - world.getRandom().nextFloat()) * 0.2F) * 0.7F);
 			}
-			return InteractionResultHolder.sidedSuccess(stack, world.isClientSide);
+			return world.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(stack) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(stack);
 		}
 
-		return InteractionResultHolder.pass(stack);
+		return InteractionResult.PASS;
 	}
 
 	@NotNull
@@ -135,25 +140,23 @@ public class ManaBlasterItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> tooltip, TooltipFlag flags) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
+		List<Component> tooltip = new ArrayList<>();
 		boolean clip = hasClip(stack);
 		if (clip) {
-			TooltipHandler.addOnShift(tooltip, () -> appendHoverTextImpl(stack, tooltip));
+			TooltipHandler.addOnShift(tooltip, () -> appendHoverTextImpl(stack, context, tooltip));
 		} else {
-			appendHoverTextImpl(stack, tooltip);
+			appendHoverTextImpl(stack, context, tooltip);
 		}
+		tooltip.forEach(builder);
 	}
 
-	private void appendHoverTextImpl(ItemStack stack, List<Component> tooltip) {
+	private void appendHoverTextImpl(ItemStack stack, Item.TooltipContext context, List<Component> tooltip) {
 		boolean clip = hasClip(stack);
-		if (clip && !Screen.hasShiftDown()) {
-			tooltip.add(TooltipHandler.getShiftInfoTooltip());
-			return;
-		}
 
 		ItemStack lens = getLens(stack);
 		if (!lens.isEmpty()) {
-			List<Component> lensTip = lens.getTooltipLines(Proxy.INSTANCE.getClientPlayer(), TooltipFlag.Default.NORMAL);
+			List<Component> lensTip = lens.getTooltipLines(context, Proxy.INSTANCE.getClientPlayer(), TooltipFlag.Default.NORMAL);
 			if (lensTip.size() > 1) {
 				tooltip.addAll(lensTip.subList(1, lensTip.size()));
 			}
@@ -196,8 +199,8 @@ public class ManaBlasterItem extends Item {
 		return ItemNBTHelper.getBoolean(stack, TAG_CLIP, false);
 	}
 
-	public static void setClip(ItemStack stack, boolean clip) {
-		ItemNBTHelper.setBoolean(stack, TAG_CLIP, clip);
+	public static void setClip(ItemStack stack) {
+		ItemNBTHelper.setBoolean(stack, TAG_CLIP, true);
 	}
 
 	public static int getClipPos(ItemStack stack) {
@@ -233,16 +236,13 @@ public class ManaBlasterItem extends Item {
 	public static ItemStack getLensAtPos(ItemStack stack, int pos) {
 		CompoundTag cmp = ItemNBTHelper.getCompound(stack, TAG_LENS + pos, true);
 		if (cmp != null) {
-			return ItemStack.of(cmp);
+			return ItemNBTHelper.deserializeStackNbt(cmp);
 		}
 		return ItemStack.EMPTY;
 	}
 
 	public static void setLensAtPos(ItemStack stack, ItemStack lens, int pos) {
-		CompoundTag cmp = new CompoundTag();
-		if (lens != null) {
-			cmp = lens.save(cmp);
-		}
+		CompoundTag cmp = ItemNBTHelper.serializeStackNbt(lens);
 		ItemNBTHelper.setCompound(stack, TAG_LENS + pos, cmp);
 	}
 
@@ -251,10 +251,7 @@ public class ManaBlasterItem extends Item {
 			setLensAtPos(stack, lens, getClipPos(stack));
 		}
 
-		CompoundTag cmp = new CompoundTag();
-		if (!lens.isEmpty()) {
-			cmp = lens.save(cmp);
-		}
+		CompoundTag cmp = ItemNBTHelper.serializeStackNbt(lens);
 		ItemNBTHelper.setCompound(stack, TAG_LENS, cmp);
 	}
 
@@ -265,7 +262,7 @@ public class ManaBlasterItem extends Item {
 
 		CompoundTag cmp = ItemNBTHelper.getCompound(stack, TAG_LENS, true);
 		if (cmp != null) {
-			return ItemStack.of(cmp);
+			return ItemNBTHelper.deserializeStackNbt(cmp);
 		}
 		return ItemStack.EMPTY;
 	}
@@ -281,6 +278,25 @@ public class ManaBlasterItem extends Item {
 		return true;
 	}
 
+	/**
+	 * Component-free variant of {@link #isValidLens(ItemStack)} for contexts where item data
+	 * components are not bound yet, i.e. model loading before the configuration phase (vanilla
+	 * binds item components in {@code ClientConfigurationPacketListenerImpl} on the client, so
+	 * creating a default {@link ItemStack} there crashes with "Components not bound yet").
+	 * {@code LensItem.getProps} ignores the stack contents, so control-lens-ness is decided from
+	 * the item alone; a hypothetical {@link ControlLensItem} that is not a {@code LensItem} is
+	 * conservatively rejected.
+	 */
+	public static boolean isValidLensItem(Item item) {
+		if (!(item instanceof BasicLensItem)) {
+			return false;
+		}
+		if (item instanceof vazkii.botania.common.item.lens.LensItem lens) {
+			return (lens.getProps(ItemStack.EMPTY) & vazkii.botania.common.item.lens.LensItem.PROP_CONTROL) == 0;
+		}
+		return !(item instanceof ControlLensItem);
+	}
+
 	public static List<ItemStack> getAllLens(ItemStack stack) {
 		List<ItemStack> ret = new ArrayList<>();
 
@@ -292,7 +308,7 @@ public class ManaBlasterItem extends Item {
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
 		if (getCooldown(stack) > 0) {
 			setCooldown(stack, getCooldown(stack) - 1);
 		}
@@ -314,11 +330,11 @@ public class ManaBlasterItem extends Item {
 	}
 
 	private int getCooldown(ItemStack stack) {
-		return stack.getOrCreateTag().getInt(TAG_COOLDOWN);
+		return ItemNBTHelper.getInt(stack, TAG_COOLDOWN, 0);
 	}
 
 	private void setCooldown(ItemStack stack, int cooldown) {
-		CompoundTag tag = stack.getOrCreateTag();
-		tag.putInt(TAG_COOLDOWN, cooldown);
+		ItemNBTHelper.setInt(stack, TAG_COOLDOWN, cooldown);
 	}
 }
+

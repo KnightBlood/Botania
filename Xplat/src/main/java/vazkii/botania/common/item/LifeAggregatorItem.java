@@ -15,16 +15,21 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.SpawnData;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
@@ -35,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import vazkii.botania.client.fx.SparkleParticleData;
 import vazkii.botania.client.fx.WispParticleData;
 import vazkii.botania.common.advancements.UseItemSuccessTrigger;
+import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.helper.PlayerHelper;
 
 import java.util.List;
@@ -50,14 +56,14 @@ public class LifeAggregatorItem extends Item {
 	}
 
 	@Nullable
-	private static ResourceLocation getEntityId(ItemStack stack) {
-		CompoundTag tag = stack.getTagElement(TAG_SPAWNER);
-		if (tag != null && tag.contains(TAG_SPAWN_DATA)) {
-			tag = tag.getCompound(TAG_SPAWN_DATA);
+	private static Identifier getEntityId(ItemStack stack) {
+		CompoundTag tag = ItemNBTHelper.getCompound(stack, TAG_SPAWNER, false);
+		if (tag.contains(TAG_SPAWN_DATA)) {
+			tag = tag.getCompoundOrEmpty(TAG_SPAWN_DATA);
 			var spawnData = SpawnData.CODEC.parse(NbtOps.INSTANCE, tag);
 			return spawnData.result()
 					.filter(sd -> sd.getEntityToSpawn().contains(TAG_ID))
-					.map(sd -> ResourceLocation.tryParse(sd.getEntityToSpawn().getString(TAG_ID)))
+					.map(sd -> Identifier.tryParse(sd.getEntityToSpawn().getStringOr(TAG_ID, "")))
 					.orElse(null);
 		}
 
@@ -69,10 +75,10 @@ public class LifeAggregatorItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> infoList, TooltipFlag flags) {
-		ResourceLocation id = getEntityId(stack);
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
+		Identifier id = getEntityId(stack);
 		if (id != null) {
-			BuiltInRegistries.ENTITY_TYPE.getOptional(id).ifPresent(type -> infoList.add(type.getDescription()));
+			BuiltInRegistries.ENTITY_TYPE.getOptional(id).ifPresent(type -> builder.accept(type.getDescription()));
 		}
 	}
 
@@ -81,7 +87,7 @@ public class LifeAggregatorItem extends Item {
 	public InteractionResult useOn(UseOnContext ctx) {
 		if (getEntityId(ctx.getItemInHand()) == null) {
 			return captureSpawner(ctx)
-					? InteractionResult.sidedSuccess(ctx.getLevel().isClientSide())
+					? (ctx.getLevel().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER)
 					: InteractionResult.PASS;
 		} else {
 			return placeSpawner(ctx);
@@ -97,19 +103,19 @@ public class LifeAggregatorItem extends Item {
 			BlockPos pos = res.getSecond();
 			ItemStack mover = ctx.getItemInHand();
 
-			if (!world.isClientSide) {
+			if (!world.isClientSide()) {
 				if (ctx.getPlayer() != null) {
-					ctx.getPlayer().broadcastBreakEvent(ctx.getHand());
+					ctx.getPlayer().swing(ctx.getHand(), true);
 				}
 				mover.shrink(1);
 
 				BlockEntity te = world.getBlockEntity(pos);
 				if (te instanceof SpawnerBlockEntity) {
-					CompoundTag spawnerTag = ctx.getItemInHand().getTagElement(TAG_SPAWNER).copy();
+					CompoundTag spawnerTag = ItemNBTHelper.getCompound(mover, TAG_SPAWNER, false).copy();
 					spawnerTag.putInt("x", pos.getX());
 					spawnerTag.putInt("y", pos.getY());
 					spawnerTag.putInt("z", pos.getZ());
-					te.load(spawnerTag);
+					te.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, world.registryAccess(), spawnerTag));
 				}
 			} else {
 				for (int i = 0; i < 100; i++) {
@@ -129,19 +135,19 @@ public class LifeAggregatorItem extends Item {
 		Player player = ctx.getPlayer();
 
 		if (world.getBlockState(pos).is(Blocks.SPAWNER)) {
-			if (!world.isClientSide) {
+			if (!world.isClientSide()) {
 				if (world.getBlockEntity(pos) instanceof SpawnerBlockEntity te) {
-					stack.getOrCreateTag().put(TAG_SPAWNER, te.saveWithFullMetadata());
+					ItemNBTHelper.setCompound(stack, TAG_SPAWNER, te.saveWithFullMetadata(world.registryAccess()));
 					world.destroyBlock(pos, false);
 					if (player != null) {
-						player.getCooldowns().addCooldown(this, 20);
+						player.getCooldowns().addCooldown(stack, 20);
 						if (player instanceof ServerPlayer serverPlayer) {
 							UseItemSuccessTrigger.INSTANCE.trigger(
-									serverPlayer, stack, serverPlayer.serverLevel(),
+									serverPlayer, stack, serverPlayer.level(),
 									pos.getX(), pos.getY(), pos.getZ()
 							);
 						}
-						player.broadcastBreakEvent(ctx.getHand());
+						player.swing(ctx.getHand(), true);
 					}
 				}
 			} else {

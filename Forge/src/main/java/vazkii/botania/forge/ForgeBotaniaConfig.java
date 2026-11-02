@@ -8,13 +8,12 @@
  */
 package vazkii.botania.forge;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraft.resources.Identifier;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.config.ModConfigEvent;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -25,31 +24,30 @@ import vazkii.botania.xplat.XplatAbstractions;
 import java.util.Collections;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = LibMisc.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class ForgeBotaniaConfig {
 
 	private static class Client implements BotaniaConfig.ClientConfigAccess {
-		public final ForgeConfigSpec.BooleanValue useShaders;
-		public final ForgeConfigSpec.BooleanValue lexiconRotatingItems;
-		public final ForgeConfigSpec.BooleanValue subtlePowerSystem;
-		public final ForgeConfigSpec.BooleanValue staticWandBeam;
-		public final ForgeConfigSpec.BooleanValue boundBlockWireframe;
-		public final ForgeConfigSpec.BooleanValue lexicon3dModel;
-		public final ForgeConfigSpec.DoubleValue flowerParticleFrequency;
-		public final ForgeConfigSpec.BooleanValue elfPortalParticlesEnabled;
-		public final ForgeConfigSpec.BooleanValue renderAccessories;
-		public final ForgeConfigSpec.BooleanValue enableSeasonalFeatures;
-		public final ForgeConfigSpec.BooleanValue enableFancySkybox;
-		public final ForgeConfigSpec.BooleanValue enableFancySkyboxInNormalWorlds;
+		public final ModConfigSpec.BooleanValue useShaders;
+		public final ModConfigSpec.BooleanValue lexiconRotatingItems;
+		public final ModConfigSpec.BooleanValue subtlePowerSystem;
+		public final ModConfigSpec.BooleanValue staticWandBeam;
+		public final ModConfigSpec.BooleanValue boundBlockWireframe;
+		public final ModConfigSpec.BooleanValue lexicon3dModel;
+		public final ModConfigSpec.ConfigValue<Double> flowerParticleFrequency;
+		public final ModConfigSpec.BooleanValue elfPortalParticlesEnabled;
+		public final ModConfigSpec.BooleanValue renderAccessories;
+		public final ModConfigSpec.BooleanValue enableSeasonalFeatures;
+		public final ModConfigSpec.BooleanValue enableFancySkybox;
+		public final ModConfigSpec.BooleanValue enableFancySkyboxInNormalWorlds;
 
-		public final ForgeConfigSpec.IntValue manaBarHeight;
+		public final ModConfigSpec.ConfigValue<Integer> manaBarHeight;
 
-		public final ForgeConfigSpec.BooleanValue staticFloaters;
-		public final ForgeConfigSpec.BooleanValue debugInfo;
-		public final ForgeConfigSpec.BooleanValue referencesEnabled;
-		public final ForgeConfigSpec.BooleanValue splashesEnabled;
+		public final ModConfigSpec.BooleanValue staticFloaters;
+		public final ModConfigSpec.BooleanValue debugInfo;
+		public final ModConfigSpec.BooleanValue referencesEnabled;
+		public final ModConfigSpec.BooleanValue splashesEnabled;
 
-		public Client(ForgeConfigSpec.Builder builder) {
+		public Client(ModConfigSpec.Builder builder) {
 			builder.push("rendering");
 			useShaders = builder
 					.comment("Set this to false to disable the use of shaders for some of the mod's renders. (Requires game restart)")
@@ -62,7 +60,7 @@ public final class ForgeBotaniaConfig {
 					.define("accessories", true);
 			manaBarHeight = builder
 					.comment("The height of the mana display bar in above the XP bar. You can change this if you have a mod that changes where the XP bar is.")
-					.defineInRange("manaBarHeight", 29, 0, Integer.MAX_VALUE);
+					.defineInRange("manaBarHeight", 29, 0, Integer.MAX_VALUE, Integer.class);
 			staticFloaters = builder
 					.comment("Set this to true if you use lots of floating flowers and are experiencing rendering lag. Will disable the floating flowers' animations and render them statically for a major performance boost. Hit F3+A in-world after toggling this.")
 					.define("staticFloaters", false);
@@ -94,7 +92,7 @@ public final class ForgeBotaniaConfig {
 					.define("staticWandBeam", false);
 			flowerParticleFrequency = builder
 					.comment("The frequency in which particles spawn from normal (worldgen) mystical flowers")
-					.defineInRange("flowerFrequency", 0.75, Double.MIN_VALUE, Double.MAX_VALUE);
+					.defineInRange("flowerFrequency", 0.75, Double.MIN_VALUE, Double.MAX_VALUE, Double.class);
 			elfPortalParticlesEnabled = builder
 					.comment("Set this to false to disable the particles in the elven portal.")
 					.define("elvenPortal", true);
@@ -201,36 +199,36 @@ public final class ForgeBotaniaConfig {
 	}
 
 	public static final Client CLIENT;
-	public static final ForgeConfigSpec CLIENT_SPEC;
+	public static final ModConfigSpec CLIENT_SPEC;
 	static {
-		final Pair<Client, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Client::new);
+		final Pair<Client, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(Client::new);
 		CLIENT_SPEC = specPair.getRight();
 		CLIENT = specPair.getLeft();
 	}
 
 	private static class Common implements BotaniaConfig.ConfigAccess {
-		public final ForgeConfigSpec.BooleanValue blockBreakParticles;
-		public final ForgeConfigSpec.BooleanValue blockBreakParticlesTool;
-		public final ForgeConfigSpec.BooleanValue chargingAnimationEnabled;
-		public final ForgeConfigSpec.BooleanValue silentSpreaders;
-		public final ForgeConfigSpec.IntValue spreaderTraceTime;
-		public final ForgeConfigSpec.BooleanValue flowerForceCheck;
-		public final ForgeConfigSpec.BooleanValue enderPickpocketEnabled;
+		public final ModConfigSpec.BooleanValue blockBreakParticles;
+		public final ModConfigSpec.BooleanValue blockBreakParticlesTool;
+		public final ModConfigSpec.BooleanValue chargingAnimationEnabled;
+		public final ModConfigSpec.BooleanValue silentSpreaders;
+		public final ModConfigSpec.ConfigValue<Integer> spreaderTraceTime;
+		public final ModConfigSpec.BooleanValue flowerForceCheck;
+		public final ModConfigSpec.BooleanValue enderPickpocketEnabled;
 
-		public final ForgeConfigSpec.BooleanValue enchanterEnabled;
-		public final ForgeConfigSpec.BooleanValue relicsEnabled;
-		public final ForgeConfigSpec.BooleanValue invertMagnetRing;
+		public final ModConfigSpec.BooleanValue enchanterEnabled;
+		public final ModConfigSpec.BooleanValue relicsEnabled;
+		public final ModConfigSpec.BooleanValue invertMagnetRing;
 
-		public final ForgeConfigSpec.IntValue harvestLevelWeight;
-		public final ForgeConfigSpec.IntValue harvestLevelBore;
+		public final ModConfigSpec.ConfigValue<Integer> harvestLevelWeight;
+		public final ModConfigSpec.ConfigValue<Integer> harvestLevelBore;
 
-		public final ForgeConfigSpec.BooleanValue gogSpawnWithLexicon;
-		public final ForgeConfigSpec.IntValue gogIslandScaleMultiplier;
+		public final ModConfigSpec.BooleanValue gogSpawnWithLexicon;
+		public final ModConfigSpec.ConfigValue<Integer> gogIslandScaleMultiplier;
 
-		public final ForgeConfigSpec.ConfigValue<List<? extends String>> rannuncarpusItemBlacklist;
-		public final ForgeConfigSpec.ConfigValue<List<? extends String>> rannuncarpusModBlacklist;
+		public final ModConfigSpec.ConfigValue<List<? extends String>> rannuncarpusItemBlacklist;
+		public final ModConfigSpec.ConfigValue<List<? extends String>> rannuncarpusModBlacklist;
 
-		public Common(ForgeConfigSpec.Builder builder) {
+		public Common(ModConfigSpec.Builder builder) {
 			builder.push("blockBreakingParticles");
 			blockBreakParticles = builder
 					.comment("Set this to false to remove the block breaking particles from the flowers and other items in the mod.")
@@ -246,16 +244,16 @@ public final class ForgeBotaniaConfig {
 					.define("silent", false);
 			spreaderTraceTime = builder
 					.comment("How many ticks into the future will mana spreaders attempt to predict where mana bursts go? Setting this lower will improve spreader performance, but will cause them to not fire at targets that are too far away.")
-					.defineInRange("traceTime", 400, 1, Integer.MAX_VALUE);
+					.defineInRange("traceTime", 400, 1, Integer.MAX_VALUE, Integer.class);
 			builder.pop();
 
 			builder.push("harvestLevels");
 			harvestLevelWeight = builder
-					.comment("The harvest level of the Mana Lens: Weight. 3 is diamond level. Defaults to 2 (iron level)")
-					.defineInRange("weightLens", 2, 0, Integer.MAX_VALUE);
+					.comment("The harvest level of the Mana Lens: Weighted. 3 is diamond level. Defaults to 2 (iron level)")
+					.defineInRange("weightLens", 2, 0, Integer.MAX_VALUE, Integer.class);
 			harvestLevelBore = builder
 					.comment("The harvest level of the Mana Lens: Bore. 3 is diamond level. Defaults to 3")
-					.defineInRange("boreLens", 3, 0, Integer.MAX_VALUE);
+					.defineInRange("boreLens", 3, 0, Integer.MAX_VALUE, Integer.class);
 			builder.pop();
 
 			chargingAnimationEnabled = builder
@@ -285,14 +283,14 @@ public final class ForgeBotaniaConfig {
 						Islands are placed on a grid with 256 blocks between points, with the spawn island always being placed on 256, 256.
 						By default, the scale is 8, putting each island on points separated by 2048 blocks.
 						Values below 4 (1024 block spacing) are not recommended due to Nether portal collisions.""")
-					.defineInRange("gardenOfGlass.islandScaleMultiplier", 8, 1, 512);
+					.defineInRange("gardenOfGlass.islandScaleMultiplier", 8, 1, 512, Integer.class);
 			rannuncarpusItemBlacklist = builder
 					.comment("List of item registry names that will be ignored by rannuncarpuses when placing blocks.")
-					.defineList("rannuncarpus.itemBlacklist", Collections.emptyList(), o -> o instanceof String s && ResourceLocation.tryParse(s) != null);
+					.defineList("rannuncarpus.itemBlacklist", Collections.emptyList(), o -> o instanceof String s && Identifier.tryParse(s) != null);
 			rannuncarpusModBlacklist = builder
 					.comment("List of mod names for rannuncarpuses to ignore.\n" +
 							"Ignores Storage Drawers by default due to crashes with placing drawer blocks without player involvement.")
-					.defineList("rannuncarpus.modBlacklist", Collections.singletonList("storagedrawers"), o -> o instanceof String s && ResourceLocation.tryParse(s + ":test") != null);
+					.defineList("rannuncarpus.modBlacklist", Collections.singletonList("storagedrawers"), o -> o instanceof String s && Identifier.tryParse(s + ":test") != null);
 		}
 
 		@Override
@@ -374,33 +372,36 @@ public final class ForgeBotaniaConfig {
 	}
 
 	private static final Common COMMON;
-	private static final ForgeConfigSpec COMMON_SPEC;
+	private static final ModConfigSpec COMMON_SPEC;
 	static {
-		final Pair<Common, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Common::new);
+		final Pair<Common, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(Common::new);
 		COMMON_SPEC = specPair.getRight();
 		COMMON = specPair.getLeft();
 	}
 
-	public static void setup() {
-		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, COMMON_SPEC);
+	public static void setup(ModContainer container, IEventBus modBus) {
+		container.registerConfig(ModConfig.Type.COMMON, COMMON_SPEC);
 		BotaniaConfig.setCommon(COMMON);
 
 		if (XplatAbstractions.INSTANCE.isPhysicalClient()) {
-			ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC);
+			container.registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC);
 			BotaniaConfig.setClient(CLIENT);
 		}
+
+		// ModConfigEvent is an IModBusEvent: it must be listened on the mod event bus,
+		// registering it on the common NeoForge bus is rejected at mod construction time.
+		modBus.addListener(ForgeBotaniaConfig::onConfigLoading);
+		modBus.addListener(ForgeBotaniaConfig::onConfigReloading);
 	}
 
-	@SubscribeEvent
-	public static void onConfigLoad(ModConfigEvent.Loading evt) {
+	public static void onConfigLoading(ModConfigEvent.Loading evt) {
 		var config = evt.getConfig();
 		if (config.getType() == ModConfig.Type.COMMON && config.getModId().equals(LibMisc.MOD_ID)) {
 			BotaniaConfig.resetPatchouliFlags();
 		}
 	}
 
-	@SubscribeEvent
-	public static void onConfigLoad(ModConfigEvent.Reloading evt) {
+	public static void onConfigReloading(ModConfigEvent.Reloading evt) {
 		var config = evt.getConfig();
 		if (config.getType() == ModConfig.Type.COMMON && config.getModId().equals(LibMisc.MOD_ID)) {
 			BotaniaConfig.resetPatchouliFlags();

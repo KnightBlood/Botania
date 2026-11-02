@@ -13,8 +13,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.Item.Properties;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -30,22 +35,21 @@ public class SoulscribeItem extends ManasteelSwordItem {
 	}
 
 	@Override
-	public boolean hurtEnemy(ItemStack stack, LivingEntity target, @NotNull LivingEntity attacker) {
-		if (!target.level().isClientSide
+	public void hurtEnemy(ItemStack stack, LivingEntity target, @NotNull LivingEntity attacker) {
+		if (!target.level().isClientSide()
 				&& target instanceof EnderMan
 				&& attacker instanceof Player player) {
 			target.hurt(player.damageSources().playerAttack(player), 20);
 		}
 
-		stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(InteractionHand.MAIN_HAND));
-		return true;
+		stack.hurtAndBreak(1, attacker, InteractionHand.MAIN_HAND);
 	}
 
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity player, int slot, boolean selected) {}
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity player, @Nullable EquipmentSlot slot) {}
 
 	@Override
-	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken) {
+	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<Item> onBroken) {
 		return amount;
 	}
 }

@@ -11,6 +11,7 @@ package vazkii.botania.common.block.flower.generating;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -58,7 +59,7 @@ public class DandelifeonBlockEntity extends GeneratingFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (!getLevel().isClientSide) {
+		if (!getLevel().isClientSide()) {
 			if (shouldTick(getLevel().getGameTime())) {
 				runSimulation();
 			} else if (shouldTick(getLevel().getGameTime() + 1)) {
@@ -267,7 +268,7 @@ public class DandelifeonBlockEntity extends GeneratingFlowerBlockEntity {
 	@Override
 	public void readFromPacketNBT(CompoundTag cmp) {
 		super.readFromPacketNBT(cmp);
-		radius = cmp.contains(TAG_RADIUS) ? cmp.getInt(TAG_RADIUS) : RANGE;
+		radius = cmp.contains(TAG_RADIUS) ? cmp.getIntOr(TAG_RADIUS, 0) : RANGE;
 	}
 
 }

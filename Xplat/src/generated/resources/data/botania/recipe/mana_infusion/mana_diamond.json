@@ -1,0 +1,9 @@
+{
+  "type": "botania:mana_infusion",
+  "input": "minecraft:diamond",
+  "mana": 10000,
+  "output": {
+    "count": 1,
+    "id": "botania:mana_diamond"
+  }
+}

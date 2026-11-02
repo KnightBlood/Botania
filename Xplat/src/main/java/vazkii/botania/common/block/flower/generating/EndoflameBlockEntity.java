@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.api.block_entity.GeneratingFlowerBlockEntity;
 import vazkii.botania.api.block_entity.RadiusDescriptor;
@@ -50,8 +51,8 @@ public class EndoflameBlockEntity extends GeneratingFlowerBlockEntity {
 			burnTime--;
 		}
 
-		if (getLevel().isClientSide) {
-			if (burnTime > 0 && getLevel().random.nextInt(10) == 0) {
+		if (getLevel().isClientSide()) {
+			if (burnTime > 0 && getLevel().getRandom().nextInt(10) == 0) {
 				emitParticle(ParticleTypes.FLAME, 0.4 + Math.random() * 0.2, 0.7, 0.4 + Math.random() * 0.2, 0.0D, 0.0D, 0.0D);
 			}
 			return;
@@ -64,10 +65,10 @@ public class EndoflameBlockEntity extends GeneratingFlowerBlockEntity {
 		if (burnTime == 0) {
 			if (getMana() < getMaxMana()) {
 
-				for (ItemEntity item : getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(getEffectivePos().offset(-RANGE, -RANGE, -RANGE), getEffectivePos().offset(RANGE + 1, RANGE + 1, RANGE + 1)))) {
+				for (ItemEntity item : getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(Vec3.atLowerCornerOf(getEffectivePos().offset(-RANGE, -RANGE, -RANGE)), Vec3.atLowerCornerOf(getEffectivePos().offset(RANGE + 1, RANGE + 1, RANGE + 1))))) {
 					if (DelayHelper.canInteractWith(this, item)) {
 						ItemStack stack = item.getItem();
-						if (stack.getItem().hasCraftingRemainingItem()) {
+						if (stack.getItem().getCraftingRemainder() != null) {
 							continue;
 						}
 
@@ -132,7 +133,7 @@ public class EndoflameBlockEntity extends GeneratingFlowerBlockEntity {
 	public void readFromPacketNBT(CompoundTag cmp) {
 		super.readFromPacketNBT(cmp);
 
-		burnTime = cmp.getInt(TAG_BURN_TIME);
+		burnTime = cmp.getIntOr(TAG_BURN_TIME, 0);
 	}
 
 	private int getBurnTime(ItemStack stack) {

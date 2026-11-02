@@ -9,11 +9,12 @@
 package vazkii.botania.common.block.dispenser;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSource;
+import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.Direction;
 import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 
@@ -29,9 +30,9 @@ public class SeedsBehavior extends OptionalDispenseItemBehavior {
 	@NotNull
 	@Override
 	public ItemStack execute(BlockSource source, ItemStack stack) {
-		Direction facing = source.getBlockState().getValue(DispenserBlock.FACING);
-		BlockPos pos = source.getPos().relative(facing);
-		Level world = source.getLevel();
+		Direction facing = source.state().getValue(DispenserBlock.FACING);
+		BlockPos pos = source.pos().relative(facing);
+		Level world = source.level();
 
 		setSuccess(false);
 		if (world.isEmptyBlock(pos) && block.defaultBlockState().canSurvive(world, pos)) {

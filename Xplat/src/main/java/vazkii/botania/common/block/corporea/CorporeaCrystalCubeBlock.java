@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.core.Direction;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,7 +46,7 @@ public class CorporeaCrystalCubeBlock extends BotaniaWaterloggedBlock implements
 
 	@Override
 	public void attack(BlockState state, Level world, BlockPos pos, Player player) {
-		if (!world.isClientSide && world.getBlockEntity(pos) instanceof CorporeaCrystalCubeBlockEntity cube) {
+		if (!world.isClientSide() && world.getBlockEntity(pos) instanceof CorporeaCrystalCubeBlockEntity cube) {
 			cube.doRequest(player);
 		}
 	}
@@ -57,7 +58,13 @@ public class CorporeaCrystalCubeBlock extends BotaniaWaterloggedBlock implements
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+	protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level world, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hit) {
+		return useItemOn(itemStack, world, player, hand, hit);
+	}
+
+	private InteractionResult useItemOn(ItemStack itemStack, Level world, Player player, InteractionHand hand, BlockHitResult hit) {
+		BlockPos pos = hit.getBlockPos();
+
 		ItemStack stack = player.getItemInHand(hand);
 		if (!stack.isEmpty()) {
 			if (stack.getItem() instanceof WandOfTheForestItem && player.isSecondaryUseActive()) {
@@ -67,13 +74,13 @@ public class CorporeaCrystalCubeBlock extends BotaniaWaterloggedBlock implements
 				return InteractionResult.FAIL;
 			}
 			if (cube.locked) {
-				if (!world.isClientSide) {
-					player.displayClientMessage(Component.translatable("botaniamisc.crystalCubeLocked"), false);
+				if (!world.isClientSide()) {
+					player.sendSystemMessage(Component.translatable("botaniamisc.crystalCubeLocked"));
 				}
 			} else {
 				cube.setRequestTarget(stack);
 			}
-			return InteractionResult.sidedSuccess(world.isClientSide());
+			return (world.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
 		}
 		return InteractionResult.PASS;
 	}
@@ -87,7 +94,7 @@ public class CorporeaCrystalCubeBlock extends BotaniaWaterloggedBlock implements
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			return createTickerHelper(type, BotaniaBlockEntities.CORPOREA_CRYSTAL_CUBE, CorporeaCrystalCubeBlockEntity::serverTick);
 		}
 		return null;
@@ -99,7 +106,7 @@ public class CorporeaCrystalCubeBlock extends BotaniaWaterloggedBlock implements
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos) {
+	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
 		return world.getBlockEntity(pos) instanceof CorporeaCrystalCubeBlockEntity cube
 				? cube.getComparatorValue()
 				: 0;

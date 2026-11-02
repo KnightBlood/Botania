@@ -26,6 +26,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -90,7 +92,7 @@ public class RingOfLokiItem extends RelicBaubleItem implements WireframeCoordina
 		BlockPos hit = lookPos.getBlockPos();
 		if (stack.isEmpty() && hand == InteractionHand.MAIN_HAND) {
 			BlockPos originCoords = getBindingCenter(lokiRing);
-			if (!world.isClientSide) {
+			if (!world.isClientSide()) {
 				if (originCoords.getY() == Integer.MIN_VALUE) {
 					// Initiate a new pending list of positions
 					setBindingCenter(lokiRing, hit);
@@ -108,7 +110,7 @@ public class RingOfLokiItem extends RelicBaubleItem implements WireframeCoordina
 							if (cursors.size() < MAX_NUM_CURSORS) {
 								cursors.add(relPos);
 							} else {
-								player.displayClientMessage(Component.translatable("botaniamisc.lokiRingLimitReached"), true);
+								player.sendOverlayMessage(Component.translatable("botaniamisc.lokiRingLimitReached"));
 							}
 						}
 						setCursorList(lokiRing, cursors);
@@ -160,7 +162,7 @@ public class RingOfLokiItem extends RelicBaubleItem implements WireframeCoordina
 	public static void breakOnAllCursors(Player player, ItemStack stack, BlockPos pos, Direction side) {
 		Item item = stack.getItem();
 		ItemStack lokiRing = getLokiRing(player);
-		if (lokiRing.isEmpty() || player.level().isClientSide || !(item instanceof SequentialBreaker breaker)) {
+		if (lokiRing.isEmpty() || player.level().isClientSide() || !(item instanceof SequentialBreaker breaker)) {
 			return;
 		}
 
@@ -193,10 +195,10 @@ public class RingOfLokiItem extends RelicBaubleItem implements WireframeCoordina
 	// This prevents a player from accidentally entering binding mode, then forgetting where the binding center
 	// is and thus being unable to exit binding mode.
 	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean held) {
-		super.inventoryTick(stack, world, entity, slot, held);
+	public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
+		super.inventoryTick(stack, world, entity, slot);
 		// Curios actually calls this method, but with a negative slot, so we can check if we're in the "real" inventory this way
-		if (slot >= 0) {
+		if (slot != null) {
 			exitBindingMode(stack);
 		}
 	}
@@ -271,12 +273,12 @@ public class RingOfLokiItem extends RelicBaubleItem implements WireframeCoordina
 		CompoundTag cmp = ItemNBTHelper.getCompound(stack, TAG_CURSOR_LIST, false);
 		List<BlockPos> cursors = new ArrayList<>();
 
-		int count = cmp.getInt(TAG_CURSOR_COUNT);
+		int count = cmp.getIntOr(TAG_CURSOR_COUNT, 0);
 		for (int i = 0; i < count; i++) {
-			CompoundTag cursorCmp = cmp.getCompound(TAG_CURSOR_PREFIX + i);
-			int x = cursorCmp.getInt(TAG_X_OFFSET);
-			int y = cursorCmp.getInt(TAG_Y_OFFSET);
-			int z = cursorCmp.getInt(TAG_Z_OFFSET);
+			CompoundTag cursorCmp = cmp.getCompoundOrEmpty(TAG_CURSOR_PREFIX + i);
+			int x = cursorCmp.getIntOr(TAG_X_OFFSET, 0);
+			int y = cursorCmp.getIntOr(TAG_Y_OFFSET, 0);
+			int z = cursorCmp.getIntOr(TAG_Z_OFFSET, 0);
 			cursors.add(new BlockPos(x, y, z));
 		}
 
@@ -311,3 +313,4 @@ public class RingOfLokiItem extends RelicBaubleItem implements WireframeCoordina
 	}
 
 }
+

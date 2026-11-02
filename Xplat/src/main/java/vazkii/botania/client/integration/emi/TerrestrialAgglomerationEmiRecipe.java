@@ -4,8 +4,8 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 import vazkii.botania.api.recipe.TerrestrialAgglomerationRecipe;
 import vazkii.botania.common.block.BotaniaBlocks;
@@ -16,17 +16,17 @@ import java.util.List;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class TerrestrialAgglomerationEmiRecipe extends BotaniaEmiRecipe {
-	private static final ResourceLocation TEXTURE = prefix("textures/gui/terrasteel_jei_overlay.png");
+	private static final Identifier TEXTURE = prefix("textures/gui/terrasteel_jei_overlay.png");
 	private static final EmiStack PLATE = EmiStack.of(BotaniaBlocks.terraPlate);
 	public static final int CENTER_X = 45;
 	public static final int CENTER_Y = 30;
 	private final int mana;
 
-	public TerrestrialAgglomerationEmiRecipe(TerrestrialAgglomerationRecipe recipe) {
-		super(BotaniaEmiPlugin.TERRESTRIAL_AGGLOMERATION, recipe);
+	public TerrestrialAgglomerationEmiRecipe(RecipeHolder<TerrestrialAgglomerationRecipe> holder) {
+		super(BotaniaEmiPlugin.TERRESTRIAL_AGGLOMERATION, holder);
+		TerrestrialAgglomerationRecipe recipe = holder.value();
 		this.input = recipe.getIngredients().stream().map(EmiIngredient::of).toList();
-		// TODO 1.19.4 figure out the proper way to get a registry access
-		this.output = List.of(EmiStack.of(recipe.getResultItem(RegistryAccess.EMPTY)));
+		this.output = List.of(EmiStack.of(recipe.getResultItem()));
 		this.mana = recipe.getMana();
 	}
 
@@ -51,6 +51,6 @@ public class TerrestrialAgglomerationEmiRecipe extends BotaniaEmiRecipe {
 					BotaniaEmiPlugin.rotateYAround(CENTER_X, CENTER_Y - 30, CENTER_X, CENTER_Y, step * i)).drawBack(false);
 		}
 		widgets.addSlot(PLATE, CENTER_X, 80).drawBack(false).catalyst(true);
-		widgets.addSlot(output.get(0), CENTER_X, CENTER_Y).drawBack(false).recipeContext(this);
+		widgets.addSlot(input.get(0), CENTER_X, CENTER_Y).drawBack(false).recipeContext(this);
 	}
 }

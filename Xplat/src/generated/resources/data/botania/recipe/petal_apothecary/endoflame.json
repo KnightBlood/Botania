@@ -1,0 +1,14 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/brown",
+    "#botania:petals/brown",
+    "#botania:petals/red",
+    "#botania:petals/light_gray"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:endoflame"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

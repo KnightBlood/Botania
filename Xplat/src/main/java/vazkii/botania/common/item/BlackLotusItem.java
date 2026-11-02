@@ -14,8 +14,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.item.ManaDissolvable;
 import vazkii.botania.api.mana.ManaPool;
@@ -50,7 +54,7 @@ public class BlackLotusItem extends Item implements ManaDissolvable {
 		BlockPos pos = pool.getManaReceiverPos();
 		boolean t2 = item.getItem().is(BotaniaItems.blackerLotus);
 
-		if (!item.level().isClientSide) {
+		if (!item.level().isClientSide()) {
 			pool.receiveMana(t2 ? MANA_PER_T2 : MANA_PER);
 			EntityHelper.shrinkItem(item);
 			XplatAbstractions.INSTANCE.sendToTracking(item, new BotaniaEffectPacket(EffectType.BLACK_LOTUS_DISSOLVE, pos.getX(), pos.getY() + 0.5, pos.getZ()));
@@ -60,8 +64,8 @@ public class BlackLotusItem extends Item implements ManaDissolvable {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level world, List<Component> list, TooltipFlag flags) {
-		list.add(Component.translatable("botaniamisc.lotusDesc").withStyle(ChatFormatting.GRAY));
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flags) {
+		builder.accept(Component.translatable("botaniamisc.lotusDesc").withStyle(ChatFormatting.GRAY));
 	}
 
 }

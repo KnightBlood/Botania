@@ -25,22 +25,18 @@ import vazkii.botania.common.item.equipment.tool.terrasteel.TerraBladeItem;
 @Mixin(Minecraft.class)
 public abstract class MinecraftFabricMixin {
 	@Shadow
-	public abstract boolean isPaused();
-
-	@Shadow
-	private float pausePartialTick;
-
-	@Shadow
-	public abstract float getFrameTime();
-
-	@Shadow
 	@Nullable
 	public LocalPlayer player;
 
-	@Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;render(FJZ)V"))
-	private void onFrameStart(boolean tick, CallbackInfo ci) {
-		ClientTickHandler.renderTick(isPaused() ? pausePartialTick : getFrameTime());
-
+	/**
+	 * 26.1: {@code runTick} no longer calls {@code GameRenderer.render}; rendering moved to
+	 * {@code renderFrame}, and {@code getFrameTime}/{@code pausePartialTick} are gone — the
+	 * per-frame partial tick now comes from the {@code DeltaTracker}. Matches the NeoForge-side
+	 * {@code RenderFrameEvent.Post} handling in ForgeClientInitializer.
+	 */
+	@Inject(method = "renderFrame", at = @At("HEAD"))
+	private void onFrameStart(boolean renderLevel, CallbackInfo ci) {
+		ClientTickHandler.renderTick(((Minecraft) (Object) this).getDeltaTracker().getGameTimeDeltaPartialTick(true));
 	}
 
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))

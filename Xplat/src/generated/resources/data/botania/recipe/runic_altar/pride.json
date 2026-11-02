@@ -1,0 +1,14 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    "#botania:mana_diamond_gems",
+    "#botania:mana_diamond_gems",
+    "botania:rune_summer",
+    "botania:rune_fire"
+  ],
+  "mana": 12000,
+  "output": {
+    "count": 1,
+    "id": "botania:rune_pride"
+  }
+}

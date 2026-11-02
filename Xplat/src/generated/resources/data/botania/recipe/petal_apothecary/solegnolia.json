@@ -1,0 +1,15 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/brown",
+    "#botania:petals/brown",
+    "#botania:petals/red",
+    "#botania:petals/blue",
+    "botania:redstone_root"
+  ],
+  "output": {
+    "count": 1,
+    "id": "botania:solegnolia"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
+}

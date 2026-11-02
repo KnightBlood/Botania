@@ -9,8 +9,11 @@
 package vazkii.botania.common.block.flower.generating;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -19,14 +22,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import vazkii.botania.api.block_entity.GeneratingFlowerBlockEntity;
 import vazkii.botania.api.block_entity.RadiusDescriptor;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.helper.EntityHelper;
+import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.mixin.ExperienceOrbAccessor;
 
 import java.util.List;
@@ -44,11 +50,11 @@ public class RosaArcanaBlockEntity extends GeneratingFlowerBlockEntity {
 	public void tickFlower() {
 		super.tickFlower();
 
-		if (level.isClientSide || getMana() >= getMaxMana()) {
+		if (level.isClientSide() || getMana() >= getMaxMana()) {
 			return;
 		}
 
-		AABB effectBounds = new AABB(getEffectivePos().offset(-RANGE, -RANGE, -RANGE), getEffectivePos().offset(RANGE + 1, RANGE + 1, RANGE + 1));
+		AABB effectBounds = new AABB(Vec3.atLowerCornerOf(getEffectivePos().offset(-RANGE, -RANGE, -RANGE)), Vec3.atLowerCornerOf(getEffectivePos().offset(RANGE + 1, RANGE + 1, RANGE + 1)));
 
 		/* TODO: Now that player and orb yields are identical, it might look better/funnier
 			to instead make xp orbs leak out of the player's head instead directly consuming.
@@ -76,7 +82,7 @@ public class RosaArcanaBlockEntity extends GeneratingFlowerBlockEntity {
 				if (count == 1) {
 					orb.discard();
 				}
-				float pitch = (level.random.nextFloat() - level.random.nextFloat()) * 0.35F + 0.9F;
+				float pitch = (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.35F + 0.9F;
 				//Usage of vanilla sound event: Subtitle is "Experience gained", and this is about gaining experience anyways.
 				level.playSound(null, getEffectivePos(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, 0.07F, pitch);
 				sync();
@@ -98,7 +104,7 @@ public class RosaArcanaBlockEntity extends GeneratingFlowerBlockEntity {
 					newEntity.setDeltaMovement(entity.getDeltaMovement());
 					level.addFreshEntity(newEntity);
 
-					level.playSound(null, getEffectivePos(), BotaniaSounds.arcaneRoseDisenchant, SoundSource.BLOCKS, 1F, this.level.random.nextFloat() * 0.1F + 0.9F);
+					level.playSound(null, getEffectivePos(), BotaniaSounds.arcaneRoseDisenchant, SoundSource.BLOCKS, 1F, this.level.getRandom().nextFloat() * 0.1F + 0.9F);
 					while (xp > 0) {
 						int i = ExperienceOrb.getExperienceValue(xp);
 						xp -= i;
@@ -113,13 +119,13 @@ public class RosaArcanaBlockEntity extends GeneratingFlowerBlockEntity {
 	// [VanillaCopy] GrindstoneMenu
 	private static int getEnchantmentXpValue(ItemStack stack) {
 		int ret = 0;
-		Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
+		ItemEnchantments map = EnchantmentHelper.getEnchantmentsForCrafting(stack);
 
-		for (Map.Entry<Enchantment, Integer> entry : map.entrySet()) {
-			Enchantment enchantment = entry.getKey();
-			Integer integer = entry.getValue();
-			if (!enchantment.isCurse()) {
-				ret += enchantment.getMinCost(integer);
+		for (var entry : map.entrySet()) {
+			Holder<Enchantment> enchantment = entry.getKey();
+			int lvl = entry.getIntValue();
+			if (!enchantment.is(EnchantmentTags.CURSE)) {
+				ret += enchantment.value().getMinCost(lvl);
 			}
 		}
 
@@ -129,23 +135,22 @@ public class RosaArcanaBlockEntity extends GeneratingFlowerBlockEntity {
 	// [VanillaCopy] GrindstoneMenu, no damage and count setting
 	private static ItemStack removeNonCurses(ItemStack stack) {
 		ItemStack itemstack = stack.copy();
-		itemstack.removeTagKey("Enchantments");
-		itemstack.removeTagKey("StoredEnchantments");
+		ItemEnchantments newEnchantments = EnchantmentHelper.updateEnchantments(itemstack,
+				enchantments -> enchantments.removeIf(enchantment -> !enchantment.is(EnchantmentTags.CURSE)));
 
-		Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
-		map.keySet().removeIf(e -> !e.isCurse());
-		EnchantmentHelper.setEnchantments(map, itemstack);
-		itemstack.setRepairCost(0);
-		if (itemstack.is(Items.ENCHANTED_BOOK) && map.size() == 0) {
-			itemstack = new ItemStack(Items.BOOK);
-			if (stack.hasCustomHoverName()) {
-				itemstack.setHoverName(stack.getHoverName());
+		if (itemstack.is(Items.ENCHANTED_BOOK) && newEnchantments.isEmpty()) {
+			itemstack = itemstack.transmuteCopy(Items.BOOK);
+			if (stack.getCustomName() != null) {
+				itemstack.set(DataComponents.CUSTOM_NAME, stack.getHoverName());
 			}
 		}
 
-		for (int i = 0; i < map.size(); ++i) {
-			itemstack.setRepairCost(AnvilMenu.calculateIncreasedRepairCost(itemstack.getBaseRepairCost()));
+		int repairCost = 0;
+
+		for (int i = 0; i < newEnchantments.size(); ++i) {
+			repairCost = AnvilMenu.calculateIncreasedRepairCost(repairCost);
 		}
+		itemstack.set(DataComponents.REPAIR_COST, repairCost);
 
 		return itemstack;
 	}

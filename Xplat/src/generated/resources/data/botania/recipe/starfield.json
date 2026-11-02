@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "#botania:elementium_ingots",
+    "O": "minecraft:obsidian",
+    "P": "botania:pixie_dust"
+  },
+  "pattern": [
+    "EPE",
+    "EOE"
+  ],
+  "result": {
+    "id": "botania:starfield"
+  }
+}

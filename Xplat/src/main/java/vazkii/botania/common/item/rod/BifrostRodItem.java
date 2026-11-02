@@ -9,14 +9,15 @@
 package vazkii.botania.common.item.rod;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,7 +43,7 @@ import java.util.List;
 
 public class BifrostRodItem extends SelfReturningItem {
 
-	private static final ResourceLocation avatarOverlay = new ResourceLocation(ResourcesLib.MODEL_AVATAR_RAINBOW);
+	private static final Identifier avatarOverlay = Identifier.parse(ResourcesLib.MODEL_AVATAR_RAINBOW);
 
 	private static final int MANA_COST = 750;
 	private static final int MANA_COST_AVATAR = 4;
@@ -54,9 +55,9 @@ public class BifrostRodItem extends SelfReturningItem {
 
 	@NotNull
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, @NotNull InteractionHand hand) {
+	public InteractionResult use(Level world, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
-		if (!world.isClientSide && ManaItemHandler.instance().requestManaExactForTool(stack, player, MANA_COST, false)) {
+		if (!world.isClientSide() && ManaItemHandler.instance().requestManaExactForTool(stack, player, MANA_COST, false)) {
 			BlockState bifrost = BotaniaBlocks.bifrost.defaultBlockState();
 			Vec3 vector = player.getLookAngle().normalize();
 
@@ -110,11 +111,11 @@ public class BifrostRodItem extends SelfReturningItem {
 				world.playSound(null, player.getX(), player.getY(), player.getZ(), BotaniaSounds.bifrostRod, SoundSource.PLAYERS, 1F, 1F);
 				player.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
 				ManaItemHandler.instance().requestManaExactForTool(stack, player, MANA_COST, true);
-				player.getCooldowns().addCooldown(this, player.isCreative() ? 10 : TIME);
+				player.getCooldowns().addCooldown(stack, player.isCreative() ? 10 : TIME);
 			}
 		}
 
-		return InteractionResultHolder.sidedSuccess(stack, world.isClientSide());
+		return world.isClientSide() ? InteractionResult.SUCCESS.heldItemTransformedTo(stack) : InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(stack);
 	}
 
 	private static boolean placeBridgeSegment(Level world, BlockPos center, BlockPos.MutableBlockPos placePos, int time) {
@@ -144,7 +145,7 @@ public class BifrostRodItem extends SelfReturningItem {
 			Level world = te.getLevel();
 			ManaReceiver receiver = XplatAbstractions.INSTANCE.findManaReceiver(world, te.getBlockPos(), te.getBlockState(), te, null);
 
-			if (world.isClientSide || receiver.getCurrentMana() < MANA_COST_AVATAR * 25
+			if (world.isClientSide() || receiver.getCurrentMana() < MANA_COST_AVATAR * 25
 					|| !tile.isEnabled() || world.isOutsideBuildHeight(te.getBlockPos().getY() - 1)) {
 				return;
 			}
@@ -156,10 +157,10 @@ public class BifrostRodItem extends SelfReturningItem {
 
 			AABB axis = null;
 			switch (world.getBlockState(tePos).getValue(BlockStateProperties.HORIZONTAL_FACING)) {
-				case NORTH -> axis = new AABB(tePos.offset(-w, -h, -l), tePos.offset(w + 1, h, 0));
-				case SOUTH -> axis = new AABB(tePos.offset(-w, -h, 1), tePos.offset(w + 1, h, l + 1));
-				case WEST -> axis = new AABB(tePos.offset(-l, -h, -w), tePos.offset(0, h, w + 1));
-				case EAST -> axis = new AABB(tePos.offset(1, -h, -w), tePos.offset(l + 1, h, w + 1));
+				case NORTH -> axis = new AABB(Vec3.atLowerCornerOf(tePos.offset(-w, -h, -l)), Vec3.atLowerCornerOf(tePos.offset(w + 1, h, 0)));
+				case SOUTH -> axis = new AABB(Vec3.atLowerCornerOf(tePos.offset(-w, -h, 1)), Vec3.atLowerCornerOf(tePos.offset(w + 1, h, l + 1)));
+				case WEST -> axis = new AABB(Vec3.atLowerCornerOf(tePos.offset(-l, -h, -w)), Vec3.atLowerCornerOf(tePos.offset(0, h, w + 1)));
+				case EAST -> axis = new AABB(Vec3.atLowerCornerOf(tePos.offset(1, -h, -w)), Vec3.atLowerCornerOf(tePos.offset(l + 1, h, w + 1)));
 				default -> {}
 			}
 
@@ -201,7 +202,7 @@ public class BifrostRodItem extends SelfReturningItem {
 		}
 
 		@Override
-		public ResourceLocation getOverlayResource(Avatar tile) {
+		public Identifier getOverlayResource(Avatar tile) {
 			return avatarOverlay;
 		}
 	}

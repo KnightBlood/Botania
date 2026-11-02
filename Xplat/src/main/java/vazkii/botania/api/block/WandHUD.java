@@ -9,7 +9,7 @@
 package vazkii.botania.api.block;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
  * Any block (entity) that has this capability renders a HUD when being hovered
@@ -17,6 +17,6 @@ import net.minecraft.client.gui.GuiGraphics;
  */
 public interface WandHUD {
 
-	void renderHUD(GuiGraphics gui, Minecraft mc);
+	void renderHUD(GuiGraphicsExtractor gui, Minecraft mc);
 
 }

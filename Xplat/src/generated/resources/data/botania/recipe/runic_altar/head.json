@@ -1,0 +1,18 @@
+{
+  "type": "botania:runic_altar_head",
+  "ingredients": [
+    "minecraft:skeleton_skull",
+    "botania:pixie_dust",
+    "minecraft:prismarine_crystals",
+    [
+      "minecraft:name_tag",
+      "minecraft:written_book"
+    ],
+    "minecraft:golden_apple"
+  ],
+  "mana": 22500,
+  "output": {
+    "count": 1,
+    "id": "minecraft:player_head"
+  }
+}

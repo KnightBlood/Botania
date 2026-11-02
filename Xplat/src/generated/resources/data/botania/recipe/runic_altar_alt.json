@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#botania:mana_diamond_gems",
+    "S": "botania:livingrock"
+  },
+  "pattern": [
+    "SSS",
+    "SPS"
+  ],
+  "result": {
+    "id": "botania:runic_altar"
+  }
+}

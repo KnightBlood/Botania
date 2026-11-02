@@ -18,9 +18,4 @@ public class SelfReturningItem extends Item {
 	public SelfReturningItem(Item.Properties builder) {
 		super(builder);
 	}
-
-	@Override
-	public boolean hasCraftingRemainingItem() {
-		return true;
-	}
 }

@@ -11,13 +11,19 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.NotNull;
@@ -35,22 +41,22 @@ import java.util.Objects;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class LuminizerBlockEntityRenderer implements BlockEntityRenderer<LuminizerBlockEntity> {
+public class LuminizerBlockEntityRenderer extends BotaniaBlockEntityRenderer<LuminizerBlockEntity> {
 	private final TextureAtlasSprite luminizerWorldSprite;
 	private final TextureAtlasSprite detectorLuminizerWorldSprite;
 	private final TextureAtlasSprite forkLuminizerWorldSprite;
 	private final TextureAtlasSprite toggleLuminizerWorldSprite;
 
 	public LuminizerBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-		var atlas = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
-		this.luminizerWorldSprite = Objects.requireNonNull(atlas.apply(prefix("block/light_relay")));
-		this.detectorLuminizerWorldSprite = Objects.requireNonNull(atlas.apply(prefix("block/detector_light_relay")));
-		this.forkLuminizerWorldSprite = Objects.requireNonNull(atlas.apply(prefix("block/fork_light_relay")));
-		this.toggleLuminizerWorldSprite = Objects.requireNonNull(atlas.apply(prefix("block/toggle_light_relay")));
+		var atlas = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
+		this.luminizerWorldSprite = Objects.requireNonNull(atlas.getSprite(prefix("block/light_relay")));
+		this.detectorLuminizerWorldSprite = Objects.requireNonNull(atlas.getSprite(prefix("block/detector_light_relay")));
+		this.forkLuminizerWorldSprite = Objects.requireNonNull(atlas.getSprite(prefix("block/fork_light_relay")));
+		this.toggleLuminizerWorldSprite = Objects.requireNonNull(atlas.getSprite(prefix("block/toggle_light_relay")));
 	}
 
 	@Override
-	public void render(@NotNull LuminizerBlockEntity tile, float pticks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@NotNull LuminizerBlockEntity tile, float pticks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		BlockState state = tile.getBlockState();
 
 		Minecraft mc = Minecraft.getInstance();
@@ -76,7 +82,7 @@ public class LuminizerBlockEntityRenderer implements BlockEntityRenderer<Luminiz
 		float scale = 0.75F;
 		ms.scale(scale, scale, scale);
 
-		ms.mulPose(mc.getEntityRenderDispatcher().cameraOrientation());
+		ms.mulPose(buffers.cameraOrientation());
 		ms.mulPose(VecHelper.rotateY(180.0F));
 
 		float off = 0.25F;
@@ -103,10 +109,10 @@ public class LuminizerBlockEntityRenderer implements BlockEntityRenderer<Luminiz
 		float f6 = 0.25F;
 
 		Matrix4f mat = ms.last().pose();
-		buffer.vertex(mat, 0.0F - f5, 0.0F - f6, 0.0F).color(1F, 1F, 1F, 1F).uv(f, f3).endVertex();
-		buffer.vertex(mat, f4 - f5, 0.0F - f6, 0.0F).color(1F, 1F, 1F, 1F).uv(f1, f3).endVertex();
-		buffer.vertex(mat, f4 - f5, f4 - f6, 0.0F).color(1F, 1F, 1F, 1F).uv(f1, f2).endVertex();
-		buffer.vertex(mat, 0.0F - f5, f4 - f6, 0.0F).color(1F, 1F, 1F, 1F).uv(f, f2).endVertex();
+		buffer.addVertex(mat, 0.0F - f5, 0.0F - f6, 0.0F).setColor(1F, 1F, 1F, 1F).setUv(f, f3);
+		buffer.addVertex(mat, f4 - f5, 0.0F - f6, 0.0F).setColor(1F, 1F, 1F, 1F).setUv(f1, f3);
+		buffer.addVertex(mat, f4 - f5, f4 - f6, 0.0F).setColor(1F, 1F, 1F, 1F).setUv(f1, f2);
+		buffer.addVertex(mat, 0.0F - f5, f4 - f6, 0.0F).setColor(1F, 1F, 1F, 1F).setUv(f, f2);
 
 	}
 

@@ -10,6 +10,7 @@ package vazkii.botania.common.item.equipment.bauble;
 
 import com.google.common.collect.Multimap;
 
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
@@ -22,9 +23,9 @@ public class GreatFairyRingItem extends BaubleItem {
 	}
 
 	@Override
-	public Multimap<Attribute, AttributeModifier> getEquippedAttributeModifiers(ItemStack stack) {
-		Multimap<Attribute, AttributeModifier> ret = super.getEquippedAttributeModifiers(stack);
-		ret.put(PixieHandler.PIXIE_SPAWN_CHANCE, new AttributeModifier(getBaubleUUID(stack), "Ring modifier", 0.25, AttributeModifier.Operation.ADDITION));
+	public Multimap<Holder<Attribute>, AttributeModifier> getEquippedAttributeModifiers(ItemStack stack) {
+		Multimap<Holder<Attribute>, AttributeModifier> ret = super.getEquippedAttributeModifiers(stack);
+		ret.put(PixieHandler.PIXIE_SPAWN_CHANCE, new AttributeModifier(getBaubleModifierId(stack), 0.25, AttributeModifier.Operation.ADD_VALUE));
 		return ret;
 	}
 }

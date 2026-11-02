@@ -11,19 +11,29 @@ package vazkii.botania.common.entity;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.FlyingMob;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.client.fx.SparkleParticleData;
 
-public class PixieEntity extends FlyingMob {
+/**
+ * Former extension of {@code net.minecraft.world.entity.FlyingMob} (removed in MC 26.1). The base
+ * class behavior is inlined here: a {@link FlyingPathNavigation} and disabled fall damage, so the
+ * pixie's flying movement behavior is identical to the old {@code FlyingMob} implementation.
+ */
+public class PixieEntity extends Mob {
 	private static final EntityDataAccessor<Integer> PIXIE_TYPE = SynchedEntityData.defineId(PixieEntity.class, EntityDataSerializers.INT);
 
 	private LivingEntity summoner = null;
@@ -39,8 +49,8 @@ public class PixieEntity extends FlyingMob {
 	}
 
 	@Override
-	protected void defineSynchedData() {
-		super.defineSynchedData();
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {
+		super.defineSynchedData(entityData);
 		entityData.define(PIXIE_TYPE, 0);
 	}
 
@@ -64,7 +74,14 @@ public class PixieEntity extends FlyingMob {
 	}
 
 	@Override
-	protected void customServerAiStep() {
+	protected PathNavigation createNavigation(Level level) {
+		FlyingPathNavigation navigation = new FlyingPathNavigation(this, level);
+		navigation.setCanFloat(true);
+		return navigation;
+	}
+
+	@Override
+	protected void customServerAiStep(ServerLevel level) {
 		LivingEntity target = getTarget();
 		if (target != null) {
 			double d0 = target.getX() + target.getBbWidth() / 2 - getX();
@@ -102,7 +119,7 @@ public class PixieEntity extends FlyingMob {
 	}
 
 	@Override
-	public boolean isInvulnerableTo(@NotNull DamageSource source) {
+	public boolean isInvulnerableTo(ServerLevel level, @NotNull DamageSource source) {
 		if (getPixieType() == 0 && source.getEntity() == summoner) {
 			return true;
 		}
@@ -111,20 +128,20 @@ public class PixieEntity extends FlyingMob {
 			return true;
 		}
 
-		return super.isInvulnerableTo(source);
+		return super.isInvulnerableTo(level, source);
 	}
 
 	@Override
 	public void baseTick() {
 		super.baseTick();
 
-		if (!level().isClientSide
+		if (!level().isClientSide()
 				&& (getTarget() == null || tickCount > 200)) {
 			discard();
 		}
 
 		boolean dark = getPixieType() == 1;
-		if (level().isClientSide) {
+		if (level().isClientSide()) {
 			for (int i = 0; i < 4; i++) {
 				float r = dark ? 0.1F : 1F;
 				float g = dark ? 0.025F : 0.25F;
@@ -137,7 +154,7 @@ public class PixieEntity extends FlyingMob {
 
 	@Override
 	public void remove(RemovalReason reason) {
-		if (level() != null && level().isClientSide && getPixieType() == 0) {
+		if (level() != null && level().isClientSide() && getPixieType() == 0) {
 			for (int i = 0; i < 12; i++) {
 				SparkleParticleData data = SparkleParticleData.sparkle(1F + (float) Math.random() * 0.25F, 1F, 0.25F, 0.9F, 5);
 				level().addParticle(data, getX() + (Math.random() - 0.5) * 0.25, getY() + 0.5 + (Math.random() - 0.5) * 0.25, getZ() + (Math.random() - 0.5) * 0.25, 0, 0, 0);
@@ -152,7 +169,18 @@ public class PixieEntity extends FlyingMob {
 	}
 
 	@Override
-	public boolean canBeLeashed(Player player) {
+	public boolean canBeLeashed() {
 		return false;
+	}
+
+	@Override
+	public boolean causeFallDamage(double fallDistance, float damageModifier, @NotNull DamageSource damageSource) {
+		// Former FlyingMob behavior: pixies take no fall damage
+		return false;
+	}
+
+	@Override
+	protected void checkFallDamage(double ya, boolean onGround, @NotNull BlockState onState, @NotNull net.minecraft.core.BlockPos pos) {
+		// Former FlyingMob behavior: no fall impact effects
 	}
 }

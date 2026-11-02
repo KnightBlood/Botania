@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -28,6 +29,7 @@ import vazkii.botania.common.block.BotaniaBlock;
 
 public class ManaDetectorBlock extends BotaniaBlock implements ManaCollisionGhost {
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: registerDefaultState in ctor
 	public ManaDetectorBlock(Properties builder) {
 		super(builder);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.POWERED, false));
@@ -66,7 +68,7 @@ public class ManaDetectorBlock extends BotaniaBlock implements ManaCollisionGhos
 
 		@Override
 		public void onBurstCollision(ManaBurst burst) {
-			if (!world.isClientSide && !burst.isFake()
+			if (!world.isClientSide() && !burst.isFake()
 					&& (!(burst.entity().getOwner() instanceof ServerPlayer player)
 							|| !player.blockActionRestricted(world, pos, player.gameMode.getGameModeForPlayer()))) {
 				if (!state.getValue(BlockStateProperties.POWERED) && !world.getBlockTicks().hasScheduledTick(pos, state.getBlock())) {
@@ -86,7 +88,7 @@ public class ManaDetectorBlock extends BotaniaBlock implements ManaCollisionGhos
 
 	@Override
 	public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
-		if (!level.isClientSide && !state.is(oldState.getBlock())
+		if (!level.isClientSide() && !state.is(oldState.getBlock())
 				&& state.getValue(BlockStateProperties.POWERED)
 				&& !level.getBlockTicks().hasScheduledTick(pos, this)) {
 			level.setBlock(pos, state.setValue(BlockStateProperties.POWERED, false), Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_CLIENTS);

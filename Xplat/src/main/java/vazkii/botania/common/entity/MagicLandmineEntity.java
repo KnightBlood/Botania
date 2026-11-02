@@ -12,13 +12,20 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +40,11 @@ public class MagicLandmineEntity extends Entity {
 
 	public MagicLandmineEntity(EntityType<MagicLandmineEntity> type, Level world) {
 		super(type, world);
+	}
+
+	@NotNull @Override
+	public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+		return false;
 	}
 
 	@Override
@@ -61,7 +73,7 @@ public class MagicLandmineEntity extends Entity {
 				level().addParticle(data, getX(), getY() + 1, getZ(), (float) (Math.random() - 0.5F) * m, (float) (Math.random() - 0.5F) * m, (float) (Math.random() - 0.5F) * m);
 			}
 
-			if (!level().isClientSide) {
+			if (!level().isClientSide()) {
 				List<Player> players = level().getEntitiesOfClass(Player.class, getBoundingBox());
 				for (Player player : players) {
 					player.hurt(this.damageSources().indirectMagic(this, summoner), 10);
@@ -77,16 +89,16 @@ public class MagicLandmineEntity extends Entity {
 	}
 
 	@Override
-	protected void defineSynchedData() {}
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {}
 
 	@Override
-	protected void readAdditionalSaveData(@NotNull CompoundTag var1) {}
+	protected void readAdditionalSaveData(ValueInput input) {}
 
 	@Override
-	protected void addAdditionalSaveData(@NotNull CompoundTag var1) {}
+	protected void addAdditionalSaveData(ValueOutput output) {}
 
 	@Override
-	public Packet<ClientGamePacketListener> getAddEntityPacket() {
-		return new ClientboundAddEntityPacket(this);
+	public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity serverEntity) {
+		return new ClientboundAddEntityPacket(this, serverEntity);
 	}
 }

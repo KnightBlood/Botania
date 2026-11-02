@@ -8,7 +8,7 @@
  */
 package vazkii.botania.common.handler;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 import java.util.ArrayList;
@@ -127,9 +127,9 @@ public final class BotaniaSounds {
 		return event;
 	}
 
-	public static void init(BiConsumer<SoundEvent, ResourceLocation> r) {
+	public static void init(BiConsumer<SoundEvent, Identifier> r) {
 		for (SoundEvent event : EVENTS) {
-			r.accept(event, event.getLocation());
+			r.accept(event, event.location());
 		}
 	}
 

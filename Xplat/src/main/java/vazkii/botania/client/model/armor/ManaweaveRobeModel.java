@@ -21,7 +21,7 @@ public class ManaweaveRobeModel {
 		var mesh = new MeshDefinition();
 		var root = mesh.getRoot();
 		root.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.ZERO);
-		root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+		root.getChild("head").addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
 		root.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.ZERO);
 		root.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.ZERO);
 		root.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.ZERO);
@@ -87,7 +87,7 @@ public class ManaweaveRobeModel {
 				.addBox(-2.61F, 8.5F, -2.51F, 5, 4, 5, deformation),
 				PartPose.offset(-1.9F, 12.0F, 0.0F));
 
-		root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+		root.getChild("head").addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
 		return mesh;
 	}
 }

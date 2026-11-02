@@ -8,112 +8,156 @@
  */
 package vazkii.botania.client.model;
 
-import com.google.common.base.Preconditions;
 import com.mojang.math.Transformation;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.resources.model.*;
-import net.minecraft.core.Direction;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
+import net.minecraft.client.renderer.item.ItemModel;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.item.ModelRenderProperties;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.client.resources.model.ResolvedModel;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
+import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import vazkii.botania.common.helper.VecHelper;
 import vazkii.botania.common.item.ManaBlasterItem;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
-public class ManaBlasterBakedModel extends DelegatedModel {
-	// key is (lens, hasClip). If no lens, the Item is null
-	private final Map<Pair<Item, Boolean>, BakedModel> models;
+/**
+ * Item model for the Mana Blaster. In older versions the per-lens/clip model switch was expressed
+ * through {@code ItemOverrides}; in 26.1 the switch happens while updating the item render state
+ * instead, with all variants pre-baked as {@link QuadCollection}s.
+ */
+public class ManaBlasterBakedModel implements ItemModel {
+	private final ModelRenderProperties properties;
+	private final QuadCollection gunNoClip;
+	private final QuadCollection gunClip;
+	private final Map<Item, QuadCollection> lensQuads;
+	private final Supplier<Vector3fc[]> extents;
 
-	private ManaBlasterBakedModel(Map<Pair<Item, Boolean>, BakedModel> models) {
-		super(models.get(Pair.of(null, false)));
-		this.models = models;
+	ManaBlasterBakedModel(ModelRenderProperties properties, QuadCollection gunNoClip, QuadCollection gunClip,
+			Map<Item, QuadCollection> lensQuads) {
+		this.properties = properties;
+		this.gunNoClip = gunNoClip;
+		this.gunClip = gunClip;
+		this.lensQuads = lensQuads;
+		this.extents = com.google.common.base.Suppliers.memoize(() -> {
+			var combined = new java.util.ArrayList<>(gunNoClip.getAll());
+			for (QuadCollection lens : lensQuads.values()) {
+				combined.addAll(lens.getAll());
+			}
+			return net.minecraft.client.renderer.item.CuboidItemModelWrapper.computeExtents(combined);
+		});
 	}
 
-	public static ManaBlasterBakedModel create(ModelBaker baker,
-			ResourceLocation gunNoClip, ResourceLocation gunClip,
-			ModelState state) {
-		BakedModel gunNoClipModel = Preconditions.checkNotNull(baker.bake(gunNoClip, state));
-		BakedModel gunClipModel = Preconditions.checkNotNull(baker.bake(gunClip, state));
-		Map<Pair<Item, Boolean>, BakedModel> models = new HashMap<>();
-		models.put(Pair.of(null, false), gunNoClipModel);
-		models.put(Pair.of(null, true), gunClipModel);
+	@Override
+	public void update(ItemStackRenderState output, ItemStack stack, ItemModelResolver resolver,
+			ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
+		boolean clip = ManaBlasterItem.hasClip(stack);
+		ItemStack lens = ManaBlasterItem.getLens(stack);
+		Item lensItem = lens.isEmpty() ? null : lens.getItem();
+		QuadCollection lensModel = lensItem == null ? null : this.lensQuads.get(lensItem);
 
-		for (var item : BuiltInRegistries.ITEM) {
-			var lens = item.getDefaultInstance();
-			if (ManaBlasterItem.isValidLens(lens)) {
-				models.put(Pair.of(item, false), new ManaBlasterBakedModel.CompositeBakedModel(baker, lens, gunNoClipModel));
-				models.put(Pair.of(item, true), new ManaBlasterBakedModel.CompositeBakedModel(baker, lens, gunClipModel));
+		output.appendModelIdentityElement(this);
+		output.appendModelIdentityElement(clip);
+		if (lensItem != null) {
+			output.appendModelIdentityElement(lensItem);
+		}
+
+		if (stack.hasFoil()) {
+			output.newLayer().setFoilType(ItemStackRenderState.FoilType.STANDARD);
+			output.setAnimated();
+		}
+
+		ItemStackRenderState.LayerRenderState renderLayer = output.newLayer();
+		QuadCollection gun = clip ? this.gunClip : this.gunNoClip;
+		renderLayer.prepareQuadList().addAll(gun.getAll());
+		if (lensModel != null) {
+			renderLayer.prepareQuadList().addAll(lensModel.getAll());
+		}
+		renderLayer.setExtents(this.extents);
+		this.properties.applyToLayer(renderLayer, displayContext);
+		if (gun.hasMaterialFlag(2) || lensModel != null && lensModel.hasMaterialFlag(2)) {
+			output.setAnimated();
+		}
+	}
+
+	public record Unbaked(Identifier gunNoClip, Identifier gunClip) implements ItemModel.Unbaked {
+		public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+				Identifier.CODEC.fieldOf("gun_noclip").forGetter(Unbaked::gunNoClip),
+				Identifier.CODEC.fieldOf("gun_clip").forGetter(Unbaked::gunClip)
+		).apply(i, Unbaked::new));
+
+		private static final ModelState LENS_STATE = new ModelState() {
+			@Override
+			public Transformation transformation() {
+				return new Transformation(new Vector3f(-0.4F, 0.2F, 0.0F), VecHelper.rotateY(90),
+						new Vector3f(0.625F, 0.625F, 0.625F), null);
+			}
+		};
+
+		@Override
+		public void resolveDependencies(ResolvableModel.Resolver resolver) {
+			resolver.markDependency(this.gunNoClip);
+			resolver.markDependency(this.gunClip);
+			for (var item : BuiltInRegistries.ITEM) {
+				// 26.1: item components are unbound during model discovery, so a default ItemStack
+				// cannot be created here (see ManaBlasterItem.isValidLensItem).
+				if (ManaBlasterItem.isValidLensItem(item)) {
+					resolver.markDependency(ModelLocationUtils.getModelLocation(item));
+				}
 			}
 		}
-		return new ManaBlasterBakedModel(models);
-	}
 
-	private final ItemOverrides itemHandler = new ItemOverrides() {
-		@NotNull
 		@Override
-		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel worldIn, @Nullable LivingEntity entityIn, int seed) {
-			boolean clip = ManaBlasterItem.hasClip(stack);
+		public ItemModel bake(ItemModel.BakingContext context, Matrix4fc transformation) {
+			ModelBaker baker = context.blockModelBaker();
+			ResolvedModel gunModel = baker.getModel(this.gunNoClip);
+			TextureSlots slots = gunModel.getTopTextureSlots();
+			ModelRenderProperties properties = ModelRenderProperties.fromResolvedModel(baker, gunModel, slots);
+			QuadCollection gunNoClip = bake(baker, this.gunNoClip, BlockModelRotation.IDENTITY);
+			QuadCollection gunClip = bake(baker, this.gunClip, BlockModelRotation.IDENTITY);
 
-			ItemStack lens = ManaBlasterItem.getLens(stack);
-			Pair<Item, Boolean> key = Pair.of(lens.isEmpty() ? null : lens.getItem(), clip);
-
-			return ManaBlasterBakedModel.this.models.getOrDefault(key,
-					Minecraft.getInstance().getModelManager().getMissingModel());
-		}
-	};
-
-	@NotNull
-	@Override
-	public ItemOverrides getOverrides() {
-		return itemHandler;
-	}
-
-	@NotNull
-	@Override
-	public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand) {
-		return originalModel.getQuads(state, side, rand);
-	}
-
-	private static class CompositeBakedModel extends DelegatedModel {
-		private final BakedModel lensModel;
-
-		CompositeBakedModel(ModelBaker baker, ItemStack lens, BakedModel gun) {
-			super(gun);
-			ResourceLocation lensId = BuiltInRegistries.ITEM.getKey(lens.getItem());
-			ModelState transform = new ModelState() {
-				@Override
-				public Transformation getRotation() {
-					return new Transformation(new Vector3f(-0.4F, 0.2F, 0.0F), VecHelper.rotateY(90), new Vector3f(0.625F, 0.625F, 0.625F), null);
+			Map<Item, QuadCollection> lenses = new HashMap<>();
+			for (var item : BuiltInRegistries.ITEM) {
+				if (ManaBlasterItem.isValidLensItem(item)) {
+					lenses.put(item, bake(baker, ModelLocationUtils.getModelLocation(item), LENS_STATE));
 				}
-			};
-			this.lensModel = baker.bake(new ModelResourceLocation(lensId, "inventory"), transform);
+			}
+			return new ManaBlasterBakedModel(properties, gunNoClip, gunClip, lenses);
 		}
 
-		@NotNull
+		private static QuadCollection bake(ModelBaker baker, Identifier id, ModelState state) {
+			ResolvedModel model = baker.getModel(id);
+			TextureSlots slots = model.getTopTextureSlots();
+			return model.bakeTopGeometry(slots, baker, state);
+		}
+
 		@Override
-		public List<BakedQuad> getQuads(BlockState state, Direction face, @NotNull RandomSource rand) {
-			List<BakedQuad> gunQuads = this.originalModel.getQuads(state, face, rand);
-			List<BakedQuad> lensQuads = this.lensModel.getQuads(state, face, rand);
-			List<BakedQuad> ret = new ArrayList<>(gunQuads.size() + lensQuads.size());
-			ret.addAll(gunQuads);
-			ret.addAll(lensQuads);
-			return ret;
+		public MapCodec<Unbaked> type() {
+			return MAP_CODEC;
 		}
 	}
-
 }

@@ -1,0 +1,34 @@
+{
+  "parent": "botania:challenge/gaia_guardian_hardmode",
+  "criteria": {
+    "use_pinkinator": {
+      "conditions": {
+        "item": {
+          "items": "botania:pinkinator"
+        }
+      },
+      "trigger": "botania:use_item_success"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.botania:pinkinator.desc"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "botania:pinkinator"
+    },
+    "title": {
+      "translate": "advancement.botania:pinkinator"
+    }
+  },
+  "requirements": [
+    [
+      "use_pinkinator"
+    ]
+  ],
+  "rewards": {
+    "experience": 40
+  },
+  "sends_telemetry_event": true
+}

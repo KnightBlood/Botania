@@ -1,0 +1,13 @@
+{
+  "type": "botania:terra_plate",
+  "ingredients": [
+    "botania:manasteel_ingot",
+    "botania:mana_pearl",
+    "botania:mana_diamond"
+  ],
+  "mana": 500000,
+  "result": {
+    "count": 1,
+    "id": "botania:terrasteel_ingot"
+  }
+}

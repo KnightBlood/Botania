@@ -16,22 +16,33 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DiggerItem;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
-import vazkii.botania.api.BotaniaAPI;
+import vazkii.botania.common.helper.EnchHelper;
 import vazkii.botania.api.mana.ManaItemHandler;
 import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.item.equipment.tool.elementium.ElementiumAxeItem;
+import vazkii.botania.common.item.equipment.tool.elementium.ElementiumHoeItem;
+import vazkii.botania.common.item.equipment.tool.elementium.ElementiumPickaxeItem;
+import vazkii.botania.common.item.equipment.tool.elementium.ElementiumShovelItem;
+import vazkii.botania.common.item.equipment.tool.elementium.ElementiumSwordItem;
+import vazkii.botania.common.item.equipment.tool.manasteel.ManasteelAxeItem;
+import vazkii.botania.common.item.equipment.tool.manasteel.ManasteelHoeItem;
+import vazkii.botania.common.item.equipment.tool.manasteel.ManasteelPickaxeItem;
+import vazkii.botania.common.item.equipment.tool.manasteel.ManasteelShovelItem;
+import vazkii.botania.common.item.equipment.tool.manasteel.ManasteelSwordItem;
 import vazkii.botania.common.item.equipment.tool.terrasteel.TerraShattererItem;
+import vazkii.botania.common.item.equipment.tool.terrasteel.TerraTruncatorItem;
 
 import java.util.function.Predicate;
 
@@ -47,7 +58,7 @@ public final class ToolCommons {
 			return amount;
 		}
 
-		final int unbreaking = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, stack);
+		final int unbreaking = EnchHelper.getItemEnchantmentLevel(stack, Enchantments.UNBREAKING);
 
 		while (amount > 0) {
 			if (ManaItemHandler.instance().requestManaExactForTool(stack, player, manaPerDamage, false)) {
@@ -99,7 +110,7 @@ public final class ToolCommons {
 		BlockState blockstate = world.getBlockState(pos);
 		boolean unminable = blockstate.getDestroyProgress(player, world, pos) == 0;
 
-		if (!world.isClientSide && !unminable && filter.test(blockstate) && !blockstate.isAir()) {
+		if (!world.isClientSide() && !unminable && filter.test(blockstate) && !blockstate.isAir()) {
 			ItemStack save = player.getMainHandItem();
 			player.setItemInHand(InteractionHand.MAIN_HAND, stack);
 			((ServerPlayer) player).connection.send(
@@ -115,20 +126,22 @@ public final class ToolCommons {
 		}
 
 		Item item = stack.getItem();
-		if (!(item instanceof DiggerItem tool)) {
+		// 26.1: pickaxes are plain Items now; identify diggers via the TOOL data component
+		if (stack.get(DataComponents.TOOL) == null) {
 			return 0;
 		}
 
-		Tier material = tool.getTier();
 		int materialLevel = 0;
-		if (material == BotaniaAPI.instance().getManasteelItemTier()) {
-			materialLevel = 10;
-		}
-		if (material == BotaniaAPI.instance().getElementiumItemTier()) {
-			materialLevel = 11;
-		}
-		if (material == BotaniaAPI.instance().getTerrasteelItemTier()) {
+		if (item instanceof TerraShattererItem || item instanceof TerraTruncatorItem || item instanceof StarcallerItem) {
 			materialLevel = 20;
+		} else if (item instanceof ElementiumPickaxeItem || item instanceof ElementiumShovelItem
+				|| item instanceof ElementiumAxeItem || item instanceof ElementiumHoeItem
+				|| item instanceof ElementiumSwordItem) {
+			materialLevel = 11;
+		} else if (item instanceof ManasteelPickaxeItem || item instanceof ManasteelShovelItem
+				|| item instanceof ManasteelAxeItem || item instanceof ManasteelHoeItem
+				|| item instanceof ManasteelSwordItem) {
+			materialLevel = 10;
 		}
 
 		int modifier = 0;
@@ -136,7 +149,7 @@ public final class ToolCommons {
 			modifier = TerraShattererItem.getLevel(stack);
 		}
 
-		int efficiency = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, stack);
+		int efficiency = EnchHelper.getItemEnchantmentLevel(stack, Enchantments.EFFICIENCY);
 		return materialLevel * 100 + modifier * 10 + efficiency;
 	}
 

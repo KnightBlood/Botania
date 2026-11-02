@@ -10,7 +10,7 @@ package vazkii.botania.network.clientbound;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import vazkii.botania.client.core.SkyblockWorldInfo;
 import vazkii.botania.network.BotaniaPacket;
@@ -19,13 +19,13 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class GogWorldPacket implements BotaniaPacket {
 	public static final GogWorldPacket INSTANCE = new GogWorldPacket();
-	public static final ResourceLocation ID = prefix("gog");
+	public static final Identifier ID = prefix("gog");
 
 	@Override
 	public void encode(FriendlyByteBuf buf) {}
 
 	@Override
-	public ResourceLocation getFabricId() {
+	public Identifier getFabricId() {
 		return ID;
 	}
 

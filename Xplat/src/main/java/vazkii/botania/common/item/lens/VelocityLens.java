@@ -17,8 +17,8 @@ public class VelocityLens extends Lens {
 	@Override
 	public void apply(ItemStack stack, BurstProperties props) {
 		props.motionModifier *= 2F;
-		props.maxMana *= 0.75F;
-		props.ticksBeforeManaLoss /= 3F;
+		props.maxMana = (int) (props.maxMana * 0.75F);
+		props.ticksBeforeManaLoss = (int) (props.ticksBeforeManaLoss / 3F);
 		props.manaLossPerTick *= 2F;
 	}
 

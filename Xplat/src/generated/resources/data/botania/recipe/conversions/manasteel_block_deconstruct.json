@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#botania:manasteel_blocks"
+  ],
+  "result": {
+    "count": 9,
+    "id": "botania:manasteel_ingot"
+  }
+}

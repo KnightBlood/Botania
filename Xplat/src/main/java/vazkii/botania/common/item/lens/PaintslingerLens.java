@@ -9,11 +9,12 @@
 package vazkii.botania.common.item.lens;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -39,7 +40,7 @@ public class PaintslingerLens extends Lens {
 	public boolean collideBurst(ManaBurst burst, HitResult pos, boolean isManaBlock, boolean shouldKill, ItemStack stack) {
 		Entity entity = burst.entity();
 		int storedColor = LensItem.getStoredColor(stack);
-		if (!entity.level().isClientSide && !burst.isFake() && storedColor > -1 && storedColor < 17) {
+		if (!entity.level().isClientSide() && !burst.isFake() && storedColor > -1 && storedColor < 17) {
 			if (pos.getType() == HitResult.Type.ENTITY) {
 				Entity collidedWith = ((EntityHitResult) pos).getEntity();
 				if (collidedWith instanceof Sheep sheep) {
@@ -50,20 +51,20 @@ public class PaintslingerLens extends Lens {
 									sheep.getX() + r, sheep.getY() + r, sheep.getZ() + r));
 					for (Sheep other : sheepList) {
 						if (other.getColor() == sheepColor) {
-							other.setColor(DyeColor.byId(storedColor == 16 ? other.level().random.nextInt(16) : storedColor));
+							other.setColor(DyeColor.byId(storedColor == 16 ? other.level().getRandom().nextInt(16) : storedColor));
 						}
 					}
 					shouldKill = true;
 				} else if (collidedWith instanceof SparkEntity spark) {
-					spark.setNetwork(DyeColor.byId(storedColor == 16 ? collidedWith.level().random.nextInt(16) : storedColor));
+					spark.setNetwork(DyeColor.byId(storedColor == 16 ? collidedWith.level().getRandom().nextInt(16) : storedColor));
 				}
 			} else if (pos.getType() == HitResult.Type.BLOCK) {
 				BlockPos hitPos = ((BlockHitResult) pos).getBlockPos();
 				Block hitBlock = entity.level().getBlockState(hitPos).getBlock();
-				ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(hitBlock);
+				Identifier blockId = BuiltInRegistries.BLOCK.getKey(hitBlock);
 
 				if (BotaniaAPI.instance().getPaintableBlocks().containsKey(blockId)
-						&& entity.mayInteract(entity.level(), hitPos)) {
+						&& entity.mayInteract((ServerLevel) entity.level(), hitPos)) {
 					List<BlockPos> coordsToPaint = new ArrayList<>();
 					Queue<BlockPos> coordsToCheck = new ArrayDeque<>();
 					Set<BlockPos> checkedCoords = new HashSet<>();
@@ -78,13 +79,13 @@ public class PaintslingerLens extends Lens {
 							BlockPos candidatePos = coords.relative(dir);
 							if (checkedCoords.add(candidatePos)
 									&& entity.level().getBlockState(candidatePos).is(hitBlock)
-									&& entity.mayInteract(entity.level(), hitPos)) {
+									&& entity.mayInteract((ServerLevel) entity.level(), hitPos)) {
 								coordsToCheck.add(candidatePos);
 							}
 						}
 					}
 					for (BlockPos coords : coordsToPaint) {
-						DyeColor placeColor = DyeColor.byId(storedColor == 16 ? entity.level().random.nextInt(16) : storedColor);
+						DyeColor placeColor = DyeColor.byId(storedColor == 16 ? entity.level().getRandom().nextInt(16) : storedColor);
 						BlockState stateThere = entity.level().getBlockState(coords);
 
 						Function<DyeColor, Block> f = BotaniaAPI.instance().getPaintableBlocks().get(blockId);

@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 import vazkii.botania.common.item.CacophoniumItem;
+import vazkii.botania.common.helper.ItemNBTHelper;
 
 public class CacophoniumBlockEntity extends BotaniaBlockEntity {
 	private static final String TAG_STACK = "stack";
@@ -30,8 +31,8 @@ public class CacophoniumBlockEntity extends BotaniaBlockEntity {
 
 	public void annoyDirewolf() {
 		CacophoniumItem.playSound(level, stack, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), SoundSource.BLOCKS, 1F);
-		if (!level.isClientSide) {
-			float noteColor = level.random.nextInt(25) / 24.0F;
+		if (!level.isClientSide()) {
+			float noteColor = level.getRandom().nextInt(25) / 24.0F;
 			((ServerLevel) level).sendParticles(ParticleTypes.NOTE, worldPosition.getX() + 0.5, worldPosition.getY() + 1.2, worldPosition.getZ() + 0.5, 0, noteColor, 0, 0, 1);
 			level.gameEvent(null, GameEvent.NOTE_BLOCK_PLAY, getBlockPos());
 		}
@@ -41,19 +42,17 @@ public class CacophoniumBlockEntity extends BotaniaBlockEntity {
 	public void writePacketNBT(CompoundTag cmp) {
 		super.writePacketNBT(cmp);
 
-		CompoundTag cmp1 = new CompoundTag();
 		if (!stack.isEmpty()) {
-			cmp1 = stack.save(cmp1);
+			cmp.put(TAG_STACK, ItemNBTHelper.serializeStackNbt(stack, level.registryAccess()));
 		}
-		cmp.put(TAG_STACK, cmp1);
 	}
 
 	@Override
 	public void readPacketNBT(CompoundTag cmp) {
 		super.readPacketNBT(cmp);
 
-		CompoundTag cmp1 = cmp.getCompound(TAG_STACK);
-		stack = ItemStack.of(cmp1);
+		CompoundTag cmp1 = cmp.getCompoundOrEmpty(TAG_STACK);
+		stack = ItemNBTHelper.deserializeStackNbt(cmp1, level.registryAccess());
 	}
 
 }

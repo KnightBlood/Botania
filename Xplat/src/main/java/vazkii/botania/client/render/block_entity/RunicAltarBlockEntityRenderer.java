@@ -11,17 +11,15 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -35,9 +33,9 @@ import vazkii.botania.common.helper.VecHelper;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class RunicAltarBlockEntityRenderer implements BlockEntityRenderer<RunicAltarBlockEntity> {
+public class RunicAltarBlockEntityRenderer extends BotaniaBlockEntityRenderer<RunicAltarBlockEntity> {
 	private final ModelPart spinningCube;
-	private static final ResourceLocation cubeTex = prefix("textures/block/runic_altar_cube.png");
+	private static final Identifier cubeTex = prefix("textures/block/runic_altar_cube.png");
 
 	public RunicAltarBlockEntityRenderer(BlockEntityRendererProvider.Context manager) {
 		var mesh = new MeshDefinition();
@@ -47,7 +45,7 @@ public class RunicAltarBlockEntityRenderer implements BlockEntityRenderer<RunicA
 	}
 
 	@Override
-	public void render(@NotNull RunicAltarBlockEntity altar, float partticks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(@NotNull RunicAltarBlockEntity altar, float partticks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		ms.pushPose();
 
 		int items = 0;
@@ -76,10 +74,9 @@ public class RunicAltarBlockEntityRenderer implements BlockEntityRenderer<RunicA
 			ms.mulPose(VecHelper.rotateY(90F));
 			ms.translate(0D, 0.075 * Math.sin((time + i * 10) / 5D), 0F);
 			ItemStack stack = altar.getItemHandler().getItem(i);
-			Minecraft mc = Minecraft.getInstance();
 			if (!stack.isEmpty()) {
-				mc.getItemRenderer().renderStatic(stack, ItemDisplayContext.GROUND,
-						light, overlay, ms, buffers, altar.getLevel(), 0);
+				RenderHelper.renderItemStatic(stack, ItemDisplayContext.GROUND, false,
+						ms, buffers, light, overlay, altar.getLevel(), 0);
 			}
 			ms.popPose();
 		}
@@ -101,7 +98,7 @@ public class RunicAltarBlockEntityRenderer implements BlockEntityRenderer<RunicA
 		ms.popPose();
 	}
 
-	private void renderSpinningCubes(PoseStack ms, MultiBufferSource buffers, int overlay, int cubes, int iters) {
+	private void renderSpinningCubes(PoseStack ms, BotaniaRenderContext buffers, int overlay, int cubes, int iters) {
 		for (int curIter = iters; curIter > 0; curIter--) {
 			final float modifier = 6F;
 			final float rotationModifier = 0.2F;
@@ -135,8 +132,8 @@ public class RunicAltarBlockEntityRenderer implements BlockEntityRenderer<RunicA
 					alpha = (float) curIter / (float) iters * 0.4F;
 				}
 
-				VertexConsumer buffer = buffers.getBuffer(curIter < iters ? RenderType.entityTranslucentCull(cubeTex) : RenderType.entitySolid(cubeTex));
-				spinningCube.render(ms, buffer, 0xF000F0, overlay, 1, 1, 1, alpha);
+				VertexConsumer buffer = buffers.getBuffer(curIter < iters ? RenderTypes.entityTranslucent(cubeTex) : RenderTypes.entitySolid(cubeTex));
+				spinningCube.render(ms, buffer, 0xF000F0, overlay, ARGB.white(alpha));
 
 				ms.popPose();
 			}
@@ -144,3 +141,4 @@ public class RunicAltarBlockEntityRenderer implements BlockEntityRenderer<RunicA
 		}
 	}
 }
+

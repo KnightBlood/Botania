@@ -35,31 +35,6 @@
     "client": [
       "vazkii.botania.fabric.client.FabricClientInitializer"
     ],
-    "fabric-gametest": [
-      "vazkii.botania.test.block.BindingTest",
-      "vazkii.botania.test.block.HopperhockTest",
-      "vazkii.botania.test.block.InterceptorTest",
-      "vazkii.botania.test.block.OpenCrateTest",
-      "vazkii.botania.test.block.ForceRelayTest",
-      "vazkii.botania.test.block.RannuncarpusTest",
-      "vazkii.botania.test.block.DandelifeonTest",
-      "vazkii.botania.test.block.TargetBlockTest",
-      "vazkii.botania.test.block.ApothecaryRecipeTest",
-      "vazkii.botania.test.block.EntropinnyumUnethicalTntDetectionTest",
-      "vazkii.botania.test.block.DrumBlockTest",
-      "vazkii.botania.test.block.ManaSpreaderTest",
-      "vazkii.botania.test.item.AstrolabeTest",
-      "vazkii.botania.test.item.CacophoniumTest",
-      "vazkii.botania.test.item.FlowerPouchTest",
-      "vazkii.botania.test.item.LifeAggregatorTest",
-      "vazkii.botania.test.item.GrassSeedDispensingTest",
-      "vazkii.botania.test.item.SpectatorScanTest",
-      "vazkii.botania.test.item.lens.BoreLensTest",
-      "vazkii.botania.test.item.lens.BoreWarpLensTest",
-      "vazkii.botania.test.item.lens.EntropicWarpLensTest",
-      "vazkii.botania.test.item.lens.PaintslingerLensTest",
-      "vazkii.botania.test.item.lens.WarpForceTest"
-    ],
     "fabric-datagen": [
       "vazkii.botania.fabric.data.FabricDatagenInitializer"
     ],
@@ -68,9 +43,6 @@
     ],
     "emi": [
       "vazkii.botania.client.integration.emi.BotaniaEmiPlugin"
-    ],
-    "rei_client": [
-      "vazkii.botania.fabric.integration.rei.BotaniaREIPlugin"
     ],
     "jei_mod_plugin": [
       "vazkii.botania.client.integration.jei.JEIBotaniaPlugin"
@@ -86,9 +58,9 @@
   "accessWidener": "botania.accesswidener",
 
   "depends": {
-    "fabricloader": ">=0.15.6",
-    "fabric-api": ">=0.92",
-    "minecraft": "=1.20.1",
+    "fabricloader": ">=0.19.2",
+    "fabric-api": ">=0.149.1+26.1.2",
+    "minecraft": "=26.1",
     "trinkets" : ">=3",
     "patchouli": "*"
   },
@@ -110,3 +82,4 @@
     ]
   }
 }
+

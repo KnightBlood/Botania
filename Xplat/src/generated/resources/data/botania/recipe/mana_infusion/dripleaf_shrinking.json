@@ -1,0 +1,13 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "input": "minecraft:big_dripleaf",
+  "mana": 500,
+  "output": {
+    "count": 1,
+    "id": "minecraft:small_dripleaf"
+  }
+}

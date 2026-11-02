@@ -3,7 +3,7 @@ package vazkii.botania.data;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.data.tags.KeyTagProvider;
 import net.minecraft.tags.BannerPatternTags;
 import net.minecraft.world.level.block.entity.BannerPattern;
 
@@ -14,13 +14,13 @@ import java.util.concurrent.CompletableFuture;
 
 import static vazkii.botania.common.block.BotaniaBannerPatterns.*;
 
-public class BannerPatternTagsProvider extends TagsProvider<BannerPattern> {
+public class BannerPatternTagsProvider extends KeyTagProvider<BannerPattern> implements PublicAddTags<BannerPattern> {
 	public BannerPatternTagsProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
 		super(packOutput, Registries.BANNER_PATTERN, lookupProvider);
 	}
 
 	@Override
-	protected void addTags(HolderLookup.Provider provider) {
+	public void addTags(HolderLookup.Provider provider) {
 		var noItemRequired = this.tag(BannerPatternTags.NO_ITEM_REQUIRED);
 		for (var t : List.of(FISH, AXE, HOE, PICKAXE, SHOVEL, SWORD)) {
 			noItemRequired.add(t);

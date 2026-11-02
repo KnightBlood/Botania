@@ -11,8 +11,9 @@ package vazkii.botania.client.core.handler;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.handler.ManaNetworkHandler;
 import vazkii.botania.xplat.BotaniaConfig;
@@ -29,7 +30,7 @@ public final class DebugHandler {
 	public static void onDrawDebugText(List<String> left) {
 		Minecraft mc = Minecraft.getInstance();
 		Level world = mc.level;
-		if (mc.options.renderDebug && BotaniaConfig.client().debugInfo()) {
+		if (mc.getDebugOverlay().showDebugScreen() && BotaniaConfig.client().debugInfo()) {
 			left.add("");
 			String version = XplatAbstractions.INSTANCE.getBotaniaVersion();
 
@@ -37,7 +38,7 @@ public final class DebugHandler {
 
 			if (Minecraft.getInstance().hasSingleplayerServer()) {
 				ResourceKey<Level> dim = world.dimension();
-				ResourceLocation dimName = dim.location();
+				Identifier dimName = dim.identifier();
 				if (mc.getSingleplayerServer() != null) {
 					Level serverWorld = mc.getSingleplayerServer().getLevel(dim);
 					left.add(PREFIX + String.format("(INTEGRATED SERVER %s) netColl : %d, netPool: %d", dimName, ManaNetworkHandler.instance.getAllCollectorsInWorld(serverWorld).size(), ManaNetworkHandler.instance.getAllPoolsInWorld(serverWorld).size()));

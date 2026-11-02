@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:blaze_rod",
+    "E": "botania:ender_air_bottle",
+    "M": "#botania:manasteel_blocks",
+    "P": "minecraft:prismarine_bricks",
+    "S": "#botania:elementium_ingots"
+  },
+  "pattern": [
+    "BSB",
+    "PMP",
+    "PEP"
+  ],
+  "result": {
+    "id": "botania:spawner_claw"
+  }
+}

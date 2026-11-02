@@ -21,7 +21,7 @@ public class ElementiumArmorModel {
 		var mesh = new MeshDefinition();
 		var root = mesh.getRoot();
 		root.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.ZERO);
-		root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+		root.getChild("head").addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
 		root.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.ZERO);
 		root.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.ZERO);
 		var body = root.addOrReplaceChild("body", CubeListBuilder.create()
@@ -129,7 +129,7 @@ public class ElementiumArmorModel {
 				.addBox(0.0F, 0.0F, 0.0F, 0, 2, 3, deformation),
 				PartPose.offsetAndRotation(-2.5F, 8.5F, 0.0F, -Mth.PI / 12, -Mth.PI / 12, Mth.PI / 12));
 
-		root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+		root.getChild("head").addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
 		return mesh;
 	}
 }

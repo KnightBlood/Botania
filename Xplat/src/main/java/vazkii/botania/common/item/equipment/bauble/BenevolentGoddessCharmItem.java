@@ -22,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.api.mana.ManaItemHandler;
 import vazkii.botania.client.render.AccessoryRenderRegistry;
 import vazkii.botania.client.render.AccessoryRenderer;
@@ -36,6 +37,7 @@ public class BenevolentGoddessCharmItem extends BaubleItem {
 
 	public static final int COST = 1000;
 
+	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public BenevolentGoddessCharmItem(Properties props) {
 		super(props);
 		Proxy.INSTANCE.runOnClient(() -> () -> AccessoryRenderRegistry.register(this, new Renderer()));
@@ -60,8 +62,7 @@ public class BenevolentGoddessCharmItem extends BaubleItem {
 			ms.translate(0.275, -0.4, 0);
 			ms.mulPose(VecHelper.rotateY(-90F));
 			ms.scale(0.55F, -0.55F, -0.55F);
-			Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE,
-					light, OverlayTexture.NO_OVERLAY, ms, buffers, living.level(), living.getId());
+			RenderHelper.renderItemStatic(stack, ItemDisplayContext.NONE, false, ms, buffers, light, OverlayTexture.NO_OVERLAY, living.level(), living.getId());
 		}
 	}
 

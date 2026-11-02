@@ -9,7 +9,7 @@
 package vazkii.botania.common.block.block_entity;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -73,7 +73,7 @@ public class HoveringHourglassBlockEntity extends ExposedSimpleInventoryBlockEnt
 				self.time = 0;
 				self.flip = !self.flip;
 				self.flipTicks = 4;
-				if (!level.isClientSide) {
+				if (!level.isClientSide()) {
 					level.setBlock(worldPosition, state.setValue(BlockStateProperties.POWERED, true), Block.UPDATE_NEIGHBORS);
 					level.scheduleTick(worldPosition, state.getBlock(), 4);
 				}
@@ -103,7 +103,7 @@ public class HoveringHourglassBlockEntity extends ExposedSimpleInventoryBlockEnt
 
 	@Override
 	public void onBurstCollision(ManaBurst burst) {
-		if (!level.isClientSide && !burst.isFake()) {
+		if (!level.isClientSide() && !burst.isFake()) {
 			if (isDust()) {
 				time++;
 			} else {
@@ -178,7 +178,7 @@ public class HoveringHourglassBlockEntity extends ExposedSimpleInventoryBlockEnt
 	@Override
 	public void setChanged() {
 		super.setChanged();
-		if (level != null && !level.isClientSide) {
+		if (level != null && !level.isClientSide()) {
 			time = 0;
 			timeFraction = 0F;
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(HoveringHourglassBlockEntity.this);
@@ -199,12 +199,12 @@ public class HoveringHourglassBlockEntity extends ExposedSimpleInventoryBlockEnt
 	@Override
 	public void readPacketNBT(CompoundTag tag) {
 		super.readPacketNBT(tag);
-		time = tag.getInt(TAG_TIME);
-		timeFraction = tag.getFloat(TAG_TIME_FRACTION);
-		flip = tag.getBoolean(TAG_FLIP);
-		flipTicks = tag.getInt(TAG_FLIP_TICKS);
-		move = tag.getBoolean(TAG_MOVE);
-		lock = tag.getBoolean(TAG_LOCK);
+		time = tag.getIntOr(TAG_TIME, 0);
+		timeFraction = tag.getFloatOr(TAG_TIME_FRACTION, 0.0F);
+		flip = tag.getBooleanOr(TAG_FLIP, false);
+		flipTicks = tag.getIntOr(TAG_FLIP_TICKS, 0);
+		move = tag.getBooleanOr(TAG_MOVE, false);
+		lock = tag.getBooleanOr(TAG_LOCK, false);
 	}
 
 	public static class WandHud implements WandHUD {
@@ -215,7 +215,7 @@ public class HoveringHourglassBlockEntity extends ExposedSimpleInventoryBlockEnt
 		}
 
 		@Override
-		public void renderHUD(GuiGraphics gui, Minecraft mc) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc) {
 			ItemStack stack = hourglass.getItemHandler().getItem(0);
 			if (!stack.isEmpty()) {
 				int x = mc.getWindow().getGuiScaledWidth() / 2 + 8;
@@ -226,8 +226,8 @@ public class HoveringHourglassBlockEntity extends ExposedSimpleInventoryBlockEnt
 					first = Integer.toString(hourglass.time);
 					second = Integer.toString(hourglass.getTotalTime());
 				} else {
-					first = StringUtil.formatTickDuration(hourglass.time);
-					second = StringUtil.formatTickDuration(hourglass.getTotalTime());
+					first = StringUtil.formatTickDuration(hourglass.time, 20.0F);
+					second = StringUtil.formatTickDuration(hourglass.getTotalTime(), 20.0F);
 				}
 				String timer = String.format("%s / %s", first, second);
 
@@ -243,12 +243,12 @@ public class HoveringHourglassBlockEntity extends ExposedSimpleInventoryBlockEnt
 
 				RenderHelper.renderHUDBox(gui, x, y, x + textWidth + 24, y + 22);
 
-				gui.renderFakeItem(stack, x + 2, y + 3);
-				gui.renderItemDecorations(mc.font, stack, x + 2, y + 3);
+				gui.fakeItem(stack, x + 2, y + 3);
+				gui.itemDecorations(mc.font, stack, x + 2, y + 3);
 
-				gui.drawString(mc.font, timer, x + 22, y + 2, hourglass.getColor());
+				gui.text(mc.font, timer, x + 22, y + 2, hourglass.getColor());
 				if (!status.isEmpty()) {
-					gui.drawString(mc.font, status, x + 22, y + 12, hourglass.getColor());
+					gui.text(mc.font, status, x + 22, y + 12, hourglass.getColor());
 				}
 			}
 		}
@@ -257,7 +257,7 @@ public class HoveringHourglassBlockEntity extends ExposedSimpleInventoryBlockEnt
 	@Override
 	public boolean onUsedByWand(@Nullable Player player, ItemStack stack, Direction side) {
 		this.lock = !this.lock;
-		if (!getLevel().isClientSide) {
+		if (!getLevel().isClientSide()) {
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
 		}
 		return true;

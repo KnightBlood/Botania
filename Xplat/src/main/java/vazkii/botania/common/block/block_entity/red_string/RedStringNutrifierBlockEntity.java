@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BonemealableBlock;
@@ -28,7 +29,7 @@ public class RedStringNutrifierBlockEntity extends RedStringBlockEntity {
 		BlockPos binding = getBinding();
 		Block block = getBlockAtBinding();
 
-		return block instanceof BonemealableBlock mealable && mealable.isValidBonemealTarget(world, binding, world.getBlockState(binding), isClient);
+		return block instanceof BonemealableBlock mealable && mealable.isValidBonemealTarget(world, binding, world.getBlockState(binding));
 	}
 
 	public boolean canUseBonemeal(Level world, RandomSource rand) {

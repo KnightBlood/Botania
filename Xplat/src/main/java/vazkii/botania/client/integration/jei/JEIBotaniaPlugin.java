@@ -25,7 +25,7 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.runtime.IRecipesGui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -56,6 +56,7 @@ import vazkii.botania.common.crafting.recipe.AncientWillRecipe;
 import vazkii.botania.common.crafting.recipe.CompositeLensRecipe;
 import vazkii.botania.common.crafting.recipe.TerraShattererTippingRecipe;
 import vazkii.botania.common.helper.ItemNBTHelper;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.LaputaShardItem;
 import vazkii.botania.common.item.LexicaBotaniaItem;
@@ -76,7 +77,7 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 @JeiPlugin
 public class JEIBotaniaPlugin implements IModPlugin {
-	private static final ResourceLocation ID = prefix("main");
+	private static final Identifier ID = prefix("main");
 
 	@Override
 	public void registerItemSubtypes(@NotNull ISubtypeRegistration registry) {
@@ -220,7 +221,7 @@ public class JEIBotaniaPlugin implements IModPlugin {
 			}
 		}
 
-		RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
+		RecipeManager recipeManager = RecipeHelper.getRecipeManager(Minecraft.getInstance().level);
 		recipeManager.byKey(prefix("petal_apothecary/daybloom_motif"))
 				.ifPresent(r -> {
 					if (r instanceof PetalApothecaryRecipe pr) {
@@ -243,7 +244,7 @@ public class JEIBotaniaPlugin implements IModPlugin {
 
 	@NotNull
 	@Override
-	public ResourceLocation getPluginUid() {
+	public Identifier getPluginUid() {
 		return ID;
 	}
 
@@ -270,3 +271,4 @@ public class JEIBotaniaPlugin implements IModPlugin {
 		}
 	}
 }
+

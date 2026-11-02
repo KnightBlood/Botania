@@ -10,12 +10,12 @@ package vazkii.botania.common.block.block_entity.corporea;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -44,8 +44,8 @@ public class CorporeaRetainerBlockEntity extends BotaniaBlockEntity implements W
 	private static final String TAG_REQUEST_COUNT = "requestCount";
 	private static final String TAG_RETAIN_MISSING = "retainMissing";
 
-	private static final Map<ResourceLocation, Function<CompoundTag, ? extends CorporeaRequestMatcher>> corporeaMatcherDeserializers = new ConcurrentHashMap<>();
-	private static final Map<Class<? extends CorporeaRequestMatcher>, ResourceLocation> corporeaMatcherSerializers = new ConcurrentHashMap<>();
+	private static final Map<Identifier, Function<CompoundTag, ? extends CorporeaRequestMatcher>> corporeaMatcherDeserializers = new ConcurrentHashMap<>();
+	private static final Map<Class<? extends CorporeaRequestMatcher>, Identifier> corporeaMatcherSerializers = new ConcurrentHashMap<>();
 
 	private BlockPos requestPos = ManaBurst.NO_SOURCE;
 
@@ -104,7 +104,7 @@ public class CorporeaRetainerBlockEntity extends BotaniaBlockEntity implements W
 		cmp.putInt(TAG_REQUEST_Y, requestPos.getY());
 		cmp.putInt(TAG_REQUEST_Z, requestPos.getZ());
 
-		ResourceLocation reqType = request != null ? corporeaMatcherSerializers.get(request.getClass()) : null;
+		Identifier reqType = request != null ? corporeaMatcherSerializers.get(request.getClass()) : null;
 
 		if (reqType != null) {
 			cmp.putString(TAG_REQUEST_TYPE, reqType.toString());
@@ -118,22 +118,22 @@ public class CorporeaRetainerBlockEntity extends BotaniaBlockEntity implements W
 	public void readPacketNBT(CompoundTag cmp) {
 		super.readPacketNBT(cmp);
 
-		int x = cmp.getInt(TAG_REQUEST_X);
-		int y = cmp.getInt(TAG_REQUEST_Y);
-		int z = cmp.getInt(TAG_REQUEST_Z);
+		int x = cmp.getIntOr(TAG_REQUEST_X, 0);
+		int y = cmp.getIntOr(TAG_REQUEST_Y, 0);
+		int z = cmp.getIntOr(TAG_REQUEST_Z, 0);
 		requestPos = new BlockPos(x, y, z);
 
-		ResourceLocation reqType = ResourceLocation.tryParse(cmp.getString(TAG_REQUEST_TYPE));
+		Identifier reqType = Identifier.tryParse(cmp.getStringOr(TAG_REQUEST_TYPE, ""));
 		if (reqType != null && corporeaMatcherDeserializers.containsKey(reqType)) {
 			request = corporeaMatcherDeserializers.get(reqType).apply(cmp);
 		} else {
 			request = null;
 		}
-		requestCount = cmp.getInt(TAG_REQUEST_COUNT);
-		retainMissing = cmp.getBoolean(TAG_RETAIN_MISSING);
+		requestCount = cmp.getIntOr(TAG_REQUEST_COUNT, 0);
+		retainMissing = cmp.getBooleanOr(TAG_RETAIN_MISSING, false);
 	}
 
-	public static <T extends CorporeaRequestMatcher> void addCorporeaRequestMatcher(ResourceLocation id, Class<T> clazz, Function<CompoundTag, T> deserializer) {
+	public static <T extends CorporeaRequestMatcher> void addCorporeaRequestMatcher(Identifier id, Class<T> clazz, Function<CompoundTag, T> deserializer) {
 		corporeaMatcherSerializers.put(clazz, id);
 		corporeaMatcherDeserializers.put(id, deserializer);
 	}
@@ -146,20 +146,20 @@ public class CorporeaRetainerBlockEntity extends BotaniaBlockEntity implements W
 		}
 
 		@Override
-		public void renderHUD(GuiGraphics gui, Minecraft mc) {
+		public void renderHUD(GuiGraphicsExtractor gui, Minecraft mc) {
 			String mode = I18n.get("botaniamisc.retainer." + (retainer.retainMissing ? "retain_missing" : "retain_all"));
 			int strWidth = mc.font.width(mode);
 			int x = (mc.getWindow().getGuiScaledWidth() - strWidth) / 2;
 			int y = mc.getWindow().getGuiScaledHeight() / 2 + 8;
 
 			RenderHelper.renderHUDBox(gui, x - 2, y, x + strWidth + 2, y + 12);
-			gui.drawString(mc.font, mode, x, y + 2, ChatFormatting.WHITE.getColor());
+			gui.text(mc.font, mode, x, y + 2, ChatFormatting.WHITE.getColor());
 		}
 	}
 
 	@Override
 	public boolean onUsedByWand(Player player, ItemStack stack, Direction side) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			retainMissing = !retainMissing;
 			setChanged();
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);

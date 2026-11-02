@@ -8,37 +8,54 @@
  */
 package vazkii.botania.common.crafting.recipe;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.PlacementInfo;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
-
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.xplat.XplatAbstractions;
 
-public class ManaUpgradeRecipe extends ShapedRecipe {
-	public ManaUpgradeRecipe(ShapedRecipe compose) {
-		super(compose.getId(), compose.getGroup(), compose.category(), compose.getWidth(), compose.getHeight(),
-				compose.getIngredients(),
-				// XXX: Hacky, but compose should always be a vanilla shaped recipe which doesn't do anything with the
-				// RegistryAccess
-				compose.getResultItem(RegistryAccess.EMPTY));
+/**
+ * A shaped crafting recipe that adds up the mana of all the mana items in the crafting grid.
+ */
+public class ManaUpgradeRecipe implements CraftingRecipe {
+	public static final MapCodec<ManaUpgradeRecipe> CODEC = ShapedRecipe.MAP_CODEC.xmap(
+			ManaUpgradeRecipe::new, recipe -> recipe.delegate);
+
+	public static final StreamCodec<RegistryFriendlyByteBuf, ManaUpgradeRecipe> STREAM_CODEC = ShapedRecipe.STREAM_CODEC.map(
+			ManaUpgradeRecipe::new, recipe -> recipe.delegate);
+
+	public static final RecipeSerializer<ManaUpgradeRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
+
+	private final ShapedRecipe delegate;
+
+	public ManaUpgradeRecipe(ShapedRecipe delegate) {
+		this.delegate = delegate;
 	}
 
-	public static ItemStack output(ItemStack output, Container inv) {
+	public static ManaUpgradeRecipe wrap(Recipe<?> recipe) {
+		return new ManaUpgradeRecipe((ShapedRecipe) recipe);
+	}
+
+	public static ItemStack output(ItemStack output, RecipeInput inv) {
 		ItemStack out = output.copy();
 		var outItem = XplatAbstractions.INSTANCE.findManaItem(out);
 		if (outItem == null) {
 			return out;
 		}
-		for (int i = 0; i < inv.getContainerSize(); i++) {
+		for (int i = 0; i < inv.size(); i++) {
 			ItemStack stack = inv.getItem(i);
 			var item = XplatAbstractions.INSTANCE.findManaItem(stack);
 			if (!stack.isEmpty() && item != null) {
@@ -48,34 +65,43 @@ public class ManaUpgradeRecipe extends ShapedRecipe {
 		return out;
 	}
 
-	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registries) {
-		return output(super.assemble(inv, registries), inv);
+	public boolean matches(CraftingInput input, Level level) {
+		return delegate.matches(input, level);
 	}
 
-	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public ItemStack assemble(CraftingInput input) {
+		return output(delegate.assemble(input), input);
+	}
+
+	@Override
+	public RecipeSerializer<? extends CraftingRecipe> getSerializer() {
 		return SERIALIZER;
 	}
 
-	public static final RecipeSerializer<ManaUpgradeRecipe> SERIALIZER = new Serializer();
+	@Override
+	public CraftingBookCategory category() {
+		return delegate.category();
+	}
 
-	private static class Serializer implements RecipeSerializer<ManaUpgradeRecipe> {
-		@Override
-		public ManaUpgradeRecipe fromJson(@NotNull ResourceLocation recipeId, @NotNull JsonObject json) {
-			return new ManaUpgradeRecipe(SHAPED_RECIPE.fromJson(recipeId, json));
-		}
+	@Override
+	public NonNullList<ItemStack> getRemainingItems(CraftingInput input) {
+		return delegate.getRemainingItems(input);
+	}
 
-		@Override
-		public ManaUpgradeRecipe fromNetwork(@NotNull ResourceLocation recipeId, @NotNull FriendlyByteBuf buffer) {
-			return new ManaUpgradeRecipe(SHAPED_RECIPE.fromNetwork(recipeId, buffer));
-		}
+	@Override
+	public String group() {
+		return delegate.group();
+	}
 
-		@Override
-		public void toNetwork(@NotNull FriendlyByteBuf buffer, @NotNull ManaUpgradeRecipe recipe) {
-			SHAPED_RECIPE.toNetwork(buffer, recipe);
-		}
+	@Override
+	public boolean showNotification() {
+		return delegate.showNotification();
+	}
+
+	@Override
+	public PlacementInfo placementInfo() {
+		return delegate.placementInfo();
 	}
 }

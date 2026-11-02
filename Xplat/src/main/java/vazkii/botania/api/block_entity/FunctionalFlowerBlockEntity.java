@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -28,7 +28,7 @@ import vazkii.botania.api.mana.ManaPool;
  * The basic class for a Functional Flower.
  */
 public abstract class FunctionalFlowerBlockEntity extends BindableSpecialFlowerBlockEntity<ManaPool> {
-	private static final ResourceLocation POOL_ID = new ResourceLocation(BotaniaAPI.MODID, "mana_pool");
+	private static final Identifier POOL_ID = Identifier.fromNamespaceAndPath(BotaniaAPI.MODID, "mana_pool");
 
 	public static final int LINK_RANGE = 10;
 	private static final String TAG_MANA = "mana";
@@ -61,7 +61,7 @@ public abstract class FunctionalFlowerBlockEntity extends BindableSpecialFlowerB
 			}
 		}
 
-		if (getLevel().isClientSide) {
+		if (getLevel().isClientSide()) {
 			double particleChance = 1F - (double) mana / (double) getMaxMana() / 3.5F;
 			int color = getColor();
 			float red = (color >> 16 & 0xFF) / 255F;
@@ -116,7 +116,7 @@ public abstract class FunctionalFlowerBlockEntity extends BindableSpecialFlowerB
 	@Override
 	public void readFromPacketNBT(CompoundTag cmp) {
 		super.readFromPacketNBT(cmp);
-		mana = cmp.getInt(TAG_MANA);
+		mana = cmp.getIntOr(TAG_MANA, 0);
 	}
 
 	@Override

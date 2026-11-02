@@ -9,9 +9,11 @@
 package vazkii.botania.network.clientbound;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
@@ -23,28 +25,28 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public record UpdateItemsRemainingPacket(ItemStack stack, int count, @Nullable Component tooltip) implements BotaniaPacket {
 
-	public static final ResourceLocation ID = prefix("rem");
+	public static final Identifier ID = prefix("rem");
 
 	@Override
 	public void encode(FriendlyByteBuf buf) {
-		buf.writeItem(stack);
+		buf.writeWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, stack);
 		buf.writeVarInt(count);
 		buf.writeBoolean(tooltip != null);
 		if (tooltip != null) {
-			buf.writeComponent(tooltip);
+			buf.writeWithCodec(NbtOps.INSTANCE, ComponentSerialization.CODEC, tooltip);
 		}
 	}
 
 	@Override
-	public ResourceLocation getFabricId() {
+	public Identifier getFabricId() {
 		return ID;
 	}
 
 	public static UpdateItemsRemainingPacket decode(FriendlyByteBuf buf) {
 		return new UpdateItemsRemainingPacket(
-				buf.readItem(),
+				buf.readWithCodecTrusted(NbtOps.INSTANCE, ItemStack.CODEC),
 				buf.readVarInt(),
-				buf.readBoolean() ? buf.readComponent() : null
+				buf.readBoolean() ? buf.readWithCodecTrusted(NbtOps.INSTANCE, ComponentSerialization.CODEC) : null
 		);
 	}
 

@@ -12,7 +12,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 
@@ -21,13 +21,13 @@ import vazkii.botania.common.lib.BotaniaTags;
 
 import java.util.concurrent.CompletableFuture;
 
-public class EntityTagProvider extends IntrinsicHolderTagsProvider<EntityType<?>> {
+public class EntityTagProvider extends IntrinsicHolderTagsProvider<EntityType<?>> implements PublicAddTags<EntityType<?>> {
 	public EntityTagProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
 		super(packOutput, Registries.ENTITY_TYPE, lookupProvider, (entityType) -> entityType.builtInRegistryHolder().key());
 	}
 
 	@Override
-	protected void addTags(HolderLookup.Provider provider) {
+	public void addTags(HolderLookup.Provider provider) {
 		tag(BotaniaTags.Entities.COCOON_COMMON).add(
 				EntityType.PIG, EntityType.COW, EntityType.CHICKEN, EntityType.RABBIT, EntityType.SHEEP
 		);
@@ -37,8 +37,9 @@ public class EntityTagProvider extends IntrinsicHolderTagsProvider<EntityType<?>
 						EntityType.PANDA, EntityType.TURTLE, EntityType.GOAT, EntityType.CAMEL);
 
 		tag(BotaniaTags.Entities.COCOON_COMMON_AQUATIC)
-				.add(EntityType.COD, EntityType.SALMON, EntityType.TROPICAL_FISH, EntityType.PUFFERFISH, EntityType.SQUID, EntityType.FROG)
-				.addOptional(new ResourceLocation("quark", "crab"));
+				.add(EntityType.COD, EntityType.SALMON, EntityType.TROPICAL_FISH, EntityType.PUFFERFISH, EntityType.SQUID, EntityType.FROG);
+		this.getOrCreateRawBuilder(BotaniaTags.Entities.COCOON_COMMON_AQUATIC)
+				.addOptionalElement(Identifier.fromNamespaceAndPath("quark", "crab"));
 		tag(BotaniaTags.Entities.COCOON_RARE_AQUATIC).add(EntityType.DOLPHIN, EntityType.GLOW_SQUID, EntityType.AXOLOTL);
 
 		tag(BotaniaTags.Entities.DRUM_MILKABLE).add(EntityType.COW, EntityType.MOOSHROOM, EntityType.GOAT);
@@ -53,7 +54,7 @@ public class EntityTagProvider extends IntrinsicHolderTagsProvider<EntityType<?>
 
 		tag(BotaniaTags.Entities.KEY_IMMUNE).add(EntityType.ITEM, EntityType.ITEM_FRAME, EntityType.PAINTING, EntityType.EXPERIENCE_ORB);
 
-		var bosses = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation("c", "bosses"));
+		var bosses = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("c", "bosses"));
 		tag(bosses).add(BotaniaEntities.DOPPLEGANGER);
 	}
 }

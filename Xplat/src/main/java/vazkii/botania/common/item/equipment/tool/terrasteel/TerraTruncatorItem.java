@@ -16,6 +16,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -127,7 +128,7 @@ public class TerraTruncatorItem extends ManasteelAxeItem implements SequentialBr
 	 */
 	private static void addBlockSwapper(Level world, Player player, ItemStack stack, BlockPos origCoords) {
 		// Block swapper registration should only occur on the server
-		if (world.isClientSide) {
+		if (world.isClientSide()) {
 			return;
 		}
 

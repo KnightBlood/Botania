@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:seeds",
+  "ingredients": [
+    "botania:grass_seeds",
+    "minecraft:wheat"
+  ],
+  "result": {
+    "id": "botania:golden_seeds"
+  }
+}

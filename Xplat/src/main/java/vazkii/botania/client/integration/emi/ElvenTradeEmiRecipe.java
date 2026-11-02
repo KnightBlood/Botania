@@ -1,34 +1,36 @@
 package vazkii.botania.client.integration.emi;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.api.widget.WidgetHolder;
 
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
-
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.resources.Identifier;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 import vazkii.botania.api.recipe.ElvenTradeRecipe;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class ElvenTradeEmiRecipe extends BotaniaEmiRecipe {
-	private static final ResourceLocation TEXTURE = prefix("textures/gui/elven_trade_overlay.png");
+	private static final Identifier TEXTURE = prefix("textures/gui/elven_trade_overlay.png");
 
-	public ElvenTradeEmiRecipe(ElvenTradeRecipe recipe) {
-		super(BotaniaEmiPlugin.ELVEN_TRADE, recipe);
+	public ElvenTradeEmiRecipe(RecipeHolder<ElvenTradeRecipe> holder) {
+		super(BotaniaEmiPlugin.ELVEN_TRADE, holder);
+		ElvenTradeRecipe recipe = holder.value();
 		this.input = recipe.getIngredients().stream().map(EmiIngredient::of).toList();
 		this.output = recipe.getOutputs().stream().map(EmiStack::of).toList();
 	}
@@ -73,23 +75,10 @@ public class ElvenTradeEmiRecipe extends BotaniaEmiRecipe {
 		}
 
 		@Override
-		public void render(GuiGraphics gui, int mouseX, int mouseY, float delta) {
-			PoseStack matrices = gui.pose();
-			TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-					.apply(prefix("block/alfheim_portal_swirl"));
-			MultiBufferSource.BufferSource immediate = Minecraft.getInstance().renderBuffers().bufferSource();
-			VertexConsumer v = immediate.getBuffer(RenderType.solid());
-			int startX = x;
-			int startY = y;
-			int stopX = x + 48;
-			int stopY = y + 48;
-			Matrix4f mat = matrices.last().pose();
-			Matrix3f n = matrices.last().normal();
-			v.vertex(mat, startX, startY, 0).color(1f, 1f, 1f, 1f).uv(sprite.getU0(), sprite.getV0()).uv2(0xF000F0).normal(n, 1, 0, 0).endVertex();
-			v.vertex(mat, startX, stopY, 0).color(1f, 1f, 1f, 1f).uv(sprite.getU0(), sprite.getV1()).uv2(0xF000F0).normal(n, 1, 0, 0).endVertex();
-			v.vertex(mat, stopX, stopY, 0).color(1f, 1f, 1f, 1f).uv(sprite.getU1(), sprite.getV1()).uv2(0xF000F0).normal(n, 1, 0, 0).endVertex();
-			v.vertex(mat, stopX, startY, 0).color(1f, 1f, 1f, 1f).uv(sprite.getU1(), sprite.getV0()).uv2(0xF000F0).normal(n, 1, 0, 0).endVertex();
-			immediate.endBatch();
+		public void extractRenderState(GuiGraphicsExtractor gui, int mouseX, int mouseY, float delta) {
+			TextureAtlasSprite sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
+					.getSprite(prefix("block/alfheim_portal_swirl"));
+			gui.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, 48, 48);
 		}
 
 	}

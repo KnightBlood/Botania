@@ -9,8 +9,9 @@
 package vazkii.botania.client.patchouli.processor;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 
 import vazkii.botania.api.recipe.BotanicalBreweryRecipe;
@@ -21,7 +22,7 @@ import vazkii.patchouli.api.IComponentProcessor;
 import vazkii.patchouli.api.IVariable;
 import vazkii.patchouli.api.IVariableProvider;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class BrewRecipeProcessor implements IComponentProcessor {
@@ -29,7 +30,7 @@ public class BrewRecipeProcessor implements IComponentProcessor {
 
 	@Override
 	public void setup(Level level, IVariableProvider variables) {
-		ResourceLocation id = new ResourceLocation(variables.get("recipe").asString());
+		Identifier id = Identifier.parse(variables.get("recipe", level.registryAccess()).asString());
 		this.recipe = PatchouliUtils.getRecipe(level, BotaniaRecipeTypes.BREW_TYPE, id);
 	}
 
@@ -37,28 +38,31 @@ public class BrewRecipeProcessor implements IComponentProcessor {
 	public IVariable process(Level level, String key) {
 		if (recipe == null) {
 			if (key.equals("is_offset")) {
-				return IVariable.wrap(false);
+				return IVariable.wrap(false, level.registryAccess());
 			}
 			return null;
 		} else if (key.equals("heading")) {
-			return IVariable.from(Component.translatable("botaniamisc.brewOf", Component.translatable(recipe.getBrew().getTranslationKey())));
+			return IVariable.from(Component.translatable("botaniamisc.brewOf", Component.translatable(recipe.getBrew().getTranslationKey())), level.registryAccess());
 		} else if (key.equals("vial")) {
-			return IVariable.from(recipe.getOutput(new ItemStack(BotaniaItems.vial)));
+			return IVariable.from(recipe.getOutput(new ItemStack(BotaniaItems.vial)), level.registryAccess());
 		} else if (key.equals("flask")) {
-			return IVariable.from(recipe.getOutput(new ItemStack(BotaniaItems.flask)));
+			return IVariable.from(recipe.getOutput(new ItemStack(BotaniaItems.flask)), level.registryAccess());
 		} else if (key.startsWith("input")) {
+			List<Ingredient> ingredients = recipe.getIngredients();
 			int requestedIndex = Integer.parseInt(key.substring(5)) - 1;
-			int indexOffset = (6 - recipe.getIngredients().size()) / 2; //Center the brew ingredients
+			int indexOffset = (6 - ingredients.size()) / 2; //Center the brew ingredients
 			int index = requestedIndex - indexOffset;
 
-			if (index < recipe.getIngredients().size() && index >= 0) {
-				return IVariable.wrapList(Arrays.stream(recipe.getIngredients().get(index).getItems()).map(IVariable::from).collect(Collectors.toList()));
+			if (index < ingredients.size() && index >= 0) {
+				return IVariable.wrapList(PatchouliUtils.getStacks(ingredients.get(index)).stream()
+						.map(stack -> IVariable.from(stack, level.registryAccess()))
+						.collect(Collectors.toList()), level.registryAccess());
 			} else {
 				return null;
 			}
 		}
 		if (key.equals("is_offset")) {
-			return IVariable.wrap(recipe.getIngredients().size() % 2 == 0);
+			return IVariable.wrap(recipe.getIngredients().size() % 2 == 0, level.registryAccess());
 		}
 		return null;
 	}

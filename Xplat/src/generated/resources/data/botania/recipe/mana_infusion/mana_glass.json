@@ -1,0 +1,9 @@
+{
+  "type": "botania:mana_infusion",
+  "input": "minecraft:glass",
+  "mana": 150,
+  "output": {
+    "count": 1,
+    "id": "botania:mana_glass"
+  }
+}

@@ -10,36 +10,46 @@ package vazkii.botania.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
-
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 
 import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.entity.ManaStormEntity;
 
-public class ManaStormRenderer extends EntityRenderer<ManaStormEntity> {
+public class ManaStormRenderer extends EntityRenderer<ManaStormEntity, ManaStormRenderer.ManaStormRenderState> {
 
 	public ManaStormRenderer(EntityRendererProvider.Context ctx) {
 		super(ctx);
 	}
 
 	@Override
-	public void render(ManaStormEntity storm, float yaw, float pticks, PoseStack ms, MultiBufferSource buffers, int light) {
-		ms.pushPose();
+	public ManaStormRenderState createRenderState() {
+		return new ManaStormRenderState();
+	}
+
+	@Override
+	public void extractRenderState(ManaStormEntity storm, ManaStormRenderState state, float partialTicks) {
+		super.extractRenderState(storm, state, partialTicks);
 		float maxScale = 1.95F;
-		float scale = 0.05F + ((float) storm.burstsFired / ManaStormEntity.TOTAL_BURSTS - (storm.deathTime == 0 ? 0 : storm.deathTime + pticks) / ManaStormEntity.DEATH_TIME) * maxScale;
-		RenderHelper.renderStar(ms, buffers, 0x00FF00, scale, scale, scale, storm.getUUID().getMostSignificantBits());
+		state.scale = 0.05F + ((float) storm.burstsFired / ManaStormEntity.TOTAL_BURSTS
+				- (storm.deathTime == 0 ? 0 : storm.deathTime + partialTicks) / ManaStormEntity.DEATH_TIME) * maxScale;
+		state.seed = storm.getUUID().getMostSignificantBits();
+	}
+
+	@Override
+	public void submit(ManaStormRenderState state, PoseStack ms, SubmitNodeCollector collector, CameraRenderState camera) {
+		super.submit(state, ms, collector, camera);
+		ms.pushPose();
+		RenderHelper.renderStar(ms, collector, 0x00FF00, state.scale, state.scale, state.scale, state.seed);
 		ms.popPose();
 	}
 
-	@NotNull
-	@Override
-	public ResourceLocation getTextureLocation(@NotNull ManaStormEntity entity) {
-		return InventoryMenu.BLOCK_ATLAS;
+	public static class ManaStormRenderState extends EntityRenderState {
+		public float scale;
+		public long seed;
 	}
 
 }

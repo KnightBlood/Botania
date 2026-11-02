@@ -5,7 +5,10 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.Nullable;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import vazkii.botania.api.corporea.CorporeaRequest;
 import vazkii.botania.api.corporea.CorporeaSpark;
@@ -13,10 +16,14 @@ import vazkii.botania.common.impl.corporea.AbstractCorporeaNode;
 
 import java.util.List;
 
+/**
+ * 26.1: rewritten on top of the ResourceHandler transfer API,
+ * replacing the removed IItemHandler-based block capability.
+ */
 public class ForgeCapCorporeaNode extends AbstractCorporeaNode {
-	protected final IItemHandler inv;
+	protected final ResourceHandler<ItemResource> inv;
 
-	public ForgeCapCorporeaNode(Level world, BlockPos pos, IItemHandler inv, CorporeaSpark spark) {
+	public ForgeCapCorporeaNode(Level world, BlockPos pos, ResourceHandler<ItemResource> inv, CorporeaSpark spark) {
 		super(world, pos, spark);
 		this.inv = inv;
 	}
@@ -34,8 +41,12 @@ public class ForgeCapCorporeaNode extends AbstractCorporeaNode {
 	protected List<ItemStack> iterateOverSlots(CorporeaRequest request, boolean doit) {
 		ImmutableList.Builder<ItemStack> builder = ImmutableList.builder();
 
-		for (int i = inv.getSlots() - 1; i >= 0; i--) {
-			ItemStack stackAt = inv.getStackInSlot(i);
+		for (int i = inv.size() - 1; i >= 0; i--) {
+			ItemResource resource = inv.getResource(i);
+			if (resource.isEmpty()) {
+				continue;
+			}
+			ItemStack stackAt = resource.toStack((int) Math.min(inv.getAmountAsLong(i), Integer.MAX_VALUE));
 			if (request.getMatcher().test(stackAt)) {
 				request.trackFound(stackAt.getCount());
 
@@ -44,12 +55,26 @@ public class ForgeCapCorporeaNode extends AbstractCorporeaNode {
 					request.trackSatisfied(rem);
 
 					if (doit) {
-						ItemStack copy = stackAt.copy();
-						builder.addAll(breakDownBigStack(inv.extractItem(i, rem, getSpark().isCreative())));
-						getSpark().onItemExtracted(copy);
-						request.trackExtracted(rem);
+						int extracted;
+						try (var tx = Transaction.openRoot()) {
+							extracted = inv.extract(i, resource, rem, tx);
+							if (extracted > 0 && !getSpark().isCreative()) {
+								tx.commit();
+							}
+						}
+						if (extracted > 0) {
+							ItemStack copy = resource.toStack(Math.min(extracted, stackAt.getCount()));
+							builder.addAll(breakDownBigStack(resource.toStack(extracted)));
+							getSpark().onItemExtracted(copy);
+							request.trackExtracted(extracted);
+						}
 					} else {
-						builder.add(inv.extractItem(i, rem, true));
+						try (var tx = Transaction.openRoot()) {
+							int simulated = inv.extract(i, resource, rem, tx);
+							if (simulated > 0) {
+								builder.add(resource.toStack(simulated));
+							}
+						}
 					}
 				}
 			}

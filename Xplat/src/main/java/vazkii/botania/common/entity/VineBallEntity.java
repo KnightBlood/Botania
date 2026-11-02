@@ -12,8 +12,10 @@ import com.google.common.collect.ImmutableMap;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -24,7 +26,9 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.VineBlock;
@@ -49,8 +53,10 @@ public class VineBallEntity extends ThrowableProjectile implements ItemSupplier 
 		super(type, world);
 	}
 
+	@SuppressWarnings("this-escape") // standard vanilla pattern: setOwner on ThrowableProjectile
 	public VineBallEntity(LivingEntity thrower, boolean gravity) {
-		super(BotaniaEntities.VINE_BALL, thrower, thrower.level());
+		super(BotaniaEntities.VINE_BALL, thrower.level());
+		setOwner(thrower);
 		entityData.set(GRAVITY, gravity ? 0.03F : 0F);
 	}
 
@@ -60,7 +66,7 @@ public class VineBallEntity extends ThrowableProjectile implements ItemSupplier 
 	}
 
 	@Override
-	protected void defineSynchedData() {
+	protected void defineSynchedData(SynchedEntityData.Builder entityData) {
 		entityData.define(GRAVITY, 0F);
 	}
 
@@ -68,7 +74,7 @@ public class VineBallEntity extends ThrowableProjectile implements ItemSupplier 
 	public void handleEntityEvent(byte id) {
 		if (id == EntityEvent.DEATH) {
 			for (int j = 0; j < 16; j++) {
-				level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(BotaniaItems.vineBall)), getX(), getY(), getZ(), Math.random() * 0.2 - 0.1, Math.random() * 0.25, Math.random() * 0.2 - 0.1);
+				level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStackTemplate(BuiltInRegistries.ITEM.wrapAsHolder(BotaniaItems.vineBall), 1, DataComponentPatch.EMPTY)), getX(), getY(), getZ(), Math.random() * 0.2 - 0.1, Math.random() * 0.25, Math.random() * 0.2 - 0.1);
 			}
 		}
 	}
@@ -88,14 +94,14 @@ public class VineBallEntity extends ThrowableProjectile implements ItemSupplier 
 	@Override
 	protected void onHitEntity(@NotNull EntityHitResult hit) {
 		super.onHitEntity(hit);
-		if (!level().isClientSide) {
+		if (!level().isClientSide()) {
 			effectAndDieWithDrop();
 		}
 	}
 
 	@Override
 	protected void onHitBlock(@NotNull BlockHitResult hit) {
-		if (!this.level().isClientSide) {
+		if (!this.level().isClientSide()) {
 			Direction dir = hit.getDirection();
 
 			BlockPos pos = hit.getBlockPos();
@@ -135,7 +141,7 @@ public class VineBallEntity extends ThrowableProjectile implements ItemSupplier 
 	}
 
 	@Override
-	protected float getGravity() {
+	protected double getDefaultGravity() {
 		return entityData.get(GRAVITY);
 	}
 

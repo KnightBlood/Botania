@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "T": "#botania:terrasteel_nuggets",
+    "W": "#botania:livingwood_logs"
+  },
+  "pattern": [
+    "WTW",
+    "WTW",
+    "WTW"
+  ],
+  "result": {
+    "id": "botania:alfheim_portal"
+  }
+}

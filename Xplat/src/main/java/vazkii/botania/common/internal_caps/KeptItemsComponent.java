@@ -8,6 +8,10 @@
  */
 package vazkii.botania.common.internal_caps;
 
+import com.mojang.serialization.MapCodec;
+
+import vazkii.botania.common.helper.ItemNBTHelper;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -18,7 +22,15 @@ import java.util.Collection;
 import java.util.List;
 
 public class KeptItemsComponent extends SerializableComponent {
+	public static final MapCodec<KeptItemsComponent> CODEC = ItemStack.CODEC.listOf().fieldOf("stacks")
+			.xmap(KeptItemsComponent::new, KeptItemsComponent::getStacks);
 	private final List<ItemStack> stacks = new ArrayList<>();
+
+	public KeptItemsComponent() {}
+
+	private KeptItemsComponent(Collection<ItemStack> stacks) {
+		this.stacks.addAll(stacks);
+	}
 
 	public void addAll(Collection<ItemStack> stack) {
 		stacks.addAll(stack);
@@ -29,19 +41,19 @@ public class KeptItemsComponent extends SerializableComponent {
 	}
 
 	@Override
-	public void readFromNbt(CompoundTag tag) {
+	public void readFromNbt(CompoundTag tag, HolderLookup.Provider registries) {
 		stacks.clear();
-		ListTag list = tag.getList("stacks", Tag.TAG_COMPOUND);
+		ListTag list = tag.getListOrEmpty("stacks");
 		for (Tag t : list) {
-			stacks.add(ItemStack.of((CompoundTag) t));
+			stacks.add(ItemNBTHelper.deserializeStackNbt((CompoundTag) t, registries));
 		}
 	}
 
 	@Override
-	public void writeToNbt(CompoundTag tag) {
+	public void writeToNbt(CompoundTag tag, HolderLookup.Provider registries) {
 		ListTag list = new ListTag();
 		for (ItemStack stack : stacks) {
-			list.add(stack.save(new CompoundTag()));
+			list.add(ItemNBTHelper.serializeStackNbt(stack, registries));
 		}
 		tag.put("stacks", list);
 	}

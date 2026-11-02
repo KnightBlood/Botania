@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "botania:item/toggle_light_relay"
+  }
+}

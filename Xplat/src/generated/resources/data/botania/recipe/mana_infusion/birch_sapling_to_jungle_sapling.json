@@ -1,0 +1,14 @@
+{
+  "type": "botania:mana_infusion",
+  "catalyst": {
+    "type": "block",
+    "block": "botania:alchemy_catalyst"
+  },
+  "group": "botania:sapling_cycle",
+  "input": "minecraft:birch_sapling",
+  "mana": 120,
+  "output": {
+    "count": 1,
+    "id": "minecraft:jungle_sapling"
+  }
+}

@@ -9,29 +9,23 @@
 package vazkii.botania.client.render.block_entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.block.block_entity.mana.ManaPumpBlockEntity;
 import vazkii.botania.common.helper.VecHelper;
 
-public class ManaPumpBlockEntityRenderer implements BlockEntityRenderer<ManaPumpBlockEntity> {
-	public static BakedModel headModel = null;
-	private final BlockRenderDispatcher blockRenderDispatcher;
+public class ManaPumpBlockEntityRenderer extends BotaniaBlockEntityRenderer<ManaPumpBlockEntity> {
+	public static BlockStateModel headModel = null;
 
 	public ManaPumpBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-		this.blockRenderDispatcher = ctx.getBlockRenderDispatcher();
 	}
 
 	@Override
-	public void render(ManaPumpBlockEntity pump, float partialTicks, PoseStack ms, MultiBufferSource buffers, int light, int overlay) {
+	public void render(ManaPumpBlockEntity pump, float partialTicks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {
 		ms.pushPose();
 		ms.translate(0.5, 0, 0.5);
 		float angle = 0;
@@ -53,8 +47,7 @@ public class ManaPumpBlockEntityRenderer implements BlockEntityRenderer<ManaPump
 		ms.translate(-0.5, 0, -0.5);
 		double diff = Math.max(0F, Math.min(8F, pump.innerRingPos + pump.moving * partialTicks));
 		ms.translate(0, 0, diff / 14);
-		VertexConsumer buffer = buffers.getBuffer(RenderType.solid());
-		blockRenderDispatcher.getModelRenderer().renderModel(ms.last(), buffer, null, headModel, 1, 1, 1, light, overlay);
+		RenderHelper.renderBlockModel(ms, buffers, null, headModel, 1, 1, 1, light, overlay);
 		ms.popPose();
 	}
 }

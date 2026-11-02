@@ -8,44 +8,53 @@
  */
 package vazkii.botania.client.render.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.client.core.helper.CoreShaders;
 import vazkii.botania.client.core.proxy.ClientProxy;
 import vazkii.botania.client.lib.ResourcesLib;
 import vazkii.botania.client.model.BotaniaModelLayers;
 import vazkii.botania.client.model.PixieModel;
 import vazkii.botania.common.entity.PixieEntity;
 
-public class PixieRenderer extends MobRenderer<PixieEntity, PixieModel> {
+public class PixieRenderer extends MobRenderer<PixieEntity, PixieRenderState, PixieModel> {
 
 	public PixieRenderer(EntityRendererProvider.Context ctx) {
 		super(ctx, new PixieModel(ctx.bakeLayer(BotaniaModelLayers.PIXIE)), 0.0F);
 	}
 
+	@NotNull
 	@Override
-	public void render(PixieEntity mob, float yaw, float partialTicks, PoseStack pos, MultiBufferSource buffers, int light) {
-		ShaderInstance shader = CoreShaders.doppleganger();
-		if (shader != null) {
-			shader.safeGetUniform("BotaniaDisfiguration").set(GaiaGuardianRenderer.DEFAULT_DISFIGURATION);
-			shader.safeGetUniform("BotaniaGrainIntensity").set(GaiaGuardianRenderer.DEFAULT_GRAIN_INTENSITY);
+	public PixieRenderState createRenderState() {
+		return new PixieRenderState();
+	}
+
+	@Override
+	public void extractRenderState(@NotNull PixieEntity entity, @NotNull PixieRenderState state, float partialTicks) {
+		super.extractRenderState(entity, state, partialTicks);
+		state.evil = entity.getPixieType() == 1;
+	}
+
+	@Nullable
+	@Override
+	protected RenderType getRenderType(@NotNull PixieRenderState state, boolean isBodyVisible, boolean forceTransparent, boolean appearGlowing) {
+		if (!state.evil) {
+			return super.getRenderType(state, isBodyVisible, forceTransparent, appearGlowing);
 		}
-		super.render(mob, yaw, partialTicks, pos, buffers, light);
+		// Reuse the translucent item-entity target layer that the doppelganger shader used to draw into.
+		return vazkii.botania.client.core.helper.RenderHelper.getDopplegangerLayer(getTextureLocation(state));
 	}
 
 	@NotNull
 	@Override
-	public ResourceLocation getTextureLocation(@NotNull PixieEntity entity) {
+	public Identifier getTextureLocation(@NotNull PixieRenderState state) {
 		return ClientProxy.dootDoot
-				? new ResourceLocation(ResourcesLib.MODEL_PIXIE_HALLOWEEN)
-				: new ResourceLocation(ResourcesLib.MODEL_PIXIE);
+				? Identifier.parse(ResourcesLib.MODEL_PIXIE_HALLOWEEN)
+				: Identifier.parse(ResourcesLib.MODEL_PIXIE);
 	}
 }
