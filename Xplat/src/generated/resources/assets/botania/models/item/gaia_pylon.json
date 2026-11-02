@@ -1,4 +1,5 @@
 {
+  "parent": "botania:block/gaia_pylon",
   "display": {
     "firstperson_righthand": {
       "rotation": [

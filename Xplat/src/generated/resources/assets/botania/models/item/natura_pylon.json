@@ -1,4 +1,5 @@
 {
+  "parent": "botania:block/natura_pylon",
   "display": {
     "firstperson_righthand": {
       "rotation": [

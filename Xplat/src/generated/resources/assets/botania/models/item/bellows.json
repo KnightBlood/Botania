@@ -1,4 +1,5 @@
 {
+  "parent": "botania:block/bellows",
   "display": {
     "firstperson_righthand": {
       "rotation": [

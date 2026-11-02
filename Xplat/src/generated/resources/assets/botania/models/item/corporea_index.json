@@ -1,4 +1,5 @@
 {
+  "parent": "botania:block/corporea_index",
   "display": {
     "firstperson_righthand": {
       "rotation": [

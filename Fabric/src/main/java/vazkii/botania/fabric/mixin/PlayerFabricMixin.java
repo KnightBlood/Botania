@@ -53,10 +53,16 @@ public abstract class PlayerFabricMixin extends LivingEntity {
 	private Inventory inventory;
 
 	/**
-	 * Registers the pixie spawn chance attribute on players
+	 * Registers the pixie spawn chance attribute on players.
+	 * <p>
+	 * {@code DefaultAttributes} initializes during bootstrap, before mod initializers run,
+	 * so {@link PixieHandler#init()} is invoked here first: this is the earliest point the
+	 * attribute holder is needed and the built-in registry is still writable on Fabric
+	 * (later call sites hit the idempotent no-op).
 	 */
 	@Inject(at = @At("RETURN"), method = "createAttributes")
 	private static void addPixieAttribute(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
+		PixieHandler.init();
 		cir.getReturnValue().add(PixieHandler.PIXIE_SPAWN_CHANCE);
 	}
 

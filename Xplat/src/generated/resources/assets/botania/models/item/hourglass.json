@@ -1,4 +1,5 @@
 {
+  "parent": "botania:block/hourglass",
   "display": {
     "firstperson_righthand": {
       "rotation": [

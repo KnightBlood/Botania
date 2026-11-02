@@ -1,4 +1,5 @@
 {
+  "parent": "botania:block/teru_teru_bozu",
   "display": {
     "firstperson_righthand": {
       "rotation": [

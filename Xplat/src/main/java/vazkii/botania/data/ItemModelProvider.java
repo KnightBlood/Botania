@@ -725,6 +725,11 @@ public class ItemModelProvider implements DataProvider {
 		Identifier modelId = ModelLocationUtils.getModelLocation(i);
 		consumer.accept(modelId, () -> {
 			JsonObject json = new JsonObject();
+			// 1.20.1 used the virtual "minecraft:builtin/entity" parent here, which no longer
+			// exists in 26.1. The item is drawn by TEISR (see the specialModel below), so the
+			// parent's geometry is never used - it only provides the texture slot chain
+			// (particle) and keeps the new model validation from warning.
+			json.addProperty("parent", ModelLocationUtils.getModelLocation(((BlockItem) i).getBlock()).toString());
 			json.add("display", display);
 			return json;
 		});

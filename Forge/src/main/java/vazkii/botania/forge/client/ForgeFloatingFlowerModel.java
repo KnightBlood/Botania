@@ -131,9 +131,21 @@ public final class ForgeFloatingFlowerModel {
 				this.flowerId = flowerId;
 			}
 
+			/**
+			 * Declaring the flower model as the parent makes the resolution chain inherit
+			 * its texture slots (notably the particle sprite) and transforms; the custom
+			 * {@link #geometry()} below replaces the inherited geometry. Without this the
+			 * baked model's particle falls back to the missing sprite.
+			 */
+			@Override
+			public Identifier parent() {
+				return this.flowerId;
+			}
+
 			@Override
 			public void resolveDependencies(ResolvableModel.Resolver resolver) {
-				resolver.markDependency(this.flowerId);
+				// The flower is reached through the parent chain; only the island
+				// models consumed by geometry() need explicit dependency marking.
 				for (var e : islandModels().entrySet()) {
 					resolver.markDependency(e.getValue());
 				}
