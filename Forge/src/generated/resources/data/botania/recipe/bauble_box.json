@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "c:chests/wooden"
+    },
+    "G": "minecraft:gold_ingot",
+    "M": {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "botania:manasteel_ingots"
+    }
+  },
+  "pattern": [
+    " M ",
+    "MCM",
+    " G "
+  ],
+  "result": {
+    "id": "botania:bauble_box"
+  }
+}

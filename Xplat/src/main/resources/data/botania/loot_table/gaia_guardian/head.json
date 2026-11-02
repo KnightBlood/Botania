@@ -1,0 +1,38 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "entity_properties",
+          "entity": "attacking_player",
+          "predicate": {
+            "equipment": {
+              "mainhand": {
+                "items": [
+                  "botania:elementium_axe"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "condition": "minecraft:random_chance_with_enchanted_bonus",
+          "unenchanted_chance": 0.0769,
+          "enchanted_chance": {
+            "type": "minecraft:linear",
+            "base": 0.1538,
+            "per_level_above_first": 0.0769
+          },
+          "enchantment": "minecraft:looting"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "botania:gaia_head"
+        }
+      ]
+    }
+  ]
+}

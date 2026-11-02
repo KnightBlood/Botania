@@ -36,7 +36,16 @@ public class LooniumMobAttributeModifier {
 	}
 
 	public AttributeModifier createAttributeModifier() {
-		return new AttributeModifier(Identifier.parse("botania:" + name), amount, operation);
+		return new AttributeModifier(Identifier.parse("botania:" + sanitizeName(name)), amount, operation);
+	}
+
+	/**
+	 * 26.1 requires attribute modifier ids to be valid {@link Identifier}s. The 1.20.1 config
+	 * names ("Loonium Modifier Health") predate that and are user-visible in the loonium config
+	 * datapacks, so they are kept as-is there and normalized to a legal id path here.
+	 */
+	private static String sanitizeName(String name) {
+		return name.toLowerCase(java.util.Locale.ROOT).replace(' ', '_').replaceAll("[^a-z0-9/._-]", "");
 	}
 
 	private static String operationToString(AttributeModifier.Operation operation) {

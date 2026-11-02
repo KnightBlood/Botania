@@ -39,14 +39,14 @@ public class ForgeRecipeProvider extends BotaniaRecipeProvider {
 	protected void buildRecipes(RecipeOutput output) {
 		ShapelessRecipeBuilder.shapeless(BuiltInRegistries.ITEM, RecipeCategory.BUILDING_BLOCKS, BotaniaBlocks.azulejo0)
 				.requires(Items.BLUE_DYE)
-				.requires(QUARTZ_STORAGE)
+				.requires(tagIngredient(QUARTZ_STORAGE))
 				.unlockedBy("has_item", conditionsFromItem(Items.BLUE_DYE))
 				.save(output);
 
 		ShapedRecipeBuilder.shaped(BuiltInRegistries.ITEM, RecipeCategory.TOOLS, BotaniaItems.baubleBox)
-				.define('C', Tags.Items.CHESTS_WOODEN)
+				.define('C', tagIngredient(Tags.Items.CHESTS_WOODEN))
 				.define('G', Items.GOLD_INGOT)
-				.define('M', BotaniaTags.Items.INGOTS_MANASTEEL)
+				.define('M', tagIngredient(BotaniaTags.Items.INGOTS_MANASTEEL))
 				.pattern(" M ")
 				.pattern("MCM")
 				.pattern(" G ")
@@ -55,8 +55,8 @@ public class ForgeRecipeProvider extends BotaniaRecipeProvider {
 
 		ShapedRecipeBuilder.shaped(BuiltInRegistries.ITEM, RecipeCategory.TOOLS, BotaniaItems.glassPick)
 				.define('T', BotaniaItems.livingwoodTwig)
-				.define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
-				.define('I', BotaniaTags.Items.INGOTS_MANASTEEL)
+				.define('G', tagIngredient(Tags.Items.GLASS_BLOCKS_COLORLESS))
+				.define('I', tagIngredient(BotaniaTags.Items.INGOTS_MANASTEEL))
 				.pattern("GIG")
 				.pattern(" T ")
 				.pattern(" T ")
@@ -64,9 +64,9 @@ public class ForgeRecipeProvider extends BotaniaRecipeProvider {
 				.save(output);
 
 		ShapedRecipeBuilder.shaped(BuiltInRegistries.ITEM, RecipeCategory.DECORATIONS, BotaniaBlocks.prism)
-				.define('P', Tags.Items.GEMS_PRISMARINE)
+				.define('P', tagIngredient(Tags.Items.GEMS_PRISMARINE))
 				.define('S', BotaniaBlocks.spectralPlatform)
-				.define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
+				.define('G', tagIngredient(Tags.Items.GLASS_BLOCKS_COLORLESS))
 				.pattern("GPG")
 				.pattern("GSG")
 				.pattern("GPG")
@@ -75,27 +75,26 @@ public class ForgeRecipeProvider extends BotaniaRecipeProvider {
 				.save(output);
 
 		ShapedRecipeBuilder.shaped(BuiltInRegistries.ITEM, RecipeCategory.MISC, BotaniaItems.lensNormal)
-				.define('S', BotaniaTags.Items.INGOTS_MANASTEEL)
-				.define('G', Ingredient.of(java.util.stream.Stream.concat(
-						BuiltInRegistries.ITEM.getOrThrow(Tags.Items.GLASS_BLOCKS_COLORLESS).stream(),
-						BuiltInRegistries.ITEM.getOrThrow(Tags.Items.GLASS_PANES_COLORLESS).stream())
-						.map(net.minecraft.core.Holder::value)))
+				.define('S', tagIngredient(BotaniaTags.Items.INGOTS_MANASTEEL))
+				.define('G', net.neoforged.neoforge.common.crafting.CompoundIngredient.of(
+						tagIngredient(Tags.Items.GLASS_BLOCKS_COLORLESS),
+						tagIngredient(Tags.Items.GLASS_PANES_COLORLESS)))
 				.pattern(" S ")
 				.pattern("SGS")
 				.pattern(" S ")
 				.unlockedBy("has_item", conditionsFromTag(BotaniaTags.Items.INGOTS_MANASTEEL))
 				.save(output);
 
-		registerRedStringBlock(output, BotaniaBlocks.redStringContainer, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(Tags.Items.CHESTS_WOODEN)), conditionsFromTag(Tags.Items.CHESTS_WOODEN));
+		registerRedStringBlock(output, BotaniaBlocks.redStringContainer, tagIngredient(Tags.Items.CHESTS_WOODEN), conditionsFromTag(Tags.Items.CHESTS_WOODEN));
 		ShapelessRecipeBuilder.shapeless(BuiltInRegistries.ITEM, RecipeCategory.REDSTONE, BotaniaBlocks.corporeaRetainer)
-				.requires(Tags.Items.CHESTS_WOODEN)
+				.requires(tagIngredient(Tags.Items.CHESTS_WOODEN))
 				.requires(BotaniaItems.corporeaSpark)
 				.unlockedBy("has_item", conditionsFromItem(BotaniaItems.corporeaSpark))
 				.save(output);
 		ShapelessRecipeBuilder.shapeless(BuiltInRegistries.ITEM, RecipeCategory.MISC, BotaniaItems.phantomInk, 4)
 				.requires(BotaniaItems.manaPearl)
-				.requires(Tags.Items.DYES)
-				.requires(Tags.Items.GLASS_BLOCKS)
+				.requires(tagIngredient(Tags.Items.DYES))
+				.requires(tagIngredient(Tags.Items.GLASS_BLOCKS))
 				.requires(Items.GLASS_BOTTLE, 4)
 				.unlockedBy("has_item", conditionsFromItem(BotaniaItems.manaPearl))
 				.save(output);
@@ -104,15 +103,19 @@ public class ForgeRecipeProvider extends BotaniaRecipeProvider {
 		MutableObject<BotaniaFinishedRecipe> gog = new MutableObject<>();
 		ShapelessRecipeBuilder.shapeless(BuiltInRegistries.ITEM, RecipeCategory.MISC, BotaniaItems.fertilizer)
 				.requires(Items.BONE_MEAL)
-				.requires(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(Tags.Items.DYES)), 4)
+				.requires(tagIngredient(Tags.Items.DYES), 4)
 				.unlockedBy("has_item", conditionsFromTag(Tags.Items.DYES))
 				.save(capturing(base::setValue), "botania:fertilizer_dye");
 		ShapelessRecipeBuilder.shapeless(BuiltInRegistries.ITEM, RecipeCategory.MISC, BotaniaItems.fertilizer, 3)
 				.requires(Items.BONE_MEAL)
-				.requires(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(Tags.Items.DYES)), 4)
+				.requires(tagIngredient(Tags.Items.DYES), 4)
 				.unlockedBy("has_item", conditionsFromTag(Tags.Items.DYES))
 				.save(capturing(gog::setValue), "botania:fertilizer_dye");
 		saveFinishedRecipe(output, new GogAlternationResult(gog.getValue(), base.getValue()));
+	}
+
+	private static Ingredient tagIngredient(TagKey<Item> tag) {
+		return vazkii.botania.forge.crafting.LazyTagIngredient.of(tag);
 	}
 
 	@Override

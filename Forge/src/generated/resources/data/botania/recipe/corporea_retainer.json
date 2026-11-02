@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "c:chests/wooden"
+    },
+    "botania:corporea_spark"
+  ],
+  "result": {
+    "id": "botania:corporea_retainer"
+  }
+}

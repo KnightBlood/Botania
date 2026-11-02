@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "botania:mana_pearl",
+    {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "c:dyes"
+    },
+    {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "c:glass_blocks"
+    },
+    "minecraft:glass_bottle",
+    "minecraft:glass_bottle",
+    "minecraft:glass_bottle",
+    "minecraft:glass_bottle"
+  ],
+  "result": {
+    "count": 4,
+    "id": "botania:phantom_ink"
+  }
+}

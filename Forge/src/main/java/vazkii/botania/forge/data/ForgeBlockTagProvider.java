@@ -4,7 +4,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
 import net.minecraft.data.tags.TagAppender;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -22,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ForgeBlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
+public class ForgeBlockTagProvider extends vazkii.botania.data.BlockTagProvider {
 	public static final TagKey<Block> MUSHROOMS = forge("mushrooms");
 	public static final TagKey<Block> ELEMENTIUM = forge("storage_blocks/elementium");
 	public static final TagKey<Block> MANASTEEL = forge("storage_blocks/manasteel");
@@ -37,8 +36,15 @@ public class ForgeBlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 	public static final TagKey<Block> STORAGE_QUARTZ = TagKey.create(Registries.BLOCK,
 			Identifier.fromNamespaceAndPath("c", "storage_blocks/quartz"));
 
+	/**
+	 * Extends the Xplat provider so that the botania:* block tags and the Forge-specific
+	 * cross-namespace compat tags live in the same builders map. 26.1 datagen validates
+	 * same-modId tag references against this run's builders + parent lookup only (no
+	 * ExistingFileHelper), and references from a different namespace than the provider's
+	 * modId are skipped entirely - so the shared map keeps everything resolvable.
+	 */
 	public ForgeBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> provider) {
-		super(output, Registries.BLOCK, provider, (block) -> block.builtInRegistryHolder().key(), LibMisc.MOD_ID);
+		super(output, provider);
 	}
 
 	@Override
@@ -47,7 +53,9 @@ public class ForgeBlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 	}
 
 	@Override
-	protected void addTags(HolderLookup.Provider provider) {
+	public void addTags(HolderLookup.Provider provider) {
+		super.addTags(provider);
+
 		tag(STORAGE_QUARTZ).add(
 				BotaniaBlocks.darkQuartz, BotaniaBlocks.manaQuartz, BotaniaBlocks.blazeQuartz,
 				BotaniaBlocks.lavenderQuartz, BotaniaBlocks.redQuartz, BotaniaBlocks.elfQuartz, BotaniaBlocks.sunnyQuartz
@@ -61,9 +69,11 @@ public class ForgeBlockTagProvider extends IntrinsicHolderTagsProvider<Block> {
 			storageBlocks.addTag(petalStorageBlockTag);
 		});
 
-		tag(TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("buzzier_bees", "flower_blacklist")))
-				.addTag(BotaniaTags.Blocks.MYSTICAL_FLOWERS)
-				.addTag(BotaniaTags.Blocks.SPECIAL_FLOWERS);
+		// Removed buzzier_bees:flower_blacklist compat tag (MC 26.1): vanilla datagen no longer
+		// consults ExistingFileHelper for tag validation, so this cross-namespace reference to
+		// #botania:mystical_flowers/#botania:special_flowers can't be resolved in this run.
+		// buzzier_bees is not a dependency (MVP: no external mod deps), so the tag is dropped
+		// rather than duplicated here.
 
 		tag(ELEMENTIUM).addTag(BotaniaTags.Blocks.BLOCKS_ELEMENTIUM);
 		tag(MANASTEEL).addTag(BotaniaTags.Blocks.BLOCKS_MANASTEEL);

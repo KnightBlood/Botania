@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "c:glass_blocks/colorless"
+    },
+    "I": {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "botania:manasteel_ingots"
+    },
+    "T": "botania:livingwood_twig"
+  },
+  "pattern": [
+    "GIG",
+    " T ",
+    " T "
+  ],
+  "result": {
+    "id": "botania:glass_pickaxe"
+  }
+}

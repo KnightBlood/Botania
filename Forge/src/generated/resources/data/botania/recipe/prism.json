@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "c:glass_blocks/colorless"
+    },
+    "P": {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "c:gems/prismarine"
+    },
+    "S": "botania:spectral_platform"
+  },
+  "pattern": [
+    "GPG",
+    "GSG",
+    "GPG"
+  ],
+  "result": {
+    "id": "botania:prism"
+  }
+}

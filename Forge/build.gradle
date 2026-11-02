@@ -11,6 +11,10 @@ if (System.getenv().RELEASE_MODE != "1") {
 
 // Mixin configs are registered via neoforge.mods.toml [[mixins]] section
 
+// Resolve outside the neoForge DSL: `project(...)` is intercepted inside it.
+def xplatGeneratedDir = project(':Xplat').file('src/generated/resources')
+def xplatMainDir = project(':Xplat').file('src/main/resources')
+
 repositories {
     maven {
         name = "Jared"
@@ -39,7 +43,7 @@ repositories {
 
 neoForge {
     version = neo_version
-    accessTransformers = [project(':Xplat').file('src/main/resources/META-INF/accesstransformer.cfg')]
+    accessTransformers = [project(":Xplat").file('src/main/resources/META-INF/accesstransformer.cfg')]
 
     if (parchment_version != 'none') {
         parchment {
@@ -59,12 +63,16 @@ neoForge {
             systemProperty('forge.logging.console.level', 'debug')
         }
 
-        data {
-            data()
+        // MDG 26.1: the old `data()` run type is gone; server-side datagen is now serverData()
+        serverData {
+            serverData()
             programArguments.addAll "-mixin.config=botania_xplat.mixins.json", "-mixin.config=botania_forge.mixins.json"
             programArguments.addAll '--mod', 'botania', '--all'
+            programArguments.addAll '--flat'
             programArguments.addAll '--output', file('src/generated/resources/').getAbsolutePath()
             programArguments.addAll '--existing', file('src/main/resources/').getAbsolutePath()
+            programArguments.addAll '--existing', xplatGeneratedDir.getAbsolutePath()
+            programArguments.addAll '--existing', xplatMainDir.getAbsolutePath()
         }
 
         configureEach {
@@ -124,6 +132,10 @@ sourceSets.main.resources {
 }
 
 processResources {
+    // The Forge-specific datagen outputs include the botania:* tags (inherited Xplat providers
+    // share one builders map), which Xplat's own generated resources also contain with the same
+    // content; take either copy instead of failing the build.
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from project(":Xplat").sourceSets.main.resources
     inputs.property "version", project.version
 

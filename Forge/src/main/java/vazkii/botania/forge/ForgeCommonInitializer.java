@@ -175,6 +175,7 @@ public class ForgeCommonInitializer {
 		modBus.addListener(ForgePacketHandler::register);
 		ForgeInternalEntityCapabilities.register(modBus);
 		ForgeRegistryHandler.init(modBus);
+		vazkii.botania.forge.crafting.ForgeBotaniaIngredients.init(modBus);
 		ForgeDatagenInitializer.init(modBus);
 		if (FMLEnvironment.getDist() == Dist.CLIENT) {
 			ForgeClientInitializer.init(modBus);

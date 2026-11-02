@@ -1,0 +1,306 @@
+{
+  "__comment": "Additional table called from all LivingEntity",
+  "type": "entity",
+  "pools": [
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "entity_properties",
+          "entity": "attacking_player",
+          "predicate": {
+            "equipment": {
+              "mainhand": {
+                "items": [
+                  "botania:elementium_axe"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "condition": "entity_properties",
+          "entity": "this",
+          "predicate": {
+            "type": "minecraft:wither_skeleton"
+          }
+        },
+        {
+          "condition": "minecraft:random_chance_with_enchanted_bonus",
+          "unenchanted_chance": 0.1154,
+          "enchanted_chance": {
+            "type": "minecraft:linear",
+            "base": 0.1539,
+            "per_level_above_first": 0.0385
+          },
+          "enchantment": "minecraft:looting"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:wither_skeleton_skull"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "entity_properties",
+          "entity": "attacking_player",
+          "predicate": {
+            "equipment": {
+              "mainhand": {
+                "items": [
+                  "botania:elementium_axe"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "condition": "entity_properties",
+          "entity": "this",
+          "predicate": {
+            "type": "#minecraft:skeletons"
+          }
+        },
+        {
+          "condition": "inverted",
+          "term": {
+            "condition": "entity_properties",
+            "entity": "this",
+            "predicate": {
+              "type": "minecraft:wither_skeleton"
+            }
+          }
+        },
+        {
+          "condition": "minecraft:random_chance_with_enchanted_bonus",
+          "unenchanted_chance": 0.1154,
+          "enchanted_chance": {
+            "type": "minecraft:linear",
+            "base": 0.1539,
+            "per_level_above_first": 0.0385
+          },
+          "enchantment": "minecraft:looting"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:skeleton_skull"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "entity_properties",
+          "entity": "attacking_player",
+          "predicate": {
+            "equipment": {
+              "mainhand": {
+                "items": [
+                  "botania:elementium_axe"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "condition": "any_of",
+          "terms": [
+            {
+              "condition": "entity_properties",
+              "entity": "this",
+              "predicate": {
+                "type": "minecraft:zombie"
+              }
+            },
+            {
+              "condition": "entity_properties",
+              "entity": "this",
+              "predicate": {
+                "type": "minecraft:zombie_villager"
+              }
+            },
+            {
+              "condition": "entity_properties",
+              "entity": "this",
+              "predicate": {
+                "type": "minecraft:husk"
+              }
+            },
+            {
+              "condition": "entity_properties",
+              "entity": "this",
+              "predicate": {
+                "type": "minecraft:drowned"
+              }
+            }
+          ]
+        },
+        {
+          "condition": "minecraft:random_chance_with_enchanted_bonus",
+          "unenchanted_chance": 0.0769,
+          "enchanted_chance": {
+            "type": "minecraft:linear",
+            "base": 0.1538,
+            "per_level_above_first": 0.0769
+          },
+          "enchantment": "minecraft:looting"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:zombie_head"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "entity_properties",
+          "entity": "attacking_player",
+          "predicate": {
+            "equipment": {
+              "mainhand": {
+                "items": [
+                  "botania:elementium_axe"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "condition": "any_of",
+          "terms": [
+            {
+              "condition": "entity_properties",
+              "entity": "this",
+              "predicate": {
+                "type": "minecraft:piglin"
+              }
+            },
+            {
+              "condition": "entity_properties",
+              "entity": "this",
+              "predicate": {
+                "type": "minecraft:piglin_brute"
+              }
+            }
+          ]
+        },
+        {
+          "condition": "minecraft:random_chance_with_enchanted_bonus",
+          "unenchanted_chance": 0.0769,
+          "enchanted_chance": {
+            "type": "minecraft:linear",
+            "base": 0.1538,
+            "per_level_above_first": 0.0769
+          },
+          "enchantment": "minecraft:looting"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:piglin_head"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "entity_properties",
+          "entity": "attacking_player",
+          "predicate": {
+            "equipment": {
+              "mainhand": {
+                "items": [
+                  "botania:elementium_axe"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "condition": "entity_properties",
+          "entity": "this",
+          "predicate": {
+            "type": "minecraft:creeper"
+          }
+        },
+        {
+          "condition": "minecraft:random_chance_with_enchanted_bonus",
+          "unenchanted_chance": 0.0769,
+          "enchanted_chance": {
+            "type": "minecraft:linear",
+            "base": 0.1538,
+            "per_level_above_first": 0.0769
+          },
+          "enchantment": "minecraft:looting"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:creeper_head"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "entity_properties",
+          "entity": "attacking_player",
+          "predicate": {
+            "equipment": {
+              "mainhand": {
+                "items": [
+                  "botania:elementium_axe"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "condition": "entity_properties",
+          "entity": "this",
+          "predicate": {
+            "type": "minecraft:player"
+          }
+        },
+        {
+          "condition": "minecraft:random_chance_with_enchanted_bonus",
+          "unenchanted_chance": 0.0909,
+          "enchanted_chance": {
+            "type": "minecraft:linear",
+            "base": 0.1818,
+            "per_level_above_first": 0.0909
+          },
+          "enchantment": "minecraft:looting"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:player_head"
+        }
+      ],
+      "functions": [
+        {
+          "function": "minecraft:fill_player_head",
+          "entity": "this"
+        }
+      ]
+    }
+  ]
+}

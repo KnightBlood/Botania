@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "minecraft:blue_dye",
+    {
+      "neoforge:ingredient_type": "botania:tag",
+      "tag": "c:storage_blocks/quartz"
+    }
+  ],
+  "result": {
+    "id": "botania:azulejo_0"
+  }
+}

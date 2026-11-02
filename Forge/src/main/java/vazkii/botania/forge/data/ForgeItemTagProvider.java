@@ -2,7 +2,6 @@ package vazkii.botania.forge.data;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -10,21 +9,19 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.data.BlockTagCopyingItemTagProvider;
 
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.helper.ColorHelper;
 import vazkii.botania.common.lib.BotaniaTags;
-import vazkii.botania.common.lib.LibMisc;
 
 import java.util.concurrent.CompletableFuture;
 
 import static vazkii.botania.common.item.BotaniaItems.*;
 
-public class ForgeItemTagProvider extends BlockTagCopyingItemTagProvider {
+public class ForgeItemTagProvider extends vazkii.botania.data.ItemTagProvider {
 	public ForgeItemTagProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider,
-			CompletableFuture<TagsProvider.TagLookup<Block>> blockTagProvider) {
-		super(packOutput, lookupProvider, blockTagProvider, LibMisc.MOD_ID);
+			vazkii.botania.data.BlockTagProvider blockTags) {
+		super(packOutput, lookupProvider, blockTags);
 	}
 
 	@Override
@@ -33,7 +30,9 @@ public class ForgeItemTagProvider extends BlockTagCopyingItemTagProvider {
 	}
 
 	@Override
-	protected void addTags(HolderLookup.Provider provider) {
+	public void addTags(HolderLookup.Provider provider) {
+		super.addTags(provider);
+
 		this.tag(forge("dusts/mana")).addTag(BotaniaTags.Items.DUSTS_MANA);
 		this.tag(forge("dusts")).addTag(forge("dusts/mana"));
 
