@@ -107,6 +107,7 @@ import vazkii.botania.common.item.relic.*;
 import vazkii.botania.common.item.rod.*;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.common.lib.RegistrationBackfill;
+import vazkii.botania.client.ClothBotaniaConfig;
 import vazkii.botania.common.loot.BotaniaLootModifiers;
 import vazkii.botania.common.loot.LootHandler;
 import vazkii.botania.common.world.BotaniaFeatures;

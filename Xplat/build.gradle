@@ -36,6 +36,13 @@ repositories {
             includeGroup("dev.emi")
         }
     }
+    maven {
+        name = "Shedaniel" // Cloth Config (shared config screen, both loaders)
+        url = "https://maven.shedaniel.me/"
+        content {
+            includeGroup("me.shedaniel.cloth")
+        }
+    }
 }
 
 dependencies {
@@ -48,6 +55,11 @@ dependencies {
     // compileOnly 'com.blamejared.crafttweaker:CraftTweaker-common-1.18.2:9.1.123'
 
     compileOnly "com.unascribed:ears-api:1.4.5"
+
+    // Cloth Config + jankson: ClothBotaniaConfig (shared JSON5 config + screen) is
+    // compiled here and in both loader modules; each loader supplies the runtime dep.
+    compileOnly "me.shedaniel.cloth:cloth-config-fabric:${cloth_config_version}"
+    compileOnly "blue.endless:jankson:1.2.0"
 
     compileOnly "mezz.jei:jei-26.1-common-api:${jei_version}"
 // EMI unofficial port (curseforge 1544558, no maven) - local jar, mojmap neoforge build

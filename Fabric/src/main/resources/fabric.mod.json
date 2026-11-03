@@ -49,6 +49,9 @@
     ],
     "speedrunigt": [
       "vazkii.botania.fabric.integration.speedrunigt.BotaniaSpeedrunIGTPlugin"
+    ],
+    "modmenu": [
+      "vazkii.botania.fabric.integration.modmenu.BotaniaModMenu"
     ]
   },
   "mixins": [
@@ -63,6 +66,10 @@
     "minecraft": "=26.1",
     "trinkets" : ">=3",
     "patchouli": "*"
+  },
+  "suggests": {
+    "cloth-config": "*",
+    "modmenu": "*"
   },
   "conflicts": {
     "fastitemframes": "*",

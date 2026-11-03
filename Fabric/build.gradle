@@ -112,6 +112,10 @@ dependencies {
     implementation "me.shedaniel.cloth:cloth-config-fabric:${cloth_config_version}"
     // 26.1: cloth-config no longer pulls jankson transitively, but our config code uses it directly
     implementation "blue.endless:jankson:1.2.0"
+
+    // Mod Menu: exposes the shared Cloth config screen via the modmenu entrypoint
+    compileOnly "maven.modrinth:modmenu:18.0.1"
+    runtimeOnly "maven.modrinth:modmenu:18.0.1"
     
     // Don't include base and entity as Trinkets includes it already
     implementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${cardinal_components_version}"

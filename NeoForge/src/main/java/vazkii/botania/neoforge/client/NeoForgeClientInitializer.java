@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.ClientChatEvent;
@@ -37,6 +38,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
@@ -64,6 +66,7 @@ import vazkii.botania.api.block.WandHUD;
 import vazkii.botania.api.mana.ManaBarTooltip;
 import vazkii.botania.client.BotaniaItemProperties;
 import vazkii.botania.client.core.handler.*;
+import vazkii.botania.client.ClothBotaniaConfig;
 import vazkii.botania.client.core.proxy.ClientProxy;
 import vazkii.botania.client.fx.BotaniaParticles;
 import vazkii.botania.client.gui.HUDHandler;
@@ -104,7 +107,10 @@ public class NeoForgeClientInitializer {
 	/** Keys of every standalone model we register, for lookup after baking. */
 	private static final Map<StandaloneModelKey<BlockStateModel>, Identifier> STANDALONE_KEYS = new HashMap<>();
 
-	public static void init(IEventBus modBus) {
+	public static void init(IEventBus modBus, ModContainer container) {
+		// Config screen (Cloth Config), reachable from the NeoForge Mods screen.
+		container.registerExtensionPoint(IConfigScreenFactory.class,
+				(modContainer, parent) -> ClothBotaniaConfig.createConfigScreen(parent));
 		modBus.addListener(NeoForgeClientInitializer::clientInit);
 		modBus.addListener(NeoForgeClientInitializer::registerGuiLayers);
 		modBus.addListener(NeoForgeClientInitializer::registerTooltipComponent);

@@ -32,6 +32,11 @@ configBackground="botania:textures/block/livingrock_bricks.png" # background for
     versionRange="[10.0.0+26.1,)"
 
 [[dependencies.botania]]
+    modId="cloth-config"
+    type="optional"
+    versionRange="[26.1,)"
+
+[[dependencies.botania]]
     modId="gardenofglass"
     type="optional"
     versionRange="[1.12,)"

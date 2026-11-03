@@ -25,6 +25,13 @@ repositories {
         url = "https://maven.theillusivec4.top/"
     }
     maven {
+        name = "Shedaniel" // Cloth Config
+        url = "https://maven.shedaniel.me/"
+        content {
+            includeGroup("me.shedaniel.cloth")
+        }
+    }
+    maven {
         name = "Sleeping Town"
         url = "https://repo.sleeping.town/" // for emi and ears
         content {
@@ -105,6 +112,13 @@ dependencies {
 
     compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
     runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")
+
+    // Cloth Config + jankson: shared ClothBotaniaConfig (JSON5 config + screen) needs
+    // both at compile time (Xplat sources are compiled into this module) and runtime.
+    compileOnly("me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}")
+    runtimeOnly("me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}")
+    compileOnly("blue.endless:jankson:1.2.0")
+    runtimeOnly("blue.endless:jankson:1.2.0")
 
     // compileOnly('com.blamejared.crafttweaker:CraftTweaker-forge-1.18.2:9.1.123')
 

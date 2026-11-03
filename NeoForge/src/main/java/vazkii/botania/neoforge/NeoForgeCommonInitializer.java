@@ -84,6 +84,7 @@ import vazkii.botania.api.item.CoordBoundItem;
 import vazkii.botania.api.item.Relic;
 import vazkii.botania.api.mana.*;
 import vazkii.botania.api.mana.spark.SparkAttachable;
+import vazkii.botania.client.ClothBotaniaConfig;
 import vazkii.botania.client.fx.BotaniaParticles;
 import vazkii.botania.common.BotaniaStats;
 import vazkii.botania.common.PlayerAccess;
@@ -178,7 +179,7 @@ public class NeoForgeCommonInitializer {
 		vazkii.botania.neoforge.crafting.NeoForgeBotaniaIngredients.init(modBus);
 		NeoForgeDatagenInitializer.init(modBus);
 		if (FMLEnvironment.getDist() == Dist.CLIENT) {
-			NeoForgeClientInitializer.init(modBus);
+			NeoForgeClientInitializer.init(modBus, container);
 		}
 	}
 
@@ -225,7 +226,10 @@ public class NeoForgeCommonInitializer {
 				List.of(BotaniaAPI.instance(), XplatAbstractions.instance(),
 						CorporeaHelper.instance(), ManaItemHandler.instance()));
 
-		NeoForgeBotaniaConfig.setup(container, this.modBus);
+		// 26.1 port: both loaders share the Cloth-Config-based JSON5 config
+		// (vazkii.botania.client.ClothBotaniaConfig); the native ModConfigSpec
+		// TOML config was retired for parity with the Fabric side.
+		ClothBotaniaConfig.setup();
 		EquipmentHandler.init();
 	}
 
