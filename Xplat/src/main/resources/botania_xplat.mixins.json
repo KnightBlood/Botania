@@ -73,6 +73,7 @@
     "client.RecipeBookComponentAccessor",
     "client.RecipeBookComponentMixin",
     "client.RecipeBookPageAccessor",
+    "client.SkullBlockRendererAccessor",
     "client.SkullBlockRendererMixin",
     "client.SkyRendererMixin",
     "client.SpecialModelRenderersAccessor",

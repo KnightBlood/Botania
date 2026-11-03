@@ -25,6 +25,14 @@ public class GaiaHeadBlock extends SkullBlock {
 			}
 		};
 
+	static {
+		// 26.1 resolves skull types by serialized name through this map (SkullBlock.Type.CODEC,
+		// see SkullBlock.Type.TYPES); vanilla enum constants self-register in their constructor.
+		// Registering here unblocks the block codec ("kind": "gaia") and the item
+		// "minecraft:head" special model, restoring the full 3D gaia skull form.
+		SkullBlock.Type.TYPES.put("gaia", GAIA_TYPE);
+	}
+
 	public GaiaHeadBlock(Properties builder) {
 		super(GAIA_TYPE, builder);
 	}

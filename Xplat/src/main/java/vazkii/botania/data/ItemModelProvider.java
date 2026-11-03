@@ -15,6 +15,7 @@ import com.google.gson.JsonPrimitive;
 
 import net.minecraft.client.data.models.model.DelegatedModel;
 import net.minecraft.client.data.models.model.ItemModelUtils;
+import net.minecraft.client.renderer.special.SkullSpecialRenderer;
 import net.minecraft.client.data.models.model.ModelInstance;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.ModelTemplate;
@@ -471,14 +472,18 @@ public class ItemModelProvider implements DataProvider {
 				ModelLocationUtils.getModelLocation(BotaniaBlocks.animatedTorch.asItem()), clientModels);
 		itemBlocks.remove(BotaniaBlocks.animatedTorch.asItem());
 
-		// 26.1 encodes skull types through SkullBlock.Type.CODEC, a closed set of vanilla serialized
-		// names, so "kind": "gaia" cannot be decoded and the skull special model is not expressible for
-		// this item. Fall back to the flat icon (textures/item/gaia_head.png); the 3D skull-in-item
-		// form is not ported yet.
+		// 3D skull item, mirroring vanilla head items (26.1 data-driven "minecraft:head" special
+		// model). GaiaHeadBlock registers its type into SkullBlock.Type.TYPES, so "kind": "gaia"
+		// resolves through SkullSpecialRenderer.Unbaked's codec; SkullBlockRendererMixin supplies
+		// the viewer-mirrored texture at bake time.
 		Identifier gaiaHead = ModelLocationUtils.getModelLocation(BotaniaBlocks.gaiaHead.asItem());
-		Identifier gaiaHeadModel = ModelTemplates.FLAT_ITEM.create(gaiaHead,
-				TextureMapping.layer0(BotaniaBlocks.gaiaHead.asItem()), consumer);
-		plainModel(gaiaHead, gaiaHeadModel, clientModels);
+		// Same transform as vanilla BlockModelGenerators.SKULL_TRANSFORM (private there, inlined here)
+		var skullTransform = new com.mojang.math.Transformation(
+				new org.joml.Vector3f(0.5F, 0.0F, 0.5F), new org.joml.Quaternionf().rotationX((float) Math.PI), null, null);
+		clientModels.accept(gaiaHead, new ClientItem(
+				ItemModelUtils.specialModel(ModelLocationUtils.decorateItemModelLocation("template_skull"),
+						skullTransform, new SkullSpecialRenderer.Unbaked(GaiaHeadBlock.GAIA_TYPE)),
+				ClientItem.Properties.DEFAULT));
 		itemBlocks.remove(BotaniaBlocks.gaiaHead.asItem());
 
 		takeAll(itemBlocks, i -> i.getBlock() instanceof BotaniaDoubleFlowerBlock).forEach(i -> {
