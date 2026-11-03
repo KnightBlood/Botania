@@ -60,6 +60,7 @@ import org.lwjgl.opengl.GL11;
 
 import vazkii.botania.client.core.handler.ClientTickHandler;
 import vazkii.botania.client.lib.ResourcesLib;
+import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
 import vazkii.botania.client.render.block_entity.PylonBlockEntityRenderer;
 import vazkii.botania.common.helper.VecHelper;
 import vazkii.botania.common.item.equipment.bauble.FlugelTiaraItem;
@@ -127,16 +128,21 @@ public final class RenderHelper {
 	}
 
 	static {
-		RenderSetup starSetup = RenderSetup.builder(RenderPipelines.SOLID_BLOCK)
+		// LIGHTNING is a position_color pipeline with the same LIGHTNING_TRANSPARENCY the
+		// 1.20.1 star used, and declares no samplers. (SOLID_BLOCK's shader samples
+		// Sampler0/Sampler2, so it crashes with "Missing sampler" unless textures are bound.)
+		RenderSetup starSetup = RenderSetup.builder(RenderPipelines.LIGHTNING)
 			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.createRenderSetup();
-		STAR = makeLayer(ResourcesLib.PREFIX_MOD + "star", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLES, starSetup);
+		STAR = makeLayer(ResourcesLib.PREFIX_MOD + "star", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, starSetup);
 
-		RenderSetup rectangleSetup = RenderSetup.builder(RenderPipelines.SOLID_BLOCK)
+		// DEBUG_QUADS: position_color, QUADS, translucent blend, no cull, and no sampler
+		// declarations - matches the 1.20.1 rectangle/circle state (TRANSLUCENT + NO_CULL).
+		RenderSetup rectangleSetup = RenderSetup.builder(RenderPipelines.DEBUG_QUADS)
 			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.createRenderSetup();
 		RECTANGLE = makeLayer(ResourcesLib.PREFIX_MOD + "rectangle_highlight", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, rectangleSetup);
-		CIRCLE = makeLayer(ResourcesLib.PREFIX_MOD + "circle_highlight", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLES, rectangleSetup);
+		CIRCLE = makeLayer(ResourcesLib.PREFIX_MOD + "circle_highlight", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, rectangleSetup);
 
 		RED_STRING = makeLayer(ResourcesLib.PREFIX_MOD + "red_string", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, RenderSetup.builder(RenderPipelines.LINES).createRenderSetup());
 		LINE_1_NO_DEPTH = makeLayer(ResourcesLib.PREFIX_MOD + "line_1_no_depth", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, RenderSetup.builder(RenderPipelines.LINES).createRenderSetup());
@@ -228,7 +234,13 @@ public final class RenderHelper {
 			.createRenderSetup();
 		HALO = makeLayer(ResourcesLib.PREFIX_MOD + "halo", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, haloSetup);
 
-		STARFIELD = makeLayer(ResourcesLib.PREFIX_MOD + "starfield", DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS, RenderSetup.builder(RenderPipelines.END_SKY).createRenderSetup());
+		// 1.20.1's starfield layer bound the end sky texture (MultiTextureStateShard with
+		// END_SKY_LOCATION + END_PORTAL_LOCATION); 26.1's END_SKY pipeline declares Sampler0
+		// and must have it bound or GlCommandEncoder throws "Missing sampler Sampler0".
+		STARFIELD = makeLayer(ResourcesLib.PREFIX_MOD + "starfield", DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS,
+				RenderSetup.builder(RenderPipelines.END_SKY)
+						.withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION)
+						.createRenderSetup());
 
 		RenderSetup lightningSetup = RenderSetup.builder(RenderPipelines.LIGHTNING)
 			.createRenderSetup();
@@ -376,14 +388,19 @@ public final class RenderHelper {
 			final float fc = f4;
 			collector.submitCustomGeometry(ms, STAR, (pose, buffer) -> {
 				Matrix4f mat = pose.pose();
+				// The LIGHTNING pipeline runs in QUADS mode: emit each apex triangle
+				// (center, a, b) as the degenerate quad (center, a, b, b).
 				buffer.addVertex(mat, 0, 0, 0).setColor(r, g, b, fa);
 				buffer.addVertex(mat, -0.866F * fc, fb, -0.5F * fc).setColor(0, 0, 0, 0);
 				buffer.addVertex(mat, 0.866F * fc, fb, -0.5F * fc).setColor(0, 0, 0, 0);
+				buffer.addVertex(mat, 0.866F * fc, fb, -0.5F * fc).setColor(0, 0, 0, 0);
 				buffer.addVertex(mat, 0, 0, 0).setColor(r, g, b, fa);
 				buffer.addVertex(mat, 0.866F * fc, fb, -0.5F * fc).setColor(0, 0, 0, 0);
 				buffer.addVertex(mat, 0, fb, 1F * fc).setColor(0, 0, 0, 0);
+				buffer.addVertex(mat, 0, fb, 1F * fc).setColor(0, 0, 0, 0);
 				buffer.addVertex(mat, 0, 0, 0).setColor(r, g, b, fa);
 				buffer.addVertex(mat, 0, fb, 1F * fc).setColor(0, 0, 0, 0);
+				buffer.addVertex(mat, -0.866F * fc, fb, -0.5F * fc).setColor(0, 0, 0, 0);
 				buffer.addVertex(mat, -0.866F * fc, fb, -0.5F * fc).setColor(0, 0, 0, 0);
 			});
 		}
@@ -399,6 +416,20 @@ public final class RenderHelper {
 		for (int i = 0; i < vertices.size() - 1; i++) {
 			center.run();
 			vertices.get(i).run();
+			vertices.get(i + 1).run();
+		}
+	}
+
+	/**
+	 * Same fan as {@link #triangleFan(Runnable, List)}, but each fan triangle
+	 * (center, vi, vi+1) is emitted as the degenerate quad (center, vi, vi+1, vi+1),
+	 * for pipelines that run in QUADS mode (e.g. DEBUG_QUADS).
+	 */
+	public static void triangleFanQuads(Runnable center, List<Runnable> vertices) {
+		for (int i = 0; i < vertices.size() - 1; i++) {
+			center.run();
+			vertices.get(i).run();
+			vertices.get(i + 1).run();
 			vertices.get(i + 1).run();
 		}
 	}

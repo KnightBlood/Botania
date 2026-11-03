@@ -49,6 +49,8 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 
 import org.jetbrains.annotations.NotNull;
@@ -99,59 +101,29 @@ public class LooniumBlockEntity extends FunctionalFlowerBlockEntity {
 
 	// this should never collide with the /team command, since space is not allowed in scoreboard team names
 	public static final String LOONIUM_TEAM_NAME = "Loonium Monsters";
-	public static final Team LOONIUM_TEAM = new Team() {
-		@NotNull
-		@Override
-		public String getName() {
-			return LOONIUM_TEAM_NAME;
-		}
 
-		@NotNull
-		@Override
-		public MutableComponent getFormattedName(Component component) {
-			return component.copy();
+	/**
+	 * 26.1: vanilla {@code Entity.getTeam()} now returns {@code PlayerTeam}, so the
+	 * 1.20.1 fake anonymous Team subclass (returned from an EntityMixin) crashes with
+	 * a ClassCastException the moment any vanilla code touches the mob's team. The
+	 * team is now a real scoreboard team, created with the same options the fake
+	 * team had (friendly fire on, invisibles visible, always-visible name/death tags,
+	 * normal collisions). Client side receives team membership via the vanilla
+	 * scoreboard sync, so identification and in-fighting behavior are unchanged.
+	 */
+	public static void joinLooniumTeam(ServerLevel world, Mob mob) {
+		Scoreboard scoreboard = world.getScoreboard();
+		PlayerTeam team = scoreboard.getPlayerTeam(LOONIUM_TEAM_NAME);
+		if (team == null) {
+			team = scoreboard.addPlayerTeam(LOONIUM_TEAM_NAME);
+			team.setAllowFriendlyFire(true);
+			team.setSeeFriendlyInvisibles(true);
+			team.setNameTagVisibility(Team.Visibility.ALWAYS);
+			team.setDeathMessageVisibility(Team.Visibility.ALWAYS);
+			team.setCollisionRule(Team.CollisionRule.ALWAYS);
 		}
-
-		@Override
-		public boolean canSeeFriendlyInvisibles() {
-			return true;
-		}
-
-		@Override
-		public boolean isAllowFriendlyFire() {
-			return true;
-		}
-
-		@NotNull
-		@Override
-		public Visibility getNameTagVisibility() {
-			return Visibility.ALWAYS;
-		}
-
-		@NotNull
-		@Override
-		public ChatFormatting getColor() {
-			return ChatFormatting.RESET;
-		}
-
-		@NotNull
-		@Override
-		public Collection<String> getPlayers() {
-			return List.of();
-		}
-
-		@NotNull
-		@Override
-		public Visibility getDeathMessageVisibility() {
-			return Visibility.ALWAYS;
-		}
-
-		@NotNull
-		@Override
-		public CollisionRule getCollisionRule() {
-			return CollisionRule.ALWAYS;
-		}
-	};
+		scoreboard.addPlayerToTeam(mob.getScoreboardName(), team);
+	}
 
 	@Nullable
 	private Identifier lootTableOverride;
@@ -260,6 +232,8 @@ public class LooniumBlockEntity extends FunctionalFlowerBlockEntity {
 			looniumComponent.setOverrideDrop(true);
 			looniumComponent.setDrop(lootStack);
 		}
+
+		joinLooniumTeam(world, mob);
 
 		mob.finalizeSpawn(world, world.getCurrentDifficultyAt(mob.blockPosition()), EntitySpawnReason.SPAWNER, null);
 		if (Boolean.FALSE.equals(pickedMobType.spawnAsBaby) && mob.isBaby()) {

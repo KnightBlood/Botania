@@ -74,6 +74,7 @@
     "client.RecipeBookComponentMixin",
     "client.RecipeBookPageAccessor",
     "client.SkullBlockRendererAccessor",
+    "client.RenderTypeDrawDebugMixin",
     "client.SkullBlockRendererMixin",
     "client.SkyRendererMixin",
     "client.SpecialModelRenderersAccessor",

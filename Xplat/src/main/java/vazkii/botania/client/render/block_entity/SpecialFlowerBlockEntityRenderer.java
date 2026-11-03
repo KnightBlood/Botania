@@ -33,6 +33,8 @@ import vazkii.botania.common.helper.PlayerHelper;
 import vazkii.botania.common.item.WandOfTheForestItem;
 import vazkii.botania.common.item.equipment.bauble.ManaseerMonocleItem;
 
+import java.util.List;
+
 public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity> extends BotaniaBlockEntityRenderer<T> {
 
 	public static final int INNER_ALPHA = 32;
@@ -134,8 +136,11 @@ public class SpecialFlowerBlockEntityRenderer<T extends SpecialFlowerBlockEntity
 		vertexFuncsInner[TOTAL_ANGLES] = vertexFuncsInner[0];
 		vertexFuncsOuter[TOTAL_ANGLES] = vertexFuncsOuter[0];
 
-		RenderHelper.triangleFan(centerFuncInner, vertexFuncsInner);
-		RenderHelper.triangleFan(centerFuncOuter, vertexFuncsOuter);
+		// CIRCLE runs on the DEBUG_QUADS pipeline (QUADS mode): emit each fan triangle
+		// as a degenerate quad. DEBUG_QUADS has culling disabled, so the disc is visible
+		// from both sides like the 1.20.1 NO_CULL state.
+		RenderHelper.triangleFanQuads(centerFuncInner, List.of(vertexFuncsInner));
+		RenderHelper.triangleFanQuads(centerFuncOuter, List.of(vertexFuncsOuter));
 
 		ms.popPose();
 	}
