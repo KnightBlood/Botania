@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
@@ -294,8 +295,8 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 	}
 
 	@Override
-	public void readPacketNBT(CompoundTag cmp) {
-		super.readPacketNBT(cmp);
+	public void readPacketNBT(CompoundTag cmp, HolderLookup.Provider lookup) {
+		super.readPacketNBT(cmp, lookup);
 
 		String tagUuidMostDeprecated = "uuidMost";
 		String tagUuidLeastDeprecated = "uuidLeast";

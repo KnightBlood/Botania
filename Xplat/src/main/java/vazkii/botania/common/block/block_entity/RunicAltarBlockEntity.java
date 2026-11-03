@@ -17,6 +17,7 @@ import org.joml.Matrix3x2fStack;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -344,8 +345,8 @@ public class RunicAltarBlockEntity extends SimpleInventoryBlockEntity implements
 	}
 
 	@Override
-	public void readPacketNBT(CompoundTag tag) {
-		super.readPacketNBT(tag);
+	public void readPacketNBT(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.readPacketNBT(tag, lookup);
 
 		mana = tag.getIntOr(TAG_MANA, 0);
 		manaToGet = tag.getIntOr(TAG_MANA_TO_GET, 0);

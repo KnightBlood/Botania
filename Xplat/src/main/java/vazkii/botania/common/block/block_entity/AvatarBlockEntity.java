@@ -10,6 +10,7 @@ package vazkii.botania.common.block.block_entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -82,8 +83,8 @@ public class AvatarBlockEntity extends SimpleInventoryBlockEntity implements Ava
 	}
 
 	@Override
-	public void readPacketNBT(CompoundTag tag) {
-		super.readPacketNBT(tag);
+	public void readPacketNBT(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.readPacketNBT(tag, lookup);
 		enabled = tag.getBooleanOr(TAG_ENABLED, false);
 		ticksElapsed = tag.getIntOr(TAG_TICKS_ELAPSED, 0);
 		mana = tag.getIntOr(TAG_MANA, 0);

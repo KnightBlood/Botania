@@ -15,6 +15,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrays;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -284,8 +285,8 @@ public class TinyPotatoBlockEntity extends ExposedSimpleInventoryBlockEntity imp
 	}
 
 	@Override
-	public void readPacketNBT(CompoundTag cmp) {
-		super.readPacketNBT(cmp);
+	public void readPacketNBT(CompoundTag cmp, HolderLookup.Provider lookup) {
+		super.readPacketNBT(cmp, lookup);
 		Tag nameTag = cmp.get(TAG_NAME);
 		if (nameTag != null) {
 			name = ComponentSerialization.CODEC.parse(NbtOps.INSTANCE, nameTag).result().orElse(name);

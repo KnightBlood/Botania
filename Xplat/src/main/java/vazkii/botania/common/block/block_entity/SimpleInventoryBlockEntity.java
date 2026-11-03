@@ -11,6 +11,7 @@ package vazkii.botania.common.block.block_entity;
 import com.google.common.base.Preconditions;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.ProblemReporter;
@@ -58,8 +59,10 @@ public abstract class SimpleInventoryBlockEntity extends BotaniaBlockEntity impl
 	}
 
 	@Override
-	public void readPacketNBT(CompoundTag tag) {
-		ValueInput input = TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag);
+	public void readPacketNBT(CompoundTag tag, HolderLookup.Provider lookup) {
+		// NB: The vanilla load path runs before setLevel, so registries must come from the caller
+		// (ValueInput#lookup) rather than level.registryAccess().
+		ValueInput input = TagValueInput.create(ProblemReporter.DISCARDING, lookup, tag);
 		NonNullList<ItemStack> tmp = NonNullList.withSize(inventorySize(), ItemStack.EMPTY);
 		ContainerHelper.loadAllItems(input, tmp);
 		copyToInv(tmp, itemHandler);

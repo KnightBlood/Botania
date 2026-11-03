@@ -16,6 +16,7 @@ import org.joml.Matrix3x2fStack;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -138,10 +139,10 @@ public class CorporeaCrystalCubeBlockEntity extends BaseCorporeaBlockEntity impl
 	}
 
 	@Override
-	public void readPacketNBT(CompoundTag tag) {
-		super.readPacketNBT(tag);
+	public void readPacketNBT(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.readPacketNBT(tag, lookup);
 		CompoundTag cmp = tag.getCompoundOrEmpty(TAG_REQUEST_TARGET);
-		requestTarget = ItemNBTHelper.deserializeStackNbt(cmp, level.registryAccess());
+		requestTarget = ItemNBTHelper.deserializeStackNbt(cmp, lookup);
 		setCount(tag.getIntOr(TAG_ITEM_COUNT, 0));
 		locked = tag.getBooleanOr(TAG_LOCK, false);
 		hideCount = tag.getBooleanOr(TAG_HIDE_COUNT, false);

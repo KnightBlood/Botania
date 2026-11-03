@@ -17,6 +17,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -414,7 +415,7 @@ public class ManaEnchanterBlockEntity extends BotaniaBlockEntity implements Mana
 	}
 
 	@Override
-	public void readPacketNBT(CompoundTag cmp) {
+	public void readPacketNBT(CompoundTag cmp, HolderLookup.Provider lookup) {
 		mana = cmp.getIntOr(TAG_MANA, 0);
 		manaRequired = cmp.getIntOr(TAG_MANA_REQUIRED, 0);
 		stage = State.values()[cmp.getIntOr(TAG_STAGE, 0)];
@@ -422,7 +423,7 @@ public class ManaEnchanterBlockEntity extends BotaniaBlockEntity implements Mana
 		stage3EndTicks = cmp.getIntOr(TAG_STAGE_3_END_TICKS, 0);
 
 		CompoundTag itemCmp = cmp.getCompoundOrEmpty(TAG_ITEM);
-		itemToEnchant = ItemNBTHelper.deserializeStackNbt(itemCmp, level.registryAccess());
+		itemToEnchant = ItemNBTHelper.deserializeStackNbt(itemCmp, lookup);
 
 		enchants.clear();
 		String enchStr = cmp.getStringOr(TAG_ENCHANTS, "");

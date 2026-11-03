@@ -49,12 +49,24 @@ public class BotaniaBlockEntity extends BlockEntity {
 	@Override
 	public void loadAdditional(ValueInput input) {
 		super.loadAdditional(input);
-		readPacketNBT(ValueIOHelper.readAll(input));
+		// NB: During the vanilla load path (BlockEntity.loadStatic -> loadWithComponents) the level is
+		// not yet assigned, so reading must not go through level.registryAccess(). The ValueInput
+		// carries its own HolderLookup.Provider, which we forward to the readPacketNBT chain.
+		readPacketNBT(ValueIOHelper.readAll(input), input.lookup());
 	}
 
 	public void writePacketNBT(CompoundTag cmp) {}
 
 	public void readPacketNBT(CompoundTag cmp) {}
+
+	/**
+	 * Load entry point used by {@link #loadAdditional}. Subclasses needing registry access while
+	 * reading should override this instead of the level-less variant, which may run before the
+	 * level is assigned.
+	 */
+	public void readPacketNBT(CompoundTag cmp, HolderLookup.Provider lookup) {
+		readPacketNBT(cmp);
+	}
 
 	@Nullable
 	@Override

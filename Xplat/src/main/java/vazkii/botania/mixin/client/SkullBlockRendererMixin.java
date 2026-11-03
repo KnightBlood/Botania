@@ -33,9 +33,13 @@ import vazkii.botania.common.block.GaiaHeadBlock;
 
 @Mixin(SkullBlockRenderer.class)
 public abstract class SkullBlockRendererMixin {
+	// TODO(botania-gaia-debug): temporary render-chain diagnostics, remove after gaia head verified.
+	private static final org.slf4j.Logger GAIA_DEBUG = com.mojang.logging.LogUtils.getLogger();
+
 	@Inject(at = @At("HEAD"), method = "createModel", cancellable = true)
 	private static void hookCreateModel(EntityModelSet entityModelSet, SkullBlock.Type type, CallbackInfoReturnable<SkullModelBase> cir) {
 		if (type == GaiaHeadBlock.GAIA_TYPE) {
+			GAIA_DEBUG.warn("[botania-gaia-debug] createModel GAIA -> GaiaHeadModel");
 			cir.setReturnValue(GaiaHeadBlockEntityRenderer.createGaiaHeadModel(entityModelSet));
 		}
 	}
@@ -50,6 +54,7 @@ public abstract class SkullBlockRendererMixin {
 	private static void hookGetRenderType(SkullBlock.Type type, @Nullable Identifier texture, CallbackInfoReturnable<RenderType> cir) {
 		if (type == GaiaHeadBlock.GAIA_TYPE) {
 			Identifier viewerTexture = viewerTexture();
+			GAIA_DEBUG.warn("[botania-gaia-debug] getSkullRenderType GAIA, passedTexture={} viewerTexture={}", texture, viewerTexture);
 			if (viewerTexture != null) {
 				cir.setReturnValue(RenderTypes.entityCutoutZOffset(viewerTexture));
 			}
@@ -71,5 +76,13 @@ public abstract class SkullBlockRendererMixin {
 					.orElse(DefaultPlayerSkin.getDefaultTexture());
 		}
 		return SkullBlockRendererAccessor.botania$skinByType().get(viewer);
+	}
+
+	// TODO(botania-gaia-debug): temporary, remove after gaia head verified.
+	@Inject(at = @At("HEAD"), method = "submit(Lnet/minecraft/client/renderer/blockentity/state/SkullBlockRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V")
+	private void hookSubmit(net.minecraft.client.renderer.blockentity.state.SkullBlockRenderState state, com.mojang.blaze3d.vertex.PoseStack poseStack, net.minecraft.client.renderer.SubmitNodeCollector collector, net.minecraft.client.renderer.state.level.CameraRenderState camera, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+		if (state.skullType == GaiaHeadBlock.GAIA_TYPE) {
+			GAIA_DEBUG.warn("[botania-gaia-debug] SkullBlockRenderer.submit pos={} renderType={}", state.blockPos, state.renderType);
+		}
 	}
 }
