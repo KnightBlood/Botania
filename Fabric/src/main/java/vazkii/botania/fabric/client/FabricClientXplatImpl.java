@@ -39,7 +39,7 @@ import vazkii.botania.fabric.integration.sodium.SodiumHelper;
 import vazkii.botania.fabric.network.FabricPacketHandler;
 import vazkii.botania.network.BotaniaPacket;
 import vazkii.botania.xplat.ClientXplatAbstractions;
-import vazkii.botania.xplat.XplatAbstractions;
+import vazkii.botania.xplat.SodiumPresence;
 
 public class FabricClientXplatImpl implements ClientXplatAbstractions {
 	@Override
@@ -159,6 +159,5 @@ public class FabricClientXplatImpl implements ClientXplatAbstractions {
 		return gui.scissorStack.peek();
 	}
 
-	private final Supplier<Boolean> sodiumLoaded = Suppliers.memoize(() -> XplatAbstractions.INSTANCE.isModLoaded("sodium")
-			|| XplatAbstractions.INSTANCE.isModLoaded("embeddium"));
+	private final Supplier<Boolean> sodiumLoaded = Suppliers.memoize(SodiumPresence::isActive);
 }

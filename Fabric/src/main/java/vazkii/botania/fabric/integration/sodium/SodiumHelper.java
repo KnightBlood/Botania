@@ -1,16 +1,20 @@
 package vazkii.botania.fabric.integration.sodium;
 
-import net.caffeinemc.mods.sodium.client.render.texture.SpriteUtil;
+import net.caffeinemc.mods.sodium.api.texture.SpriteUtil;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
-public class SodiumHelper {
+/**
+ * Bridge to Sodium's official animated-sprite API (0.8.9+). The NeoForge and Fabric builds of
+ * Sodium 0.8.9 ship the very same {@code net.caffeinemc.mods.sodium} classes, so both loaders
+ * now use the identical integration.
+ *
+ * <p>Only ever called through {@link vazkii.botania.xplat.SodiumPresence#isActive()}.
+ */
+public final class SodiumHelper {
+	private SodiumHelper() {}
 
-	// 26.1: Sodium's SpriteUtil is deprecated (marked for removal); keep using it until
-	// Sodium lands its replacement, but silence the removal warning for -Werror builds.
-	@SuppressWarnings("removal")
 	public static void markSpriteActive(TextureAtlasSprite sprite) {
-		// this should work with both the actual Sodium and the Fabric backport of its Forge port Embeddium
-		SpriteUtil.markSpriteActive(sprite);
+		SpriteUtil.INSTANCE.markSpriteActive(sprite);
 	}
 }

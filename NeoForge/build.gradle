@@ -45,7 +45,7 @@ repositories {
     }
     maven {
         name = "Modrinth"
-        url = "https://api.modrinth.com/maven" // for Sodium ports
+        url = "https://api.modrinth.com/maven" // for Sodium
         content {
             includeGroup "maven.modrinth"
         }
@@ -105,10 +105,13 @@ dependencies {
     // NeoForge 26.1 is unobfuscated - no mixin refmap / annotation processor needed
 
     implementation("vazkii.patchouli:patchouli-neoforge:${patchouli_version}")
-    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
-    // Explicit downgrade: JEI 29.2.0.21 (latest of the 26.1 line) hard-requires neoforge >= 26.1.0.8-beta,
-    // but this port is pinned to 26.1.0.1-beta. Keep JEI out of the runtime until we upgrade NeoForge.
-    // runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    // JEI publishes its API artifact on the 26.1 line; pin it explicitly so that
+    // minecraft_version (now 26.1.2) does not silently resolve a different artifact.
+    compileOnly("mezz.jei:jei-26.1-common-api:${jei_version}")
+    // Still compileOnly: the 26.1-line JEI runtime build originally required a newer NeoForge
+    // than the old pin. NeoForge is now 26.1.2.126, so that condition is met, but restoring the
+    // runtime dependency needs a matching 26.1.2 JEI artifact and a fresh compatibility check.
+    // runtimeOnly("mezz.jei:jei-26.1-neoforge:${jei_version}")
 
     // EMI unofficial port (curseforge 1544558, no maven) - local jar, mojmap neoforge build
     compileOnlyApi(rootProject.files("libs/emi-1.1.24+26.1.2+neoforge.jar"))
@@ -142,7 +145,16 @@ dependencies {
 
     compileOnly('com.unascribed:ears-api:1.4.5')
 
-    compileOnly('maven.modrinth:rubidium:0.7.0') { transitive = false }
+    // Official Sodium 0.9.2 for MC 26.1.2 ships for both loaders with the SAME
+    // net.caffeinemc.mods.sodium API (SpriteUtil.INSTANCE). The NeoForge release (zg4YQ9EL) is
+    // a jarjar launcher: its classes live in META-INF/jarjar/*-mod.jar, so it cannot serve as a
+    // compileOnly dependency. The Fabric release (tZQ3jqnf) is a plain mod jar with identical
+    // API classes, so both modules compile against that one coordinate. At runtime the player
+    // installs the build for their loader; SodiumPresence gates every call.
+    // 0.8.9+mc26.1.1 is NOT usable on NeoForge 26.1.2.126 (calls a removed 4-arg
+    // SectionRenderingContext constructor). Rubidium/Embeddium have no 26.1 release,
+    // so the old me.jellysquid.mods.sodium bridge is gone.
+    compileOnly('maven.modrinth:sodium:tZQ3jqnf') { transitive = false } // 0.9.2+mc26.1.2-fabric, API shared with NeoForge
 
     compileOnly "org.jetbrains:annotations:24.0.1"
 }

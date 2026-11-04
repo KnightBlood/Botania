@@ -33,11 +33,11 @@ import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.BotaniaNeoForgeClientCapabilities;
 import vazkii.botania.api.block.WandHUD;
 import vazkii.botania.api.item.TinyPotatoRenderEvent;
-import vazkii.botania.neoforge.integration.rubidium.RubidiumHelper;
+import vazkii.botania.neoforge.integration.sodium.SodiumHelper;
 import vazkii.botania.neoforge.network.NeoForgePacketHandler;
 import vazkii.botania.network.BotaniaPacket;
 import vazkii.botania.xplat.ClientXplatAbstractions;
-import vazkii.botania.xplat.XplatAbstractions;
+import vazkii.botania.xplat.SodiumPresence;
 
 public class NeoForgeClientXplatImpl implements ClientXplatAbstractions {
 	@Override
@@ -141,8 +141,8 @@ public class NeoForgeClientXplatImpl implements ClientXplatAbstractions {
 
 	@Override
 	public void markSpriteActive(TextureAtlasSprite sprite) {
-		if (rubidiumLoaded.get()) {
-			RubidiumHelper.markSpriteActive(sprite);
+		if (sodiumLoaded.get()) {
+			SodiumHelper.markSpriteActive(sprite);
 		}
 	}
 
@@ -158,5 +158,5 @@ public class NeoForgeClientXplatImpl implements ClientXplatAbstractions {
 		return gui.peekScissorStack();
 	}
 
-	private final Supplier<Boolean> rubidiumLoaded = Suppliers.memoize(() -> XplatAbstractions.INSTANCE.isModLoaded("rubidium"));
+	private final Supplier<Boolean> sodiumLoaded = Suppliers.memoize(SodiumPresence::isActive);
 }
