@@ -14,6 +14,8 @@ import com.google.common.collect.ImmutableSet;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.impl.PointHelper;
 import me.shedaniel.rei.api.client.REIRuntime;
+import me.shedaniel.rei.api.client.config.addon.ConfigAddon;
+import me.shedaniel.rei.api.client.config.addon.ConfigAddonRegistry;
 import me.shedaniel.rei.api.client.gui.screen.DisplayScreen;
 import me.shedaniel.rei.api.client.gui.widgets.Slot;
 import me.shedaniel.rei.api.client.overlay.OverlayListWidget;
@@ -30,7 +32,9 @@ import me.shedaniel.rei.plugin.common.displays.DefaultStrippingDisplay;
 import me.shedaniel.rei.plugin.common.displays.crafting.DefaultCustomDisplay;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -51,6 +55,7 @@ import vazkii.botania.api.recipe.PetalApothecaryRecipe;
 import vazkii.botania.api.recipe.PureDaisyRecipe;
 import vazkii.botania.api.recipe.RunicAltarRecipe;
 import vazkii.botania.api.recipe.TerrestrialAgglomerationRecipe;
+import vazkii.botania.client.ClothBotaniaConfig;
 import vazkii.botania.client.core.handler.CorporeaInputHandler;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
@@ -157,6 +162,35 @@ public class BotaniaREIPlugin implements REIClientPlugin {
 	/** Axe stripping maps live in each loader's Xplat implementation. */
 	protected Map<Block, Block> customStripping() {
 		return Map.of();
+	}
+
+	/**
+	 * Makes REI's config screen the preferred entry point for Botania's settings. REI only hosts
+	 * the addon list - it explicitly does not serialize addon config - so the screen and all
+	 * persistence stay in {@link ClothBotaniaConfig}, shared with the ModMenu / NeoForge entries.
+	 * REI remains an optional dependency; without it those entries still work unchanged.
+	 */
+	@Override
+	public void registerConfigAddons(ConfigAddonRegistry registry) {
+		registry.register(new BotaniaConfigAddon());
+		BotaniaAPI.LOGGER.info("Botania REI: config addon registered (REI config screen entry point)");
+	}
+
+	private static final class BotaniaConfigAddon implements ConfigAddon {
+		@Override
+		public Component getName() {
+			return Component.literal("Botania");
+		}
+
+		@Override
+		public Component getDescription() {
+			return Component.translatable("botania.rei.config_addon.description");
+		}
+
+		@Override
+		public Screen createScreen(Screen parent) {
+			return ClothBotaniaConfig.createConfigScreen(parent);
+		}
 	}
 
 	@Override
