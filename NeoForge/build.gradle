@@ -180,6 +180,11 @@ dependencies {
     // so the old me.jellysquid.mods.sodium bridge is gone.
     compileOnly('maven.modrinth:sodium:tZQ3jqnf') { transitive = false } // 0.9.2+mc26.1.2-fabric, API shared with NeoForge
 
+    // Meza Inventory Sorting 3.x publishes the same compatibility API on both loaders, so the
+    // plain Fabric jar also serves as the compile-only API source here. Compile-only: the mod
+    // stays optional, and InventorySorterPresence gates every reference to its classes.
+    compileOnly("maven.modrinth:inventory-sorting:${inventory_sorting_version}") { transitive = false }
+
     compileOnly "org.jetbrains:annotations:24.0.1"
 }
 

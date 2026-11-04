@@ -59,6 +59,17 @@ configBackground="botania:textures/block/livingrock_bricks.png" # background for
     ordering="BEFORE"
     side="BOTH"
 
+# Inventory Sorting. Two unrelated upstream builds share this mod id: Meza 3.x (Fabric +
+# NeoForge) receives a do-not-sort CompatibilityLoader from Xplat, while the cpw build keeps
+# the legacy containerblacklist IMC bridge. No versionRange: the two builds number themselves
+# differently, and both are supported. AFTER lets the upstream static initializer (which reads
+# and writes its config) run before Botania touches its compatibility object.
+[[dependencies.botania]]
+    modId="inventorysorter"
+    type="optional"
+    ordering="AFTER"
+    side="BOTH"
+
 [[dependencies.botania]]
     modId="gardenofglass"
     type="optional"

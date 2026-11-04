@@ -142,6 +142,10 @@ dependencies {
     compileOnly "teamreborn:energy:${teamreborn_energy_version}"
     
     compileOnly('maven.modrinth:sodium:tZQ3jqnf') { transitive = false } // 0.9.2+mc26.1.2-fabric (NeoForge uses zg4YQ9EL)
+
+    // Meza Inventory Sorting 3.x: the shared do-not-sort loader lives in Xplat. Compile-only,
+    // the mod stays optional; the player (or a dev run's mods folder) supplies the runtime jar.
+    compileOnly("maven.modrinth:inventory-sorting:${inventory_sorting_version}") { transitive = false }
     
     // modCompileOnly 'com.blamejared.crafttweaker:CraftTweaker-fabric-1.18.2:9.1.123'
     

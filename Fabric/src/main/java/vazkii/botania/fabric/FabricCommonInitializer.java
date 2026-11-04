@@ -119,6 +119,7 @@ import vazkii.botania.fabric.integration.tr_energy.FluxfieldTRStorage;
 import vazkii.botania.fabric.internal_caps.RedStringContainerStorage;
 import vazkii.botania.fabric.network.FabricPacketHandler;
 import vazkii.botania.fabric.xplat.FabricXplatImpl;
+import vazkii.botania.xplat.InventorySorterPresence;
 import vazkii.botania.xplat.XplatAbstractions;
 import vazkii.patchouli.api.PatchouliAPI;
 
@@ -152,6 +153,11 @@ public class FabricCommonInitializer implements ModInitializer {
 
 		registerCapabilities();
 		registerEvents();
+
+		// Inventory Sorting keys its do-not-sort list by registered menu ids, so this has to
+		// run after registryInit(). The shared probe registers a loader for the Meza 3.x build
+		// and simply returns when the mod (or its compatibility API) is absent.
+		InventorySorterPresence.init();
 	}
 
 	private void coreInit() {

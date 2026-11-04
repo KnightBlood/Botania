@@ -51,6 +51,13 @@ repositories {
             includeGroup("dev.architectury")
         }
     }
+    maven {
+        name = "Modrinth" // Inventory Sorting compile-only API
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup("maven.modrinth")
+        }
+    }
 }
 
 dependencies {
@@ -78,6 +85,12 @@ dependencies {
     compileOnly "dev.architectury:architectury-fabric:${architectury_version}"
     // REI API classes carry Fabric's @Environment(EnvType.CLIENT) annotation.
     compileOnly "net.fabricmc:fabric-loader:${fabric_loader_version}"
+
+    // Meza Inventory Sorting 3.x publishes the SAME compatibility API on Fabric and NeoForge.
+    // The shared InventorySorterCompat is compiled into both loaders, so this compile-only jar
+    // supplies its types here too. It stays strictly optional at runtime: InventorySorterPresence
+    // probes the upstream classes before InventorySorterCompat is ever loaded.
+    compileOnly("maven.modrinth:inventory-sorting:${inventory_sorting_version}") { transitive = false }
 
     compileOnly "mezz.jei:jei-26.1-common-api:${jei_version}"
 // EMI unofficial port (curseforge 1544558, no maven) - local jar, mojmap neoforge build

@@ -146,6 +146,7 @@ import vazkii.botania.neoforge.internal_caps.NeoForgeInternalEntityCapabilities;
 import vazkii.botania.neoforge.internal_caps.RedStringContainerCapProvider;
 import vazkii.botania.neoforge.network.NeoForgePacketHandler;
 import vazkii.botania.neoforge.xplat.NeoForgeXplatImpl;
+import vazkii.botania.xplat.InventorySorterPresence;
 import vazkii.botania.xplat.XplatAbstractions;
 import vazkii.patchouli.api.PatchouliAPI;
 
@@ -216,7 +217,12 @@ public class NeoForgeCommonInitializer {
 		CraftyCrateBlockEntity.registerListener();
 		CorporeaNodeDetectors.register(new NeoForgeCapCorporeaNodeDetector());
 		if (ModList.get().isLoaded("inventorysorter")) {
-			InventorySorterIntegration.init(modBus);
+			// Two unrelated upstream builds share the "inventorysorter" mod id. The shared probe
+			// registers a CompatibilityLoader for Meza 3.x (Fabric + NeoForge); the cpw build
+			// has no such API and still needs the legacy containerblacklist IMC message.
+			if (!InventorySorterPresence.init()) {
+				InventorySorterIntegration.init(modBus);
+			}
 		}
 	}
 
