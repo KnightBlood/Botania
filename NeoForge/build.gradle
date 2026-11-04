@@ -25,10 +25,18 @@ repositories {
         url = "https://maven.theillusivec4.top/"
     }
     maven {
-        name = "Shedaniel" // Cloth Config
+        name = "Shedaniel" // Cloth Config and REI
         url = "https://maven.shedaniel.me/"
         content {
             includeGroup("me.shedaniel.cloth")
+            includeGroup("me.shedaniel")
+        }
+    }
+    maven {
+        name = "Architectury" // REI's fluid API types at compile time
+        url = "https://maven.architectury.dev/"
+        content {
+            includeGroup("dev.architectury")
         }
     }
     maven {
@@ -89,6 +97,16 @@ neoForge {
         configureEach {
             gameDirectory = file('../run/')
             systemProperty('fml.earlyprogresswindow', 'false')
+            // REI 26.1.819 (NeoForge jar) still ships @OnlyIn annotations, even though
+            // MC 26.1 removed their runtime member-stripping behaviour. In dev launches
+            // NeoForge's OnlyInWarningsHandler turns every such mod file into a
+            // ModLoadingIssue.warning screen that blocks runClient before the title screen.
+            // Both 26.1.818 and 26.1.819 contain 133 annotated classes, and the 26.2/26.3
+            // builds target a different Minecraft line, so there is no clean 26.1 artifact.
+            // Production (non-dev) launches never run this handler at all; suppressing the
+            // dev-only warning therefore matches shipping behaviour. This does NOT remove the
+            // annotations or hide the underlying log entries - they are still logged as ERROR.
+            systemProperty('neoforge.warnings.onlyin.hide', 'true')
         }
     }
 
@@ -140,6 +158,12 @@ dependencies {
     runtimeOnly("me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}")
     compileOnly("blue.endless:jankson:1.2.0")
     runtimeOnly("blue.endless:jankson:1.2.0")
+
+    // Official REI 26.1 NeoForge build: supplies the same API as the Fabric build plus
+    // @REIPluginClient, which is how NeoForge discovers the shared Xplat plugin.
+    // Compile-only - REI stays an optional mod; see neoforge.mods.toml.
+    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}")
+    compileOnly("dev.architectury:architectury-neoforge:${architectury_version}")
 
     // compileOnly('com.blamejared.crafttweaker:CraftTweaker-forge-1.18.2:9.1.123')
 

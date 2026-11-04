@@ -37,10 +37,18 @@ repositories {
         }
     }
     maven {
-        name = "Shedaniel" // Cloth Config (shared config screen, both loaders)
+        name = "Shedaniel" // Cloth Config, basic-math and REI
         url = "https://maven.shedaniel.me/"
         content {
             includeGroup("me.shedaniel.cloth")
+            includeGroup("me.shedaniel")
+        }
+    }
+    maven {
+        name = "Architectury" // REI's fluid API types
+        url = "https://maven.architectury.dev/"
+        content {
+            includeGroup("dev.architectury")
         }
     }
 }
@@ -60,6 +68,16 @@ dependencies {
     // compiled here and in both loader modules; each loader supplies the runtime dep.
     compileOnly "me.shedaniel.cloth:cloth-config-fabric:${cloth_config_version}"
     compileOnly "blue.endless:jankson:1.2.0"
+
+    // REI: the shared integration under client/integration/rei is compiled into both loaders.
+    // The official platform jars contain the entire API (plus the default plugin displays), so
+    // the plain Fabric build serves as the compile-only API source here; each loader module also
+    // puts its own platform jar on the compile classpath. all of REI's POM dependencies are
+    // runtime-scoped, so no Architectury mod is pulled into the compile classpath by accident.
+    compileOnly "me.shedaniel:RoughlyEnoughItems-fabric:${rei_version}"
+    compileOnly "dev.architectury:architectury-fabric:${architectury_version}"
+    // REI API classes carry Fabric's @Environment(EnvType.CLIENT) annotation.
+    compileOnly "net.fabricmc:fabric-loader:${fabric_loader_version}"
 
     compileOnly "mezz.jei:jei-26.1-common-api:${jei_version}"
 // EMI unofficial port (curseforge 1544558, no maven) - local jar, mojmap neoforge build

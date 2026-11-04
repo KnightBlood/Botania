@@ -51,6 +51,14 @@ configBackground="botania:textures/block/livingrock_bricks.png" # background for
     type="optional"
     versionRange="[26.1,)"
 
+# REI 26.1.819 (NeoForge) - plugin discovered via @REIPluginClient.
+[[dependencies.botania]]
+    modId="roughlyenoughitems"
+    type="optional"
+    versionRange="[26.1.819,)"
+    ordering="BEFORE"
+    side="BOTH"
+
 [[dependencies.botania]]
     modId="gardenofglass"
     type="optional"
