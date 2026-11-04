@@ -31,6 +31,21 @@ configBackground="botania:textures/block/livingrock_bricks.png" # background for
     type="required"
     versionRange="[10.0.0+26.1,)"
 
+# Trinkets Updated 4.x: optional secondary accessory backend alongside Curios.
+# The universal 4.x mod id is "trinkets_updated" (the "trinkets" alias only
+# exists on Fabric through fabric.mod.json 'provides').
+# NOTE: 4.0.x+26.1 needs NeoForge classes from the 26.1.2.x line
+# (TagsUpdatedEvent$ClientPacketReceived / common.tooltip.ItemTooltipHandler);
+# gradle.properties was upgraded accordingly. On installs with an older NeoForge
+# the mod should not be installed, since the optional version range cannot
+# express a NeoForge requirement.
+[[dependencies.botania]]
+    modId="trinkets_updated"
+    type="optional"
+    versionRange="[4.0.1+26.1,)"
+    ordering="BEFORE"
+    side="BOTH"
+
 [[dependencies.botania]]
     modId="cloth-config"
     type="optional"

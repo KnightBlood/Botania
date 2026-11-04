@@ -45,6 +45,8 @@ import top.theillusivec4.curios.api.common.DropRule;
 import top.theillusivec4.curios.api.type.capability.ICurio;
 import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 
+import vazkii.botania.neoforge.integration.trinkets.NeoTrinketsIntegration;
+import vazkii.botania.neoforge.integration.trinkets.TrinketsPresence;
 import vazkii.botania.client.render.AccessoryRenderRegistry;
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.handler.EquipmentHandler;
@@ -53,7 +55,8 @@ import vazkii.botania.common.item.ResoluteIvyItem;
 import vazkii.botania.common.item.equipment.bauble.BaubleItem;
 import vazkii.botania.common.proxy.Proxy;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class CurioIntegration extends EquipmentHandler {
@@ -74,31 +77,45 @@ public class CurioIntegration extends EquipmentHandler {
 
 	@Override
 	protected Container getAllWornItems(LivingEntity living) {
-		// 26.1: IItemHandler accessors are deprecated for removal; use the Curios query API instead
-		return CuriosApi.getCuriosInventory(living)
-				.map(i -> {
-					var worn = i.findCurios(stack -> true);
-					SimpleContainer container = new SimpleContainer(worn.size());
-					for (int j = 0; j < worn.size(); j++) {
-						container.setItem(j, worn.get(j).stack());
-					}
-					return (Container) container;
-				})
-				.orElseGet(() -> new SimpleContainer(0));
+		// 26.1: IItemHandler accessors are deprecated for removal; use the Curios query API instead.
+		// Curios is the primary backend, but baubles can also live in Trinkets slots when the
+		// optional mod is installed, so merge both inventories instead of only falling back.
+		List<ItemStack> worn = new ArrayList<>(CuriosApi.getCuriosInventory(living)
+				.map(i -> i.findCurios(stack -> true).stream().map(SlotResult::stack).toList())
+				.orElseGet(List::of));
+		if (TrinketsPresence.isLoaded()) {
+			Container trinkets = NeoTrinketsIntegration.getAllWornItems(living);
+			for (int i = 0; i < trinkets.getContainerSize(); i++) {
+				worn.add(trinkets.getItem(i));
+			}
+		}
+		SimpleContainer container = new SimpleContainer(worn.size());
+		for (int j = 0; j < worn.size(); j++) {
+			container.setItem(j, worn.get(j));
+		}
+		return container;
 	}
 
 	@Override
 	protected ItemStack findItem(Item item, LivingEntity living) {
-		return CuriosApi.getCuriosInventory(living)
+		ItemStack curios = CuriosApi.getCuriosInventory(living)
 				.map(i -> i.findFirstCurio(item).map(SlotResult::stack).orElse(ItemStack.EMPTY))
 				.orElse(ItemStack.EMPTY);
+		if (!curios.isEmpty() || !TrinketsPresence.isLoaded()) {
+			return curios;
+		}
+		return NeoTrinketsIntegration.findItem(item, living);
 	}
 
 	@Override
 	protected ItemStack findItem(Predicate<ItemStack> pred, LivingEntity living) {
-		return CuriosApi.getCuriosInventory(living)
+		ItemStack curios = CuriosApi.getCuriosInventory(living)
 				.map(i -> i.findFirstCurio(pred).map(SlotResult::stack).orElse(ItemStack.EMPTY))
 				.orElse(ItemStack.EMPTY);
+		if (!curios.isEmpty() || !TrinketsPresence.isLoaded()) {
+			return curios;
+		}
+		return NeoTrinketsIntegration.findItem(pred, living);
 	}
 
 	public void initCapability(RegisterCapabilitiesEvent event, Item... items) {
@@ -111,11 +128,17 @@ public class CurioIntegration extends EquipmentHandler {
 	@Override
 	public void onInit(Item item) {
 		Proxy.INSTANCE.runOnClient(() -> () -> CuriosRendererRegistry.register(item, () -> Renderer.INSTANCE));
+		if (TrinketsPresence.isLoaded()) {
+			// Mirrors the Fabric side: every bauble gets the per-item Trinkets callback as well.
+			NeoTrinketsIntegration.onInit(item);
+		}
 	}
 
 	@Override
 	public boolean isAccessory(ItemStack stack) {
-		return super.isAccessory(stack) || CuriosCapability.ITEM.getCapability(stack, null) != null;
+		return super.isAccessory(stack)
+				|| CuriosCapability.ITEM.getCapability(stack, null) != null
+				|| (TrinketsPresence.isLoaded() && NeoTrinketsIntegration.isAccessory(stack));
 	}
 
 	public static class Wrapper implements ICurio {

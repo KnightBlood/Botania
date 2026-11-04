@@ -113,6 +113,8 @@ import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.common.lib.LibMisc;
 import vazkii.botania.neoforge.block.NeoForgeSpecialFlowerBlock;
 import vazkii.botania.neoforge.integration.curios.CurioIntegration;
+import vazkii.botania.neoforge.integration.trinkets.NeoTrinketsIntegration;
+import vazkii.botania.neoforge.integration.trinkets.TrinketsPresence;
 import vazkii.botania.neoforge.internal_caps.NeoForgeInternalEntityCapabilities;
 import vazkii.botania.neoforge.mixin.AbstractFurnaceBlockEntityNeoForgeAccessor;
 import vazkii.botania.neoforge.network.NeoForgePacketHandler;
@@ -547,9 +549,21 @@ public class NeoForgeXplatImpl implements XplatAbstractions {
 	@Nullable
 	@Override
 	public EquipmentHandler tryCreateEquipmentHandler() {
+		// Curios remains the primary accessory backend on NeoForge. When the optional Trinkets
+		// mod is present, its callbacks are registered on top and Curios lookups fall back to
+		// Trinkets slots; without Curios, Trinkets can carry the equipment handler alone.
+		// Optional dependency: the probe must not initialize NeoTrinketsIntegration itself.
+		boolean trinkets = TrinketsPresence.isLoaded();
 		if (XplatAbstractions.INSTANCE.isModLoaded("curios")) {
 			CurioIntegration.init();
+			if (trinkets) {
+				NeoTrinketsIntegration.init();
+			}
 			return new CurioIntegration();
+		}
+		if (trinkets) {
+			NeoTrinketsIntegration.init();
+			return new NeoTrinketsIntegration.Handler();
 		}
 		return null;
 	}

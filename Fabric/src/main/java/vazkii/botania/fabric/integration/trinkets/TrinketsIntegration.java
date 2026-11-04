@@ -13,6 +13,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import dev.yumi.commons.TriState;
 
+import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.api.TrinketDropRule;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.TrinketsApi;
@@ -74,39 +75,38 @@ public class TrinketsIntegration extends EquipmentHandler {
 	}
 
 	@Override
-	@SuppressWarnings("removal") // deprecated TrinketAttachment accessors, replacement requires API rework
 	protected Container getAllWornItems(LivingEntity living) {
-		var attachment = TrinketsApi.getAttachment(living);
+		TrinketAttachment attachment = TrinketsApi.getAttachment(living);
 		if (attachment == null) {
 			return new SimpleContainer(0);
 		}
 		List<ItemStack> list = new ArrayList<>();
-		for (var tuple : attachment.getAllEquipped()) {
-			list.add(tuple.getB());
+		// 4.x: allEquipped/findFirst replace the deprecated getEquipped tuple accessors.
+		for (TrinketSlotAccess slot : attachment.allEquipped(false)) {
+			ItemStack stack = slot.get();
+			if (!stack.isEmpty()) {
+				list.add(stack);
+			}
 		}
 		return new SimpleContainer(list.toArray(new ItemStack[0]));
 	}
 
 	@Override
-	@SuppressWarnings("removal") // deprecated TrinketAttachment accessors, replacement requires API rework
 	protected ItemStack findItem(Item item, LivingEntity living) {
-		var attachment = TrinketsApi.getAttachment(living);
+		TrinketAttachment attachment = TrinketsApi.getAttachment(living);
 		if (attachment == null) {
 			return ItemStack.EMPTY;
 		}
-		var results = attachment.getEquipped(item);
-		return results.isEmpty() ? ItemStack.EMPTY : results.get(0).getB();
+		return attachment.findFirst(item).map(TrinketSlotAccess::get).orElse(ItemStack.EMPTY);
 	}
 
 	@Override
-	@SuppressWarnings("removal") // deprecated TrinketAttachment accessors, replacement requires API rework
 	protected ItemStack findItem(java.util.function.Predicate<ItemStack> pred, LivingEntity living) {
-		var attachment = TrinketsApi.getAttachment(living);
+		TrinketAttachment attachment = TrinketsApi.getAttachment(living);
 		if (attachment == null) {
 			return ItemStack.EMPTY;
 		}
-		var results = attachment.getEquipped(pred, false);
-		return results.isEmpty() ? ItemStack.EMPTY : results.get(0).getB();
+		return attachment.findFirst(pred).map(TrinketSlotAccess::get).orElse(ItemStack.EMPTY);
 	}
 
 	@Override

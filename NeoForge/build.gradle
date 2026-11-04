@@ -40,6 +40,10 @@ repositories {
         }
     }
     maven {
+        name = "Nucleoid"
+        url = "https://maven.nucleoid.xyz/releases/" // for trinkets 4.x / yumi commons
+    }
+    maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven" // for Sodium ports
         content {
@@ -112,6 +116,20 @@ dependencies {
 
     compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
     runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")
+
+    // Trinkets Updated 4.x is a single jar for both loaders (fabric.mod.json +
+    // META-INF/neoforge.mods.toml) and is an OPTIONAL secondary accessory backend.
+    // 4.0.x+26.1 needs NeoForge classes from the 26.1.2.x line
+    // (TagsUpdatedEvent$ClientPacketReceived / common.tooltip.ItemTooltipHandler), hence the
+    // NeoForge upgrade in gradle.properties. runtimeOnly puts it on the dev run's mod
+    // classpath so the integration is actually exercised; it is NOT bundled in the release jar.
+    compileOnly("eu.pb4:trinkets:${trinkets_version}")
+    runtimeOnly("eu.pb4:trinkets:${trinkets_version}")
+    // Trinkets' client API classes carry Fabric's @Environment(EnvType.CLIENT) annotation.
+    // Without the annotation class javac emits a non-suppressible "unknown enum constant"
+    // warning, which -Werror turns into an error. Compile-time only; NeoForge never loads
+    // Fabric Loader at runtime (the annotation is CLASS-retention and stays unresolved).
+    compileOnly("net.fabricmc:fabric-loader:${fabric_loader_version}")
 
     // Cloth Config + jankson: shared ClothBotaniaConfig (JSON5 config + screen) needs
     // both at compile time (Xplat sources are compiled into this module) and runtime.

@@ -280,7 +280,8 @@ public class NeoForgeClientInitializer {
 		// (Inlined copy of AtlasUncheckedModels.bakeUnchecked; this file compiles
 		// against the published Xplat jar, which does not carry new client helpers.)
 		MiscellaneousModels.INSTANCE.onModelRegister(resourceManager, id -> registerStandalone(evt, id,
-				new SimpleUnbakedStandaloneModel<>(id, (model, baker) -> {
+				// 26.1.2: SimpleBaker now receives a ModelDebugName as its third argument.
+				new SimpleUnbakedStandaloneModel<>(id, (model, baker, debugName) -> {
 					var slots = model.getTopTextureSlots();
 					var particle = model.resolveParticleMaterial(slots, baker);
 					var geometry = model.bakeTopGeometry(slots, baker, BlockModelRotation.IDENTITY);
