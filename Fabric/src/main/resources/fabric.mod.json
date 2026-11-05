@@ -47,6 +47,9 @@
  "rei_client": [
   "vazkii.botania.fabric.integration.rei.FabricREIPlugin"
  ],
+ "rei_common": [
+  "vazkii.botania.fabric.integration.rei.FabricREICommonPlugin"
+ ],
     "jei_mod_plugin": [
       "vazkii.botania.client.integration.jei.JEIBotaniaPlugin"
     ],

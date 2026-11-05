@@ -14,7 +14,9 @@ import me.shedaniel.rei.api.client.gui.Renderer;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
+import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
+import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 
@@ -24,7 +26,7 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
-import vazkii.botania.api.recipe.StateIngredient;
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.client.gui.HUDHandler;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
@@ -35,12 +37,12 @@ import java.util.List;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class ManaPoolREICategory implements DisplayCategory<ManaPoolREIDisplay> {
+public class ManaPoolREICategory implements DisplayCategory<Display> {
 	private final EntryStack<ItemStack> manaPool = EntryStacks.of(new ItemStack(BotaniaBlocks.manaPool));
 	private final Identifier OVERLAY = prefix("textures/gui/pure_daisy_overlay.png");
 
 	@Override
-	public @NotNull CategoryIdentifier<ManaPoolREIDisplay> getCategoryIdentifier() {
+	public @NotNull CategoryIdentifier<Display> getCategoryIdentifier() {
 		return BotaniaREICategoryIdentifiers.MANA_INFUSION;
 	}
 
@@ -55,7 +57,8 @@ public class ManaPoolREICategory implements DisplayCategory<ManaPoolREIDisplay> 
 	}
 
 	@Override
-	public @NotNull List<Widget> setupDisplay(ManaPoolREIDisplay display, Rectangle bounds) {
+	public @NotNull List<Widget> setupDisplay(Display display, Rectangle bounds) {
+		BotaniaREIView view = (BotaniaREIView) display;
 		List<Widget> widgets = new ArrayList<>();
 		ItemStack pool = manaPool.getValue().copy();
 		ItemNBTHelper.setBoolean(pool, "RenderFull", true);
@@ -65,16 +68,13 @@ public class ManaPoolREICategory implements DisplayCategory<ManaPoolREIDisplay> 
 		widgets.add(Widgets.createRecipeBase(bounds));
 		widgets.add(Widgets.createDrawableWidget((gui, mouseX, mouseY, delta) -> {
 			CategoryUtils.drawOverlay(gui, OVERLAY, center.x - 23, center.y - 13, 0, 0, 65, 44);
-			HUDHandler.renderManaBar(gui, center.x - 43, center.y + 37, 0x0000FF, 0.75F, display.getManaCost(), ManaPoolBlockEntity.MAX_MANA / 10);
+			HUDHandler.renderManaBar(gui, center.x - 43, center.y + 37, 0x0000FF, 0.75F, view.getManaCost(), ManaPoolBlockEntity.MAX_MANA / 10);
 		}));
 
 		widgets.add(Widgets.createSlot(center).entry(renderPool).disableBackground());
-		StateIngredient catalyst = display.getCatalyst();
+		EntryIngredient catalyst = view.getCatalystEntries();
 		if (catalyst != null) {
-			List<EntryStack<ItemStack>> entries = catalyst.getDisplayed().stream()
-					.map(state -> EntryStacks.of(state.getBlock()))
-					.toList();
-			widgets.add(Widgets.createSlot(new Point(center.x - 50, center.y)).entries(entries).disableBackground());
+			widgets.add(Widgets.createSlot(new Point(center.x - 50, center.y)).entries(catalyst).disableBackground());
 		}
 		widgets.add(Widgets.createSlot(new Point(center.x - 30, center.y)).entries(display.getInputEntries().get(0)).disableBackground());
 		widgets.add(Widgets.createSlot(new Point(center.x + 29, center.y)).entries(display.getOutputEntries().get(0)).disableBackground());

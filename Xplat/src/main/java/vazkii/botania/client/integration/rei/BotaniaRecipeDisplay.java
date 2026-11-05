@@ -23,6 +23,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.api.recipe.BotaniaRecipe;
 import vazkii.botania.common.helper.RecipeHelper;
 
@@ -34,7 +35,7 @@ import java.util.Optional;
  * Shared base for Botania's REI displays. In MC 26.1 recipes are owned by a {@link RecipeHolder},
  * so both the ingredients and the id are taken from that holder rather than from the recipe itself.
  */
-public abstract class BotaniaRecipeDisplay<T extends Recipe<?>> implements Display {
+public abstract class BotaniaRecipeDisplay<T extends Recipe<?>> implements Display, BotaniaREIView {
 	protected final RecipeHolder<T> holder;
 	protected final T recipe;
 	protected List<EntryIngredient> inputs;

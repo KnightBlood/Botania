@@ -14,6 +14,7 @@ import me.shedaniel.rei.api.client.gui.Renderer;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
+import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
@@ -30,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.common.block.BotaniaBlocks;
 
 import java.util.ArrayList;
@@ -37,13 +39,13 @@ import java.util.List;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class ElvenTradeREICategory implements DisplayCategory<ElvenTradeREIDisplay> {
+public class ElvenTradeREICategory implements DisplayCategory<Display> {
 	private final EntryStack<ItemStack> gateway = EntryStacks.of(new ItemStack(BotaniaBlocks.alfPortal));
 	private final Identifier TRADE_OVERLAY = prefix("textures/gui/elven_trade_overlay.png");
 	private final Identifier PORTAL_SPRITE = prefix("block/alfheim_portal_swirl");
 
 	@Override
-	public @NotNull CategoryIdentifier<ElvenTradeREIDisplay> getCategoryIdentifier() {
+	public @NotNull CategoryIdentifier<Display> getCategoryIdentifier() {
 		return BotaniaREICategoryIdentifiers.ELVEN_TRADE;
 	}
 
@@ -58,7 +60,8 @@ public class ElvenTradeREICategory implements DisplayCategory<ElvenTradeREIDispl
 	}
 
 	@Override
-	public @NotNull List<Widget> setupDisplay(ElvenTradeREIDisplay display, Rectangle bounds) {
+	public @NotNull List<Widget> setupDisplay(Display display, Rectangle bounds) {
+		BotaniaREIView view = (BotaniaREIView) display;
 		List<Widget> widgets = new ArrayList<>();
 		Point center = new Point(bounds.getCenterX() - 8, bounds.getCenterY() - 4);
 		widgets.add(Widgets.createRecipeBase(bounds));

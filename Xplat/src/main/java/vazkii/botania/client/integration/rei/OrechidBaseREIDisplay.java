@@ -19,13 +19,14 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.api.recipe.OrechidRecipe;
 
 import java.util.List;
 import java.util.Optional;
 
 /** Orechid / Orechid Ignem / Marimorphosis all show a state ingredient -> state ingredient exchange. */
-public abstract class OrechidBaseREIDisplay<T extends OrechidRecipe> implements Display {
+public abstract class OrechidBaseREIDisplay<T extends OrechidRecipe> implements Display, BotaniaREIView {
 	private final RecipeHolder<T> holder;
 	private final T recipe;
 	private final List<EntryIngredient> stone;

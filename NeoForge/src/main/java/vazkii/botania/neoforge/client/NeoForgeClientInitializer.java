@@ -66,7 +66,7 @@ import vazkii.botania.api.block.WandHUD;
 import vazkii.botania.api.mana.ManaBarTooltip;
 import vazkii.botania.client.BotaniaItemProperties;
 import vazkii.botania.client.core.handler.*;
-import vazkii.botania.client.ClothBotaniaConfig;
+import vazkii.botania.client.ClothBotaniaConfigScreen;
 import vazkii.botania.client.core.proxy.ClientProxy;
 import vazkii.botania.client.fx.BotaniaParticles;
 import vazkii.botania.client.gui.HUDHandler;
@@ -110,7 +110,7 @@ public class NeoForgeClientInitializer {
 	public static void init(IEventBus modBus, ModContainer container) {
 		// Config screen (Cloth Config), reachable from the NeoForge Mods screen.
 		container.registerExtensionPoint(IConfigScreenFactory.class,
-				(modContainer, parent) -> ClothBotaniaConfig.createConfigScreen(parent));
+				(modContainer, parent) -> ClothBotaniaConfigScreen.create(parent));
 		modBus.addListener(NeoForgeClientInitializer::clientInit);
 		modBus.addListener(NeoForgeClientInitializer::registerGuiLayers);
 		modBus.addListener(NeoForgeClientInitializer::registerTooltipComponent);

@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 
 import java.util.ArrayList;
@@ -32,12 +33,12 @@ import java.util.List;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class PureDaisyREICategory implements DisplayCategory<PureDaisyREIDisplay> {
+public class PureDaisyREICategory implements DisplayCategory<Display> {
 	private final EntryStack<ItemStack> daisy = EntryStacks.of(new ItemStack(BotaniaFlowerBlocks.pureDaisy));
 	private static final Identifier OVERLAY = prefix("textures/gui/pure_daisy_overlay.png");
 
 	@Override
-	public @NotNull CategoryIdentifier<PureDaisyREIDisplay> getCategoryIdentifier() {
+	public @NotNull CategoryIdentifier<Display> getCategoryIdentifier() {
 		return BotaniaREICategoryIdentifiers.PURE_DAISY;
 	}
 
@@ -52,7 +53,8 @@ public class PureDaisyREICategory implements DisplayCategory<PureDaisyREIDisplay
 	}
 
 	@Override
-	public @NotNull List<Widget> setupDisplay(PureDaisyREIDisplay display, Rectangle bounds) {
+	public @NotNull List<Widget> setupDisplay(Display display, Rectangle bounds) {
+		BotaniaREIView view = (BotaniaREIView) display;
 		return setupPureDaisyDisplay(display, bounds, daisy);
 	}
 
@@ -75,7 +77,7 @@ public class PureDaisyREICategory implements DisplayCategory<PureDaisyREIDisplay
 	}
 
 	@Override
-	public int getDisplayWidth(PureDaisyREIDisplay display) {
+	public int getDisplayWidth(Display display) {
 		return 112;
 	}
 }

@@ -15,6 +15,7 @@ import me.shedaniel.rei.api.client.gui.Renderer;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
+import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
@@ -26,6 +27,7 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.client.gui.HUDHandler;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
@@ -35,12 +37,12 @@ import java.util.List;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class TerrestrialAgglomerationREICategory implements DisplayCategory<TerrestrialAgglomerationREIDisplay> {
+public class TerrestrialAgglomerationREICategory implements DisplayCategory<Display> {
 	private final Identifier OVERLAY = prefix("textures/gui/terrasteel_jei_overlay.png");
 	private final EntryStack<ItemStack> icon = EntryStacks.of(BotaniaBlocks.terraPlate);
 
 	@Override
-	public @NotNull CategoryIdentifier<TerrestrialAgglomerationREIDisplay> getCategoryIdentifier() {
+	public @NotNull CategoryIdentifier<Display> getCategoryIdentifier() {
 		return BotaniaREICategoryIdentifiers.TERRA_PLATE;
 	}
 
@@ -55,7 +57,8 @@ public class TerrestrialAgglomerationREICategory implements DisplayCategory<Terr
 	}
 
 	@Override
-	public @NotNull List<Widget> setupDisplay(TerrestrialAgglomerationREIDisplay display, Rectangle bounds) {
+	public @NotNull List<Widget> setupDisplay(Display display, Rectangle bounds) {
+		BotaniaREIView view = (BotaniaREIView) display;
 		List<Widget> widgets = new ArrayList<>();
 		List<EntryIngredient> inputs = display.getInputEntries();
 		EntryStack<?> output = display.getOutputEntries().get(0).get(0);
@@ -66,7 +69,7 @@ public class TerrestrialAgglomerationREICategory implements DisplayCategory<Terr
 		widgets.add(Widgets.createRecipeBase(bounds));
 		widgets.add(Widgets.createDrawableWidget((gui, mouseX, mouseY, delta) -> {
 			CategoryUtils.drawOverlay(gui, OVERLAY, center.x - 24, center.y - 24, 42, 29, 64, 64);
-			HUDHandler.renderManaBar(gui, center.x - 43, center.y + 52, 0x0000FF, 0.75F, display.getManaCost(), ManaPoolBlockEntity.MAX_MANA / 10);
+			HUDHandler.renderManaBar(gui, center.x - 43, center.y + 52, 0x0000FF, 0.75F, view.getManaCost(), ManaPoolBlockEntity.MAX_MANA / 10);
 		}));
 
 		for (EntryIngredient o : inputs) {

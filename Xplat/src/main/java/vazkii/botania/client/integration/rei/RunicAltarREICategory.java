@@ -15,6 +15,7 @@ import me.shedaniel.rei.api.client.gui.Renderer;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
+import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
@@ -26,6 +27,7 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.client.gui.HUDHandler;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
@@ -35,13 +37,13 @@ import java.util.List;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class RunicAltarREICategory implements DisplayCategory<RunicAltarREIDisplay> {
+public class RunicAltarREICategory implements DisplayCategory<Display> {
 	private final EntryStack<ItemStack> altar = EntryStacks.of(new ItemStack(BotaniaBlocks.runeAltar));
 	private final EntryStack<ItemStack> livingrock = EntryStacks.of(new ItemStack(BotaniaBlocks.livingrock));
 	private final Identifier PETAL_OVERLAY = prefix("textures/gui/petal_overlay.png");
 
 	@Override
-	public @NotNull CategoryIdentifier<RunicAltarREIDisplay> getCategoryIdentifier() {
+	public @NotNull CategoryIdentifier<Display> getCategoryIdentifier() {
 		return BotaniaREICategoryIdentifiers.RUNE_ALTAR;
 	}
 
@@ -56,7 +58,8 @@ public class RunicAltarREICategory implements DisplayCategory<RunicAltarREIDispl
 	}
 
 	@Override
-	public @NotNull List<Widget> setupDisplay(RunicAltarREIDisplay display, Rectangle bounds) {
+	public @NotNull List<Widget> setupDisplay(Display display, Rectangle bounds) {
+		BotaniaREIView view = (BotaniaREIView) display;
 		List<EntryIngredient> inputs = display.getInputEntries();
 		EntryStack<?> output = display.getOutputEntries().get(0).get(0);
 
@@ -67,7 +70,7 @@ public class RunicAltarREICategory implements DisplayCategory<RunicAltarREIDispl
 		widgets.add(Widgets.createRecipeBase(bounds));
 		widgets.add(Widgets.createDrawableWidget((gui, mouseX, mouseY, delta) -> {
 			CategoryUtils.drawOverlay(gui, PETAL_OVERLAY, center.x - 24, center.y - 42, 42, 11, 85, 82);
-			HUDHandler.renderManaBar(gui, center.x - 43, center.y + 52, 0x0000FF, 0.75F, display.getManaCost(), ManaPoolBlockEntity.MAX_MANA / 10);
+			HUDHandler.renderManaBar(gui, center.x - 43, center.y + 52, 0x0000FF, 0.75F, view.getManaCost(), ManaPoolBlockEntity.MAX_MANA / 10);
 		}));
 
 		for (EntryIngredient o : inputs) {

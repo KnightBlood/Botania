@@ -15,6 +15,7 @@ import me.shedaniel.rei.api.client.gui.Renderer;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
+import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
@@ -27,6 +28,7 @@ import net.minecraft.world.item.Items;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.common.block.BotaniaBlocks;
 
 import java.util.ArrayList;
@@ -34,13 +36,13 @@ import java.util.List;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class PetalApothecaryREICategory implements DisplayCategory<PetalApothecaryREIDisplay> {
+public class PetalApothecaryREICategory implements DisplayCategory<Display> {
 	private final EntryStack<ItemStack> apothecary = EntryStacks.of(new ItemStack(BotaniaBlocks.defaultAltar));
 	private final EntryStack<ItemStack> waterBucket = EntryStacks.of(new ItemStack(Items.WATER_BUCKET));
 	private final Identifier PETAL_OVERLAY = prefix("textures/gui/petal_overlay.png");
 
 	@Override
-	public @NotNull CategoryIdentifier<PetalApothecaryREIDisplay> getCategoryIdentifier() {
+	public @NotNull CategoryIdentifier<Display> getCategoryIdentifier() {
 		return BotaniaREICategoryIdentifiers.PETAL_APOTHECARY;
 	}
 
@@ -55,7 +57,8 @@ public class PetalApothecaryREICategory implements DisplayCategory<PetalApotheca
 	}
 
 	@Override
-	public @NotNull List<Widget> setupDisplay(PetalApothecaryREIDisplay display, Rectangle bounds) {
+	public @NotNull List<Widget> setupDisplay(Display display, Rectangle bounds) {
+		BotaniaREIView view = (BotaniaREIView) display;
 		List<EntryIngredient> inputs = display.getInputEntries();
 		EntryStack<?> output = display.getOutputEntries().get(0).get(0);
 
@@ -72,7 +75,7 @@ public class PetalApothecaryREICategory implements DisplayCategory<PetalApotheca
 		}
 		widgets.add(Widgets.createSlot(new Point(center.x, center.y + 10)).entry(apothecary).disableBackground());
 		widgets.add(Widgets.createSlot(new Point(center.x - 8, center.y - 5)).entry(waterBucket).disableBackground());
-		widgets.add(Widgets.createSlot(new Point(center.x + 8, center.y - 5)).entries(display.getReagent()).disableBackground());
+		widgets.add(Widgets.createSlot(new Point(center.x + 8, center.y - 5)).entries(view.getReagent()).disableBackground());
 		widgets.add(Widgets.createSlot(new Point(center.x + 38, center.y - 35)).entry(output).disableBackground());
 
 		return widgets;

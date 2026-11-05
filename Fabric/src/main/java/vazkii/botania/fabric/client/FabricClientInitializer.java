@@ -58,6 +58,7 @@ import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
 import vazkii.botania.common.entity.BotaniaEntities;
 import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.fabric.integration.trinkets.TrinketsClientIntegration;
 import vazkii.botania.fabric.network.FabricPacketHandler;
 import vazkii.botania.xplat.ClientXplatAbstractions;
 import vazkii.botania.xplat.XplatAbstractions;
@@ -82,6 +83,12 @@ public class FabricClientInitializer implements ClientModInitializer {
 		// related effects fall back to vanilla rendering).
 		CoreShaders.init((id, vertexFormat, onLoaded) -> {});
 		FabricPacketHandler.initClient();
+
+		// Trinkets renderer registration is client-only: TrinketsIntegration itself is loaded on
+		// dedicated servers as the EquipmentHandler, so it must not reference client classes.
+		if (XplatAbstractions.INSTANCE.isModLoaded("trinkets")) {
+			TrinketsClientIntegration.registerRenderers();
+		}
 
 		// Guis
 		MenuScreens.register(BotaniaItems.FLOWER_BAG_CONTAINER, FlowerPouchGui::new);

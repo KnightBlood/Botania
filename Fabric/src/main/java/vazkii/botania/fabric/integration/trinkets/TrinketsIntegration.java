@@ -9,7 +9,6 @@
 package vazkii.botania.fabric.integration.trinkets;
 
 import com.google.common.collect.Multimap;
-import com.mojang.blaze3d.vertex.PoseStack;
 
 import dev.yumi.commons.TriState;
 
@@ -18,14 +17,9 @@ import eu.pb4.trinkets.api.TrinketDropRule;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
-import eu.pb4.trinkets.api.client.TrinketRenderer;
-import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
 import eu.pb4.trinkets.api.event.TrinketDropCallback;
 import eu.pb4.trinkets.api.event.TrinketSlotCompatibilityCallback;
 
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
@@ -40,7 +34,6 @@ import vazkii.botania.common.handler.EquipmentHandler;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.ResoluteIvyItem;
 import vazkii.botania.common.item.equipment.bauble.BaubleItem;
-import vazkii.botania.common.proxy.Proxy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +45,10 @@ import java.util.function.BiConsumer;
  * {@link TrinketSlotCompatibilityCallback}. Right-click-to-equip is handled by trinkets itself
  * (its Item mixin consults {@link TrinketCallback#canEquipFromUse}), so no UseItemCallback is
  * registered anymore.
+ *
+ * <p>This class is loaded on dedicated servers, so it must not reference any client-only type.
+ * The empty {@code TrinketRenderer} registration lives in {@link TrinketsClientIntegration},
+ * which is only reached from the Fabric client entrypoint.
  */
 public class TrinketsIntegration extends EquipmentHandler {
 	public static void init() {
@@ -112,7 +109,7 @@ public class TrinketsIntegration extends EquipmentHandler {
 	@Override
 	public void onInit(Item item) {
 		TrinketCallback.setCallback(item, WRAPPER);
-		Proxy.INSTANCE.runOnClient(() -> () -> TrinketRendererRegistry.registerRenderer(item, new RenderWrapper()));
+		// Renderer registration happens in TrinketsClientIntegration (client entrypoint only).
 	}
 
 	@Override
@@ -169,15 +166,4 @@ public class TrinketsIntegration extends EquipmentHandler {
 			}
 		}
 	};
-
-	private static class RenderWrapper implements TrinketRenderer {
-		// 26.1: TrinketRenderer.submit uses the new render-state pipeline
-		// (LivingEntityRenderState + SubmitNodeCollector), which the Xplat accessory
-		// renderers are not ported to yet. Registration stays in place so slot
-		// rendering does not crash; visuals follow in a dedicated render pass.
-		@Override
-		public void submit(ItemStack stack, TrinketSlotAccess slot, EntityModel<? extends LivingEntityRenderState> contextModel,
-				PoseStack matrices, SubmitNodeCollector collector, int light, LivingEntityRenderState state,
-				float tickDelta, float headYaw) {}
-	}
 }

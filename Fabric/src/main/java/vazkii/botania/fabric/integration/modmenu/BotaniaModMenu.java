@@ -11,7 +11,7 @@ package vazkii.botania.fabric.integration.modmenu;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 
-import vazkii.botania.client.ClothBotaniaConfig;
+import vazkii.botania.client.ClothBotaniaConfigScreen;
 
 /**
  * Wires the shared Cloth Config screen into Mod Menu's config button.
@@ -22,6 +22,6 @@ import vazkii.botania.client.ClothBotaniaConfig;
 public class BotaniaModMenu implements ModMenuApi {
 	@Override
 	public ConfigScreenFactory<?> getModConfigScreenFactory() {
-		return ClothBotaniaConfig::createConfigScreen;
+		return ClothBotaniaConfigScreen::create;
 	}
 }

@@ -14,6 +14,7 @@ import me.shedaniel.rei.api.client.gui.Renderer;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
+import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
@@ -25,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.common.block.BotaniaBlocks;
 
 import java.util.ArrayList;
@@ -32,12 +34,12 @@ import java.util.List;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
-public class BreweryREICategory implements DisplayCategory<BreweryREIDisplay> {
+public class BreweryREICategory implements DisplayCategory<Display> {
 	private final EntryStack<ItemStack> brewery = EntryStacks.of(new ItemStack(BotaniaBlocks.brewery));
 	private final Identifier BREWERY_OVERLAY = prefix("textures/gui/nei_brewery.png");
 
 	@Override
-	public @NotNull CategoryIdentifier<BreweryREIDisplay> getCategoryIdentifier() {
+	public @NotNull CategoryIdentifier<Display> getCategoryIdentifier() {
 		return BotaniaREICategoryIdentifiers.BREWERY;
 	}
 
@@ -52,7 +54,8 @@ public class BreweryREICategory implements DisplayCategory<BreweryREIDisplay> {
 	}
 
 	@Override
-	public @NotNull List<Widget> setupDisplay(BreweryREIDisplay display, Rectangle bounds) {
+	public @NotNull List<Widget> setupDisplay(Display display, Rectangle bounds) {
+		BotaniaREIView view = (BotaniaREIView) display;
 		List<Widget> widgets = new ArrayList<>();
 		List<EntryIngredient> inputs = display.getInputEntries();
 		Point center = new Point(bounds.getCenterX() - 8, bounds.getCenterY() + 9);
@@ -60,7 +63,7 @@ public class BreweryREICategory implements DisplayCategory<BreweryREIDisplay> {
 		widgets.add(Widgets.createRecipeBase(bounds));
 		widgets.add(Widgets.createDrawableWidget((gui, mouseX, mouseY, delta) -> CategoryUtils.drawOverlay(gui, BREWERY_OVERLAY, center.x - 59, center.y - 36, 28, 6, 86, 55)));
 
-		widgets.add(Widgets.createSlot(new Point(center.x - 48, center.y)).entries(display.getContainers()));
+		widgets.add(Widgets.createSlot(new Point(center.x - 48, center.y)).entries(view.getContainers()));
 		int posX = center.x - (inputs.size() - 1) * 9;
 		for (EntryIngredient o : inputs) {
 			widgets.add(Widgets.createSlot(new Point(posX, center.y - 35)).entries(o).disableBackground());

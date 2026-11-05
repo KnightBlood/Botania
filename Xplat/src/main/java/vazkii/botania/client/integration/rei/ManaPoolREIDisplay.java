@@ -9,8 +9,12 @@
 package vazkii.botania.client.integration.rei;
 
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
+import me.shedaniel.rei.api.common.entry.EntryIngredient;
+import me.shedaniel.rei.api.common.entry.EntryStack;
+import me.shedaniel.rei.api.common.util.EntryStacks;
 
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,18 +22,30 @@ import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.recipe.ManaInfusionRecipe;
 import vazkii.botania.api.recipe.StateIngredient;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ManaPoolREIDisplay extends BotaniaRecipeDisplay<ManaInfusionRecipe> {
 	@Nullable
-	private final StateIngredient catalyst;
+	private final EntryIngredient catalystEntries;
 
 	public ManaPoolREIDisplay(RecipeHolder<ManaInfusionRecipe> holder) {
 		super(holder);
-		this.catalyst = recipe.getRecipeCatalyst();
+		StateIngredient catalyst = recipe.getRecipeCatalyst();
+		if (catalyst == null) {
+			this.catalystEntries = null;
+		} else {
+			List<EntryStack<?>> entries = new ArrayList<>();
+			for (BlockState state : catalyst.getDisplayed()) {
+				entries.add(EntryStacks.of(state.getBlock()));
+			}
+			this.catalystEntries = EntryIngredient.of(entries);
+		}
 	}
 
-	@Nullable
-	public StateIngredient getCatalyst() {
-		return catalyst;
+	@Override
+	public @Nullable EntryIngredient getCatalystEntries() {
+		return catalystEntries;
 	}
 
 	@Override

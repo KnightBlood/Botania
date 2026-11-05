@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 
 import me.shedaniel.math.Point;
 import me.shedaniel.math.impl.PointHelper;
+import dev.architectury.event.EventResult;
 import me.shedaniel.rei.api.client.REIRuntime;
 import me.shedaniel.rei.api.client.config.addon.ConfigAddon;
 import me.shedaniel.rei.api.client.config.addon.ConfigAddonRegistry;
@@ -22,6 +23,7 @@ import me.shedaniel.rei.api.client.overlay.OverlayListWidget;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
+import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
@@ -35,6 +37,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -55,9 +58,10 @@ import vazkii.botania.api.recipe.PetalApothecaryRecipe;
 import vazkii.botania.api.recipe.PureDaisyRecipe;
 import vazkii.botania.api.recipe.RunicAltarRecipe;
 import vazkii.botania.api.recipe.TerrestrialAgglomerationRecipe;
-import vazkii.botania.client.ClothBotaniaConfig;
+import vazkii.botania.client.ClothBotaniaConfigScreen;
 import vazkii.botania.client.core.handler.CorporeaInputHandler;
 import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.integration.rei.BotaniaSyncedDisplay;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.crafting.LexiconElvenTradeRecipe;
@@ -77,6 +81,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
@@ -88,13 +93,15 @@ import java.util.stream.StreamSupport;
  * Like the EMI integration, the displays are built explicitly in
  * {@link #registerDisplays(DisplayRegistry)} from a real {@code RecipeManager}.
  *
- * <p><b>Known limitation (explicit, not a silent downgrade):</b> MC 26.1 no longer syncs full
- * {@code RecipeHolder}s to clients - a {@code ClientLevel} only exposes {@code RecipeAccess}
- * (property sets + stonecutter recipes). In singleplayer, including dev runs, the integrated
- * server is already running when REI reloads its plugins, so its {@code RecipeManager} is used.
- * On a dedicated server the client has no such manager, so these ten custom categories are empty
- * until a server-side {@code REICommonPlugin} registers them with REI's
- * {@code DisplaySerializerRegistry} (not implemented yet). See {@link #recipeManager()}.
+ * <p>MC 26.1 no longer syncs full {@code RecipeHolder}s to clients - a {@code ClientLevel} only
+ * exposes {@code RecipeAccess} (property sets + stonecutter recipes). In singleplayer, including
+ * dev runs, the integrated server is already running when REI reloads its plugins, so its
+ * {@code RecipeManager} is used to build the full client-side displays (which keep the
+ * biome-sensitive Orechid tooltip). On a dedicated server there is no such manager;
+ * {@code BotaniaREICommonPlugin} instead registers serialisable displays on the server and REI
+ * syncs them with {@code DisplaySyncPacket}. A visibility predicate hides a synced display when
+ * a local display with the same category + recipe id exists, so singleplayer shows no duplicates.
+ * See {@link #recipeManager()}.
  *
  * <p>Platform-specific parts are supplied by thin subclasses: Fabric registers this as a
  * {@code rei_client} entrypoint, NeoForge uses {@code @REIPluginClient}; both override
@@ -103,6 +110,7 @@ import java.util.stream.StreamSupport;
 public class BotaniaREIPlugin implements REIClientPlugin {
 	private static final Supplier<ItemStack> HOVERED_STACK_GETTER = BotaniaREIPlugin::getHoveredREIStack;
 	private static boolean warnedAboutMissingRecipes = false;
+	private static final Set<String> LOCAL_DISPLAY_KEYS = ConcurrentHashMap.newKeySet();
 
 	public BotaniaREIPlugin() {
 		if (!CorporeaInputHandler.hoveredStackGetters.contains(HOVERED_STACK_GETTER)) {
@@ -167,7 +175,7 @@ public class BotaniaREIPlugin implements REIClientPlugin {
 	/**
 	 * Makes REI's config screen the preferred entry point for Botania's settings. REI only hosts
 	 * the addon list - it explicitly does not serialize addon config - so the screen and all
-	 * persistence stay in {@link ClothBotaniaConfig}, shared with the ModMenu / NeoForge entries.
+	 * persistence stay in {@code ClothBotaniaConfig}, shared with the ModMenu / NeoForge entries.
 	 * REI remains an optional dependency; without it those entries still work unchanged.
 	 */
 	@Override
@@ -189,54 +197,63 @@ public class BotaniaREIPlugin implements REIClientPlugin {
 
 		@Override
 		public Screen createScreen(Screen parent) {
-			return ClothBotaniaConfig.createConfigScreen(parent);
+			return ClothBotaniaConfigScreen.create(parent);
 		}
 	}
 
 	@Override
 	public void registerDisplays(DisplayRegistry helper) {
 		int displaysBefore = helper.size();
+		LOCAL_DISPLAY_KEYS.clear();
+		// REI reloads client plugins before the server's DisplaySyncPacket arrives, so hide the
+		// synced copy by recipe id whenever a full local display is available (singleplayer).
+		helper.registerVisibilityPredicate((category, display) -> {
+			if (display instanceof BotaniaSyncedDisplay && LOCAL_DISPLAY_KEYS.contains(key(display))) {
+				return EventResult.interruptFalse();
+			}
+			return EventResult.pass();
+		});
 		registerAncientWillRecipeWrapper(helper);
 		registerCompositeLensRecipeWrapper(helper);
 		registerTerraPickTippingRecipeWrapper(helper);
 
 		for (var holder : recipesOfType(BotaniaRecipeTypes.PETAL_TYPE)) {
-			helper.add(new PetalApothecaryREIDisplay(holder));
+			addLocal(helper, new PetalApothecaryREIDisplay(holder));
 		}
 		for (var holder : recipesOfType(BotaniaRecipeTypes.BREW_TYPE)) {
-			helper.add(new BreweryREIDisplay(holder));
+			addLocal(helper, new BreweryREIDisplay(holder));
 		}
 		for (var holder : recipesOfType(BotaniaRecipeTypes.ELVEN_TRADE_TYPE)) {
 			ElvenTradeRecipe recipe = holder.value();
 			if (recipe instanceof LexiconElvenTradeRecipe || !recipe.isReturnRecipe()) {
-				helper.add(new ElvenTradeREIDisplay(holder));
+				addLocal(helper, new ElvenTradeREIDisplay(holder));
 			}
 		}
 		for (var holder : recipesOfType(BotaniaRecipeTypes.MANA_INFUSION_TYPE)) {
-			helper.add(new ManaPoolREIDisplay(holder));
+			addLocal(helper, new ManaPoolREIDisplay(holder));
 		}
 		for (var holder : recipesOfType(BotaniaRecipeTypes.PURE_DAISY_TYPE)) {
-			helper.add(new PureDaisyREIDisplay(holder));
+			addLocal(helper, new PureDaisyREIDisplay(holder));
 		}
 		for (var holder : recipesOfType(BotaniaRecipeTypes.RUNE_TYPE)) {
-			helper.add(new RunicAltarREIDisplay(holder));
+			addLocal(helper, new RunicAltarREIDisplay(holder));
 		}
 		for (var holder : recipesOfType(BotaniaRecipeTypes.TERRA_PLATE_TYPE)) {
-			helper.add(new TerrestrialAgglomerationREIDisplay(holder));
+			addLocal(helper, new TerrestrialAgglomerationREIDisplay(holder));
 		}
 		for (var holder : recipesOfType(BotaniaRecipeTypes.ORECHID_TYPE)) {
-			helper.add(new OrechidREIDisplay(holder));
+			addLocal(helper, new OrechidREIDisplay(holder));
 		}
 		for (var holder : recipesOfType(BotaniaRecipeTypes.ORECHID_IGNEM_TYPE)) {
-			helper.add(new OrechidIgnemREIDisplay(holder));
+			addLocal(helper, new OrechidIgnemREIDisplay(holder));
 		}
 		for (var holder : recipesOfType(BotaniaRecipeTypes.MARIMORPHOSIS_TYPE)) {
-			helper.add(new MarimorphosisREIDisplay(holder));
+			addLocal(helper, new MarimorphosisREIDisplay(holder));
 		}
 
 		try {
 			for (var entry : customStripping().entrySet()) {
-				helper.add(new DefaultStrippingDisplay(EntryStacks.of(entry.getKey()), EntryStacks.of(entry.getValue())));
+				addLocal(helper, new DefaultStrippingDisplay(EntryStacks.of(entry.getKey()), EntryStacks.of(entry.getValue())));
 			}
 		} catch (Exception e) {
 			BotaniaAPI.LOGGER.error("Error adding strippable entry to REI", e);
@@ -272,8 +289,8 @@ public class BotaniaREIPlugin implements REIClientPlugin {
 				warnedAboutMissingRecipes = true;
 				BotaniaAPI.LOGGER.warn("Botania's custom REI recipe categories cannot be filled: this client has no "
 						+ "RecipeManager with full RecipeHolders. MC 26.1 only syncs RecipeDisplays to clients, and "
-						+ "Botania's special recipes have no vanilla RecipeDisplay. Dedicated-server play requires a "
-						+ "server-side REICommonPlugin with registered DisplaySerializers (not implemented yet).");
+						+ "Botania's special recipes have no vanilla RecipeDisplay. The server-side REICommonPlugin "
+						+ "supplies synced displays in this case.");
 			}
 			return List.of();
 		}
@@ -281,6 +298,16 @@ public class BotaniaREIPlugin implements REIClientPlugin {
 				.filter(h -> h.value().getType() == type)
 				.map(h -> (RecipeHolder<T>) h)
 				.toList();
+	}
+
+	private static void addLocal(DisplayRegistry helper, Display display) {
+		LOCAL_DISPLAY_KEYS.add(key(display));
+		helper.add(display);
+	}
+
+	private static String key(Display display) {
+		return display.getCategoryIdentifier().getIdentifier() + "|"
+				+ display.getDisplayLocation().map(Identifier::toString).orElse("");
 	}
 
 	void registerAncientWillRecipeWrapper(DisplayRegistry helper) {
@@ -299,7 +326,7 @@ public class BotaniaREIPlugin implements REIClientPlugin {
 			container.addAncientWill(copy, ((AncientWillItem) will.getItem()).type);
 			output.add(EntryStacks.of(copy));
 		}
-		helper.add(new DefaultCustomDisplay(input.build(), Collections.singletonList(EntryIngredient.of(output.build())), Optional.empty()));
+		addLocal(helper, new DefaultCustomDisplay(input.build(), Collections.singletonList(EntryIngredient.of(output.build())), Optional.empty()));
 	}
 
 	void registerCompositeLensRecipeWrapper(DisplayRegistry helper) {
@@ -333,7 +360,7 @@ public class BotaniaREIPlugin implements REIClientPlugin {
 		inputs.set(0, EntryIngredients.ofItemStacks(firstInput));
 		inputs.set(2, EntryIngredients.ofItemStacks(secondInput));
 
-		helper.add(new DefaultCustomDisplay(inputs, Collections.singletonList(EntryIngredients.ofItemStacks(outputs)), Optional.empty()));
+		addLocal(helper, new DefaultCustomDisplay(inputs, Collections.singletonList(EntryIngredients.ofItemStacks(outputs)), Optional.empty()));
 	}
 
 	void registerTerraPickTippingRecipeWrapper(DisplayRegistry helper) {
@@ -341,7 +368,7 @@ public class BotaniaREIPlugin implements REIClientPlugin {
 		ItemStack output = new ItemStack(BotaniaItems.terraPick);
 		TerraShattererItem.setTipped(output);
 
-		helper.add(new DefaultCustomDisplay(inputs, Collections.singletonList(EntryIngredients.of(output)), Optional.empty()));
+		addLocal(helper, new DefaultCustomDisplay(inputs, Collections.singletonList(EntryIngredients.of(output)), Optional.empty()));
 	}
 
 	private static ItemStack getHoveredREIStack() {
