@@ -1,35 +1,31 @@
 {
-  "type": "botania:nbt_output_wrapper",
-  "nbt": "{SkullOwner:\"Vazkii\"}",
-  "recipe": {
-    "type": "botania:petal_apothecary",
-    "ingredients": [
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink",
-      "#botania:petals/pink"
-    ],
-    "output": {
-      "components": {
-        "minecraft:custom_data": {
-          "SkullOwner": "Vazkii"
-        }
-      },
-      "count": 1,
-      "id": "minecraft:player_head"
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink",
+    "#botania:petals/pink"
+  ],
+  "output": {
+    "components": {
+      "minecraft:custom_data": {
+        "SkullOwner": "Vazkii"
+      }
     },
-    "reagent": "#botania:seed_apothecary_reagent"
-  }
+    "count": 1,
+    "id": "minecraft:player_head"
+  },
+  "reagent": "#botania:seed_apothecary_reagent"
 }

@@ -140,14 +140,16 @@ public class PetalApothecaryProvider extends BotaniaRecipeProvider {
 		saveFinishedRecipe(output, make(BotaniaBlocks.motifDaybloom, yellow, yellow, orange, lightBlue));
 		saveFinishedRecipe(output, make(BotaniaBlocks.motifNightshade, black, black, purple, gray));
 
+		// 26.1: ItemStackTemplate serialises the CUSTOM_DATA component together with the output,
+		// so the 1.20.1 nbt_output_wrapper hack is no longer needed here. Keeping the wrapper would
+		// register this as a crafting recipe instead of botania:petal_apothecary, and MC 26.1's
+		// RecipeManager drops non-special recipes whose PlacementInfo is NOT_PLACEABLE (logging
+		// "can't be placed due to empty ingredients") - the apothecary would never see this recipe.
 		ItemStack stack = new ItemStack(Items.PLAYER_HEAD);
 		ItemNBTHelper.setString(stack, "SkullOwner", "Vazkii");
 		Ingredient[] inputs = new Ingredient[16];
 		Arrays.fill(inputs, pink);
-		saveFinishedRecipe(output, new NbtOutputResult(
-				new FinishedRecipe(idFor(prefix("vazkii_head")), stack, DEFAULT_REAGENT, inputs),
-				stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA) != null
-						? stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag() : new net.minecraft.nbt.CompoundTag()));
+		saveFinishedRecipe(output, new FinishedRecipe(idFor(prefix("vazkii_head")), stack, DEFAULT_REAGENT, inputs));
 	}
 
 	protected static Ingredient tagIngr(String tag) {
