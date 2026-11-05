@@ -195,9 +195,12 @@ public class FabricClientInitializer implements ClientModInitializer {
 		}
 	}
 
-	// 26.1: fabric's ArmorRenderer and BuiltinItemRendererRegistry are gone. Armor visuals
-	// are expected to come through the vanilla equipment layer system (TODO 26.1: wire
-	// Botania armor textures up there); BE item rendering falls back to static item models.
+	// 26.1: fabric's ArmorRenderer and BuiltinItemRendererRegistry are gone. Botania armour
+	// now goes through the vanilla equipment layer system: BotaniaAPIImpl assigns a
+	// botania:<material> EquipmentAsset key, and assets/botania/equipment/<material>.json
+	// points at textures/entity/equipment/<layer>/<material>.png. The old 64x128 atlases
+	// were UV maps for the removed custom ArmorModels, so custom 3D pieces, phantom ink
+	// and the santaweave variant are not rendered yet. BE items fall back to static models.
 
 	private static void registerCapabilities() {
 		BotaniaEntities.registerWandHudCaps((factory, types) -> BotaniaFabricClientCapabilities.ENTITY_WAND_HUD.registerForTypes((e, c) -> factory.apply(e), types));

@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "botania:elementium"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "botania:elementium"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "botania:elementium"
+      }
+    ]
+  }
+}

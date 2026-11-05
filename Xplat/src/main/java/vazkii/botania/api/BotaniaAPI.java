@@ -103,6 +103,9 @@ public interface BotaniaAPI {
 
 	TagKey<Block> DUMMY_INCORRECT_BLOCKS = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MODID, "dummy_incorrect_blocks"));
 
+	// API-side fallback for when no BotaniaAPI implementation has been injected yet.
+	// It deliberately keeps the vanilla leather equipment asset so this stub can never
+	// resolve to a missing Botania asset; the real materials use armorAsset(...) instead.
 	ArmorMaterial DUMMY_ARMOR_MATERIAL = new ArmorMaterial(
 		0,
 		Map.of(),

@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "botania:manaweave"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "botania:manaweave"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "botania:manaweave"
+      }
+    ]
+  }
+}

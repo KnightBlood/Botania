@@ -59,6 +59,24 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 
 	private ConfigDataManager configDataManager = new ConfigDataManagerImpl();
 
+	/**
+	 * 26.1 draws armour through {@code Equippable.assetId()}, which
+	 * {@code Item.Properties#humanoidArmor} copies from {@link ArmorMaterial#assetId()}.
+	 * Each key resolves to {@code assets/botania/equipment/<name>.json}; its layers point at
+	 * {@code assets/botania/textures/entity/equipment/<layer>/<name>.png}.
+	 *
+	 * <p>The old 64x128 atlases in {@code textures/model/} were UV maps for Botania's custom
+	 * ArmorModel geometry (Forge {@code getArmorTexture} / Fabric {@code ArmorRenderer}). 26.1
+	 * removed both hooks and uses a different vanilla UV layout, so the shipped equipment
+	 * textures are a recoloured conversion of those atlases onto the vanilla silhouette.
+	 * Explicitly not restored: the custom 3D pieces (crystals, pauldrons, cloaks), the
+	 * phantom-ink invisibility variant and the santaweave holiday variant.
+	 */
+	private static ResourceKey<EquipmentAsset> armorAsset(String name) {
+		return ResourceKey.create(EquipmentAssets.ROOT_ID,
+				Identifier.fromNamespaceAndPath("botania", name));
+	}
+
 	private static final ArmorMaterial MANASTEEL = new ArmorMaterial(
 		16,
 		Map.of(
@@ -72,7 +90,7 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 		0.0F,
 		0.0F,
 		ItemTags.WOODEN_TOOL_MATERIALS,
-		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+		armorAsset("manasteel")
 	);
 
 	private static final ArmorMaterial MANAWEAVE = new ArmorMaterial(
@@ -88,7 +106,7 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 		0.0F,
 		0.0F,
 		ItemTags.WOODEN_TOOL_MATERIALS,
-		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+		armorAsset("manaweave")
 	);
 
 	private static final ArmorMaterial ELEMENTIUM = new ArmorMaterial(
@@ -104,7 +122,7 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 		0.0F,
 		0.0F,
 		ItemTags.WOODEN_TOOL_MATERIALS,
-		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+		armorAsset("elementium")
 	);
 
 	private static final ArmorMaterial TERRASTEEL = new ArmorMaterial(
@@ -120,7 +138,7 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 		3.0F,
 		0.0F,
 		ItemTags.WOODEN_TOOL_MATERIALS,
-		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+		armorAsset("terrasteel")
 	);
 
 	@Override
