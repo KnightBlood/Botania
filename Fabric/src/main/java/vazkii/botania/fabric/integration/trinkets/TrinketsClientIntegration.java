@@ -15,12 +15,15 @@ import eu.pb4.trinkets.api.client.TrinketRenderer;
 import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
 
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
+import vazkii.botania.client.render.AccessoryRenderBridge;
 import vazkii.botania.common.item.equipment.bauble.BaubleItem;
 
 /**
@@ -36,7 +39,7 @@ import vazkii.botania.common.item.equipment.bauble.BaubleItem;
 public final class TrinketsClientIntegration {
 	private TrinketsClientIntegration() {}
 
-	/** Registers the (currently empty) renderer for every bauble that received a TrinketCallback. */
+	/** Registers the Botania accessory renderer for every bauble. */
 	public static void registerRenderers() {
 		for (Item item : BuiltInRegistries.ITEM) {
 			if (item instanceof BaubleItem) {
@@ -46,13 +49,21 @@ public final class TrinketsClientIntegration {
 	}
 
 	private static final class RenderWrapper implements TrinketRenderer {
-		// 26.1: TrinketRenderer.submit uses the new render-state pipeline
-		// (LivingEntityRenderState + SubmitNodeCollector), which the Xplat accessory
-		// renderers are not ported to yet. Registration stays in place so slot
-		// rendering does not crash; visuals follow in a dedicated render pass.
 		@Override
 		public void submit(ItemStack stack, TrinketSlotAccess slot, EntityModel<? extends LivingEntityRenderState> contextModel,
 				PoseStack matrices, SubmitNodeCollector collector, int light, LivingEntityRenderState state,
-				float tickDelta, float headYaw) {}
+				float yRot, float xRot) {
+			// TrinketSlotAccess has no entity field, but its inventory's attachment does. The
+			// 1.20.1 renderers need the LivingEntity for sneak pose, equipped armour, tick count
+			// and the item-model seed, so keep passing the real one rather than faking a state.
+			LivingEntity living = slot.inventory().getAttachment().getEntity();
+			if (!AccessoryRenderBridge.shouldRender(stack, living)) {
+				return;
+			}
+			if (!(contextModel instanceof HumanoidModel<?> humanoid)) {
+				return;
+			}
+			AccessoryRenderBridge.render(stack, living, humanoid, matrices, collector, light, state, yRot, xRot);
+		}
 	}
 }

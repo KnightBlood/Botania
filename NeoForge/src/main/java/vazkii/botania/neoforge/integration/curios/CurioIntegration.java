@@ -14,7 +14,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -47,7 +47,7 @@ import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 
 import vazkii.botania.neoforge.integration.trinkets.NeoTrinketsIntegration;
 import vazkii.botania.neoforge.integration.trinkets.TrinketsPresence;
-import vazkii.botania.client.render.AccessoryRenderRegistry;
+import vazkii.botania.client.render.AccessoryRenderBridge;
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.handler.EquipmentHandler;
 import vazkii.botania.common.helper.ItemNBTHelper;
@@ -206,29 +206,27 @@ public class CurioIntegration extends EquipmentHandler {
 	private static class Renderer implements ICurioRenderer {
 		private static final Renderer INSTANCE = new Renderer();
 
+		/**
+		 * Curios 26.1 calls the {@link SubmitNodeCollector} overload from {@code CuriosLayer};
+		 * the old {@code MultiBufferSource} overload is deprecated and its default forwarding goes
+		 * through {@code Minecraft#renderBuffers()}, which the deferred pipeline never flushes.
+		 * Overriding the new overload is therefore required for any of this to be drawn.
+		 */
 		@Override
 		public <S extends LivingEntityRenderState, M extends EntityModel<? super S>>
 				void render(ItemStack stack, SlotContext slotContext, PoseStack matrixStack,
-						MultiBufferSource renderTypeBuffer, int light, S renderState,
+						SubmitNodeCollector submitNodeCollector, int light, S renderState,
 						RenderLayerParent<S, M> renderLayerParent, EntityRendererProvider.Context context,
-						float partialTicks, float distance) {
-			// 26.1: Curios renders through entity render states now; the limb-swing params are gone.
+						float yRotation, float xRotation) {
 			LivingEntity livingEntity = slotContext.entity();
-			BaubleItem item = (BaubleItem) stack.getItem();
-
-			if (!item.hasRender(stack, livingEntity)) {
+			if (!AccessoryRenderBridge.shouldRender(stack, livingEntity)) {
 				return;
 			}
-
-			ItemStack cosmetic = item.getCosmeticItem(stack);
-			if (!cosmetic.isEmpty()) {
-				@SuppressWarnings("removal")
-				var renderer = CuriosRendererRegistry.getRenderer(item);
-				renderer.ifPresent(curio -> curio.render(cosmetic, slotContext, matrixStack, renderTypeBuffer,
-								light, renderState, renderLayerParent, context, partialTicks, distance));
+			if (!(renderLayerParent.getModel() instanceof HumanoidModel<?> humanoid)) {
+				return;
 			}
-			// TODO 26.1: the legacy Botania accessory render path (AccessoryRenderRegistry) is
-			// model-based (HumanoidModel + limb swing values) and needs a render-state port.
+			AccessoryRenderBridge.render(stack, livingEntity, humanoid, matrixStack, submitNodeCollector,
+					light, renderState, yRotation, xRotation);
 		}
 	}
 
