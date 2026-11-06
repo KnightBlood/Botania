@@ -2,7 +2,6 @@
   "name": "botania.entry.corporeaCrystalCube",
   "category": "botania:ender",
   "icon": "botania:corporea_crystal_cube",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

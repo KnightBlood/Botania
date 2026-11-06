@@ -2,7 +2,6 @@
   "name": "botania.entry.flugelEye",
   "category": "botania:alfhomancy",
   "icon": "botania:flugel_eye",
-  "entry_color": "aa00aa",
   "advancement": "botania:challenge/flugel_eye",
   "flag": "botania:relics",
   "pages": [

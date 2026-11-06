@@ -2,7 +2,6 @@
   "name": "botania.entry.superTravelBelt",
   "category": "botania:baubles",
   "icon": "botania:super_travel_belt",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

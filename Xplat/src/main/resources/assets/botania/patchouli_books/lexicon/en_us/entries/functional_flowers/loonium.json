@@ -2,7 +2,6 @@
   "name": "botania.entry.loonium",
   "category": "botania:functional_flowers",
   "icon": "botania:loonium",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

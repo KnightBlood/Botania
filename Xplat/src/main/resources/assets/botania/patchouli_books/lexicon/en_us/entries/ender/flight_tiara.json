@@ -2,7 +2,6 @@
   "name": "botania.entry.flightTiara",
   "category": "botania:ender",
   "icon": "botania:flight_tiara",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

@@ -2,7 +2,6 @@
   "name": "botania.entry.dreamwoodSpreader",
   "category": "botania:mana",
   "icon": "botania:elven_spreader",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

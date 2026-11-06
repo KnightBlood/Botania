@@ -2,7 +2,6 @@
   "name": "botania.entry.virus",
   "category": "botania:tools",
   "icon": "botania:virus_necrodermal",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

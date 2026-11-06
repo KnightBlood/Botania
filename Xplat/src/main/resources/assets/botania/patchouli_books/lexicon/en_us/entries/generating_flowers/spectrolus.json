@@ -2,7 +2,6 @@
   "name": "botania.entry.spectrolus",
   "category": "botania:generating_flowers",
   "icon": "botania:spectrolus",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

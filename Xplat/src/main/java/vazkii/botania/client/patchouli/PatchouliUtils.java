@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
+import vazkii.botania.common.helper.IngredientHelper;
 import vazkii.botania.xplat.XplatAbstractions;
 import vazkii.patchouli.api.IVariable;
 
@@ -38,7 +39,7 @@ public class PatchouliUtils {
 	 * If the recipe has no replacement, it will be logged.
 	 */
 	public static <T extends Recipe<?>> T getRecipe(Level level, RecipeType<T> type, Identifier id) {
-		Map<Identifier, T> map = BotaniaRecipeTypes.getRecipes(level, type);
+		Map<Identifier, T> map = recipes(level, type);
 		T r = map.get(id);
 		if (r != null) {
 			return r;
@@ -66,10 +67,22 @@ public class PatchouliUtils {
 	}
 
 	/**
+	 * In MC 26.1 clients have no {@code RecipeManager} of their own, so
+	 * {@code BotaniaRecipeTypes.getRecipes(Level, type)} returns an empty map there. Patchouli 26.1
+	 * keeps the recipe holders synchronized from the server in {@code ClientRecipes}; fall back to
+	 * that cache whenever the level cannot supply recipes. The {@link ClientRecipeLookup}
+	 * indirection keeps Patchouli's client classes off the dedicated-server class path.
+	 */
+	private static <T extends Recipe<?>> Map<Identifier, T> recipes(Level level, RecipeType<T> type) {
+		Map<Identifier, T> fromLevel = BotaniaRecipeTypes.getRecipes(level, type);
+		return fromLevel.isEmpty() ? ClientRecipeLookup.byType(type) : fromLevel;
+	}
+
+	/**
 	 * Get all recipes of the specified type that belong to the specified recipe group.
 	 */
 	public static <T extends Recipe<?>> List<T> getRecipeGroup(RecipeType<T> type, String group) {
-		Map<Identifier, T> map = BotaniaRecipeTypes.getRecipes(Minecraft.getInstance().level, type);
+		Map<Identifier, T> map = recipes(Minecraft.getInstance().level, type);
 		List<T> list = new ArrayList<>();
 		for (T value : map.values()) {
 			if (group.equals(value.group())) {
@@ -86,7 +99,10 @@ public class PatchouliUtils {
 	 * @return The stacks matched by the given ingredient, for display purposes.
 	 */
 	public static List<ItemStack> getStacks(Ingredient ingredient) {
-		if (ingredient == null || ingredient.isEmpty()) {
+		// IngredientHelper.EMPTY is an unbound named tag in MC 26.1. Calling isEmpty() or items()
+		// on it throws "Tag ... can't be dereferenced during construction" while book contents
+		// are compiled, so compare by identity before touching the holder set.
+		if (ingredient == null || ingredient == IngredientHelper.EMPTY) {
 			return List.of(ItemStack.EMPTY);
 		}
 		return ingredient.items().map(ItemStack::new).collect(Collectors.toList());

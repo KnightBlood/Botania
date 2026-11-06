@@ -2,7 +2,6 @@
   "name": "botania.entry.sparkUpgrades",
   "category": "botania:mana",
   "icon": "botania:spark_upgrade_dispersive",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

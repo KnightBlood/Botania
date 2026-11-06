@@ -2,7 +2,6 @@
   "name": "botania.entry.heiseiDream",
   "category": "botania:functional_flowers",
   "icon": "botania:heisei_dream",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

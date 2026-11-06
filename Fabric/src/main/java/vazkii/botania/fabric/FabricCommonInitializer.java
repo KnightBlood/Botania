@@ -31,6 +31,7 @@ import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.MinecartComparatorLogicRegistry;
+import net.fabricmc.fabric.api.recipe.v1.sync.RecipeSynchronization;
 import net.fabricmc.fabric.api.registry.CompostableRegistry;
 import net.fabricmc.fabric.api.registry.FlattenableBlockRegistry;
 import net.fabricmc.fabric.api.registry.FuelValueEvents;
@@ -51,6 +52,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
@@ -173,6 +175,36 @@ public class FabricCommonInitializer implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STOPPED.register(server -> FabricXplatImpl.setCurrentServer(null));
 
 		FabricPacketHandler.init();
+		enableClientRecipeSync();
+	}
+
+	/**
+	 * MC 26.1 no longer sends full {@code RecipeHolder}s to clients, and Fabric API only
+	 * synchronizes recipes whose serializer explicitly opts in. Patchouli 26.1 builds its client
+	 * recipe cache from that sync; without it every Lexicon recipe page logs
+	 * "Recipe ... not found" and Botania's own templates log "Template references nonexistent
+	 * recipe". Register our serializers plus vanilla's, which back the book's crafting, cooking,
+	 * smithing and stonecutting pages. Must run in the common initializer on both sides.
+	 */
+	private static void enableClientRecipeSync() {
+		BiConsumer<RecipeSerializer<?>, Identifier> sync = (serializer, id) -> {
+			if (serializer.streamCodec() != null) {
+				RecipeSynchronization.synchronizeRecipeSerializer(serializer);
+			} else {
+				// No silent degradation: a serializer without a stream codec cannot be synced.
+				BotaniaAPI.LOGGER.warn("Recipe serializer {} has no stream codec; its recipes will be missing from the Lexicon on clients", id);
+			}
+		};
+		// The Lexicon has crafting, smelting, blasting, smoking, campfire, smithing and
+		// stonecutting pages, so every vanilla serializer has to be available client-side.
+		for (var entry : BuiltInRegistries.RECIPE_SERIALIZER.entrySet()) {
+			Identifier id = entry.getKey().identifier();
+			if ("minecraft".equals(id.getNamespace())) {
+				sync.accept(entry.getValue(), id);
+			}
+		}
+		BotaniaRecipeTypes.submitRecipeSerializers(sync);
+		BotaniaItems.registerRecipeSerializers(sync);
 	}
 
 	private void registryInit() {

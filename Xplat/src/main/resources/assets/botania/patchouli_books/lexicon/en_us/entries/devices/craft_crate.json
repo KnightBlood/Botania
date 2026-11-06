@@ -2,7 +2,6 @@
   "name": "botania.entry.craftCrate",
   "category": "botania:devices",
   "icon": "botania:crafty_crate",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

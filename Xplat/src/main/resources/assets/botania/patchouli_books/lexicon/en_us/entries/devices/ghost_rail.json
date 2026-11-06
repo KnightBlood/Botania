@@ -2,7 +2,6 @@
   "name": "botania.entry.ghostRail",
   "category": "botania:devices",
   "icon": "botania:ghost_rail",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

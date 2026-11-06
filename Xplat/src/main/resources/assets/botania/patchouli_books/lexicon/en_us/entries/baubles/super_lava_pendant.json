@@ -2,7 +2,6 @@
   "name": "botania.entry.superLavaPendant",
   "category": "botania:baubles",
   "icon": "botania:super_lava_pendant",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

@@ -2,7 +2,6 @@
   "name": "botania.entry.elfMessage",
   "category": "botania:alfhomancy",
   "icon": "minecraft:writable_book",
-  "entry_color": "aa00",
   "priority": true,
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [

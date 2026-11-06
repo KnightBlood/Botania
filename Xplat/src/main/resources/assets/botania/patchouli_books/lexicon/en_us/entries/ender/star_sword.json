@@ -2,7 +2,6 @@
   "name": "botania.entry.starSword",
   "category": "botania:ender",
   "icon": "botania:star_sword",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

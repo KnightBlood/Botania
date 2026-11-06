@@ -2,7 +2,6 @@
   "name": "botania.entry.corporeaIndex",
   "category": "botania:ender",
   "icon": "botania:corporea_index",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

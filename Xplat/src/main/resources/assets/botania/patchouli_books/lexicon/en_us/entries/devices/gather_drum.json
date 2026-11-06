@@ -2,7 +2,6 @@
   "name": "botania.entry.gatherDrum",
   "category": "botania:devices",
   "icon": "botania:drum_gathering",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

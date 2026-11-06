@@ -2,7 +2,6 @@
   "name": "botania.entry.elvenLore",
   "category": "botania:alfhomancy",
   "icon": "minecraft:writable_book",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

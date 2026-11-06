@@ -2,7 +2,6 @@
   "name": "botania.entry.divaCharm",
   "category": "botania:baubles",
   "icon": "botania:diva_charm",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

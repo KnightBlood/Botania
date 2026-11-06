@@ -103,6 +103,18 @@ public class ManaInfusionRecipe implements vazkii.botania.api.recipe.ManaInfusio
 		return NonNullList.of(IngredientHelper.EMPTY, input);
 	}
 
+	/**
+	 * MC 26.1 renamed {@code Recipe#getGroup()} to {@link #group()}. BotaniaRecipe's default
+	 * implementation returns an empty string, which made every Lexicon multi-recipe page that
+	 * uses a mana infusion group appear empty after the port.
+	 */
+	@NotNull
+	@Override
+	public String group() {
+		return group;
+	}
+
+	/** Kept for addons that still use the 1.20.1 name. */
 	@NotNull
 	public String getGroup() {
 		return group;

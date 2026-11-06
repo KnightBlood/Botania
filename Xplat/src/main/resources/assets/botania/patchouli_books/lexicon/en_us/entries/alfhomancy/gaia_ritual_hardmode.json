@@ -2,7 +2,6 @@
   "name": "botania.entry.gaiaRitualHardmode",
   "category": "botania:alfhomancy",
   "icon": "botania:gaia_ingot",
-  "entry_color": "aa00",
   "advancement": "botania:main/gaia_guardian_kill",
   "turnin": "botania:challenge/gaia_guardian_hardmode",
   "pages": [

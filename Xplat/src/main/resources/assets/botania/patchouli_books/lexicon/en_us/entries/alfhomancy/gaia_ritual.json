@@ -2,7 +2,6 @@
   "name": "botania.entry.gaiaRitual",
   "category": "botania:alfhomancy",
   "icon": "botania:life_essence",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "turnin": "botania:main/gaia_guardian_kill",
   "pages": [

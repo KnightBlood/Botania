@@ -2,7 +2,6 @@
   "name": "botania.entry.spectralPlatform",
   "category": "botania:devices",
   "icon": "botania:spectral_platform",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

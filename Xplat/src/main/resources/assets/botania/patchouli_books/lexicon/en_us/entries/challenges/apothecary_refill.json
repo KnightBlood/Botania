@@ -4,7 +4,6 @@
   "icon": "botania:apothecary_default",
   "read_by_default": true,
   "advancement": "botania:main/mana_pool_pickup_lexicon",
-  "entry_color": "ffaa00",
   "sortnum": 3,
   "pages": [
     {

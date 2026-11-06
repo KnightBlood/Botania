@@ -2,7 +2,6 @@
   "name": "botania.entry.corporeaFunnel",
   "category": "botania:ender",
   "icon": "botania:corporea_funnel",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {

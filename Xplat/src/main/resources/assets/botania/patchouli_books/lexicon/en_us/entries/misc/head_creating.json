@@ -2,7 +2,6 @@
   "name": "botania.entry.headCreating",
   "category": "botania:misc",
   "icon": "minecraft:player_head",
-  "entry_color": "aa00",
   "advancement": "botania:main/elf_lexicon_pickup",
   "pages": [
     {
