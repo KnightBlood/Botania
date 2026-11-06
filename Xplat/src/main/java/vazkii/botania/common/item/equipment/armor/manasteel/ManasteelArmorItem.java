@@ -90,9 +90,10 @@ public class ManasteelArmorItem extends Item implements CustomDamageItem, Phanto
 
 	/**
 	 * @return the texture that is used to render this armor piece.
-	 * @deprecated 26.1 renders armour through {@code Equippable.assetId()} instead; the
-	 *             invisible variant is now handled by {@code HumanoidArmorLayerMixin}.
-	 *             Kept as an API method for add-ons, no longer called by the renderer.
+	 * @deprecated 26.1 renders armour through {@code Equippable.assetId()} instead; phantom ink
+	 *             is handled by {@code HumanoidArmorLayerMixin}, which calls
+	 *             {@link #getArmorTextureAfterInk} for the visible 64x128 atlases. Kept as an
+	 *             API method for add-ons, no longer called by the renderer.
 	 */
 	@Deprecated
 	public String getArmorTexture(ItemStack stack, EquipmentSlot slot) {
