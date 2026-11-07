@@ -320,56 +320,47 @@ public class SkyblockSkyRenderer {
 		GpuTextureView depth = mc.getMainRenderTarget().getDepthTextureView();
 		GpuBuffer indexBuffer = quadIndices.getBuffer(starIndexCount);
 
+		Quaternionf[] rotations = {
+				VecHelper.rotateY(t * 3), VecHelper.rotateY(t), VecHelper.rotateY(t * 2),
+				VecHelper.rotateZ(t * 3), VecHelper.rotateZ(t), VecHelper.rotateZ(t * 2)
+		};
+		Vector4f[] colors = {
+				new Vector4f(1F, 1F, 1F, alpha),
+				new Vector4f(0.5F, 1F, 1F, alpha),
+				new Vector4f(1F, 0.75F, 0.75F, alpha),
+				new Vector4f(1F, 1F, 1F, 0.25F * alpha),
+				new Vector4f(0.5F, 1F, 1F, 0.25F * alpha),
+				new Vector4f(1F, 0.75F, 0.75F, 0.25F * alpha)
+		};
+
+		// MC 26.1 DynamicUniforms.writeTransform() maps the UBO through
+		// CommandEncoder.mapBuffer(), which throws "Close the existing render pass
+		// before performing additional commands" if a RenderPass is still open.
+		// Vanilla SkyRenderer therefore bakes the transform *before* createRenderPass()
+		// and only submits draws inside it. Do the same for each of the six star layers,
+		// and use the model view stack (as vanilla does) instead of the bare pose.
 		Matrix4fStack mvs = RenderSystem.getModelViewStack();
-		mvs.pushMatrix();
-		mvs.mul(ms.last().pose());
-
-		try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder()
-				.createRenderPass(() -> "Botania stars", color, OptionalInt.empty(), depth, OptionalDouble.empty())) {
-			renderPass.setPipeline(RenderPipelines.STARS);
-			RenderSystem.bindDefaultUniforms(renderPass);
-			renderPass.setVertexBuffer(0, starBuffer);
-			renderPass.setIndexBuffer(indexBuffer, quadIndices.type());
-
+		for (int i = 0; i < rotations.length; i++) {
 			ms.pushPose();
-			ms.mulPose(VecHelper.rotateY(t * 3));
-			drawStars(renderPass, ms, 1F, 1F, 1F, alpha);
+			ms.mulPose(rotations[i]);
+			mvs.pushMatrix();
+			mvs.mul(ms.last().pose());
+			GpuBufferSlice transform = RenderSystem.getDynamicUniforms()
+					.writeTransform(mvs, colors[i], new Vector3f(), new Matrix4f());
+			mvs.popMatrix();
 			ms.popPose();
 
-			ms.pushPose();
-			ms.mulPose(VecHelper.rotateY(t));
-			drawStars(renderPass, ms, 0.5F, 1F, 1F, alpha);
-			ms.popPose();
-
-			ms.pushPose();
-			ms.mulPose(VecHelper.rotateY(t * 2));
-			drawStars(renderPass, ms, 1F, 0.75F, 0.75F, alpha);
-			ms.popPose();
-
-			ms.pushPose();
-			ms.mulPose(VecHelper.rotateZ(t * 3));
-			drawStars(renderPass, ms, 1F, 1F, 1F, 0.25F * alpha);
-			ms.popPose();
-
-			ms.pushPose();
-			ms.mulPose(VecHelper.rotateZ(t));
-			drawStars(renderPass, ms, 0.5F, 1F, 1F, 0.25F * alpha);
-			ms.popPose();
-
-			ms.pushPose();
-			ms.mulPose(VecHelper.rotateZ(t * 2));
-			drawStars(renderPass, ms, 1F, 0.75F, 0.75F, 0.25F * alpha);
-			ms.popPose();
+			String passName = "Botania stars " + i;
+			try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder()
+					.createRenderPass(() -> passName, color, OptionalInt.empty(), depth, OptionalDouble.empty())) {
+				renderPass.setPipeline(RenderPipelines.STARS);
+				RenderSystem.bindDefaultUniforms(renderPass);
+				renderPass.setUniform("DynamicTransforms", transform);
+				renderPass.setVertexBuffer(0, starBuffer);
+				renderPass.setIndexBuffer(indexBuffer, quadIndices.type());
+				renderPass.drawIndexed(0, 0, starIndexCount, 1);
+			}
 		}
-
-		mvs.popMatrix();
-	}
-
-	private static void drawStars(RenderPass renderPass, PoseStack ms, float r, float g, float b, float a) {
-		GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms()
-				.writeTransform(ms.last().pose(), new Vector4f(r, g, b, a), new Vector3f(), new Matrix4f());
-		renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-		renderPass.drawIndexed(0, 0, starIndexCount, 1);
 	}
 
 }
