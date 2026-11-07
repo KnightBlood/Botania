@@ -1,0 +1,13 @@
+{
+  "result": {
+    "id": "minecraft:end_portal_frame"
+  },
+  "pattern": [
+    "OGO"
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "G": "botania:life_essence",
+    "O": "minecraft:obsidian"
+  }
+}

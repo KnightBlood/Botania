@@ -1,0 +1,10 @@
+{
+  "result": {
+    "id": "minecraft:slime_ball"
+  },
+  "ingredients": [
+    "minecraft:magma_cream",
+    "minecraft:water_bucket"
+  ],
+  "type": "minecraft:crafting_shapeless"
+}

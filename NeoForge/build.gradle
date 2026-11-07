@@ -80,6 +80,9 @@ neoForge {
         server {
             server()
             systemProperty('forge.logging.console.level', 'debug')
+            // Loom's server() appends "nogui" by default; MDG's does not. Without it
+            // MC 26.1 opens the server GUI window in dev launches. Keep runServer headless.
+            programArguments.addAll 'nogui'
         }
 
         // MDG 26.1: the old `data()` run type is gone; server-side datagen is now serverData()

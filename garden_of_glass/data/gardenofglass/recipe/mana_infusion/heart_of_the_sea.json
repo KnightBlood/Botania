@@ -1,12 +1,10 @@
 {
   "type": "botania:mana_infusion",
-  "input": {
-    "item": "minecraft:prismarine_shard"
-  },
+  "input": "minecraft:nautilus_shell",
   "output": {
-    "item": "minecraft:prismarine_crystals"
+    "id": "minecraft:heart_of_the_sea"
   },
-  "mana": 500,
+  "mana": 20000,
   "catalyst": {
     "type": "block",
     "block": "botania:alchemy_catalyst"

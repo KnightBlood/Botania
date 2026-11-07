@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "minecraft:magma_cream"
-            ]
+            "items": "botania:living_root"
           }
         ]
       },
@@ -15,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "gardenofglass:magma_cream_to_slime_ball"
+        "recipe": "gardenofglass:root_to_fertilizer"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "gardenofglass:magma_cream_to_slime_ball"
+      "gardenofglass:root_to_fertilizer"
     ]
   },
   "sends_telemetry_event": false

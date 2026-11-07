@@ -27,6 +27,7 @@
   ],
 
   "depends": {
-    "botania" : ">=1.19.2-436"
+    "minecraft": "=26.1.2",
+    "botania": ">=26.1"
   }
 }

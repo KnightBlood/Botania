@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "botania:living_root"
-            ]
+            "items": "botania:pebble"
           }
         ]
       },
@@ -15,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "gardenofglass:root_to_sapling"
+        "recipe": "gardenofglass:pebble_to_cobblestone"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "gardenofglass:root_to_sapling"
+      "gardenofglass:pebble_to_cobblestone"
     ]
   },
   "sends_telemetry_event": false

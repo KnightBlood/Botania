@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "botania:life_essence"
-            ]
+            "items": "botania:living_root"
           }
         ]
       },
@@ -15,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "gardenofglass:end_portal_frame"
+        "recipe": "gardenofglass:root_to_sapling"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "gardenofglass:end_portal_frame"
+      "gardenofglass:root_to_sapling"
     ]
   },
   "sends_telemetry_event": false

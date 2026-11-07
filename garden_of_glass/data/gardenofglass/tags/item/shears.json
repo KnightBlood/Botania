@@ -1,0 +1,15 @@
+{
+  "__comment": "26.1: neither loader ships c:shears / forge:shears. List the vanilla item explicitly so the tag is not empty (extra_seeds uses it to suppress seed drops when shearing); optional platform tags remain as a bridge for addons.",
+  "replace": false,
+  "values": [
+    "minecraft:shears",
+    {
+      "id": "#c:shears",
+      "required": false
+    },
+    {
+      "id": "#forge:shears",
+      "required": false
+    }
+  ]
+}

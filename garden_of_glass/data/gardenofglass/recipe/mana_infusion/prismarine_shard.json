@@ -1,10 +1,8 @@
 {
   "type": "botania:mana_infusion",
-  "input": {
-    "item": "minecraft:quartz"
-  },
+  "input": "minecraft:quartz",
   "output": {
-    "item": "minecraft:prismarine_shard"
+    "id": "minecraft:prismarine_shard"
   },
   "mana": 1000,
   "catalyst": {

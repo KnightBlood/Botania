@@ -20,7 +20,7 @@
           "terms": [
             {
               "condition": "minecraft:block_state_property",
-              "block": "minecraft:grass"
+              "block": "minecraft:short_grass"
             },
             {
               "condition": "minecraft:block_state_property",
@@ -43,7 +43,7 @@
           "term": {
             "condition": "minecraft:match_tool",
             "predicate": {
-              "tag": "gardenofglass:shears"
+              "items": "#gardenofglass:shears"
             }
           }
         }
