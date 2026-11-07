@@ -72,7 +72,10 @@ public class AdvancementProvider {
 			// Main progression line
 			AdvancementHolder root = Advancement.Builder.advancement()
 					.display(rootDisplay(BotaniaItems.lexicon, "itemGroup.botania",
-							"botania.desc", prefix("textures/block/livingwood_log.png")))
+							// 26.1 stores an asset id here; ClientAsset.ResourceTexture appends
+							// "textures/" and ".png" itself. A full path would resolve to
+							// textures/textures/...png.png and show the missing-texture checkerboard.
+							"botania.desc", prefix("block/livingwood_log")))
 					.addCriterion("flower", onPickup(BotaniaTags.Items.MYSTICAL_FLOWERS))
 					.save(consumer, mainId("root"));
 
@@ -362,7 +365,7 @@ public class AdvancementProvider {
 		public void generate(HolderLookup.Provider lookup, Consumer<AdvancementHolder> consumer) {
 			AdvancementHolder root = Advancement.Builder.advancement()
 					.display(rootDisplay(BotaniaItems.dice, "advancement.botania_challenge",
-							"advancement.botania_challenge.desc", prefix("textures/block/livingrock_bricks.png")))
+							"advancement.botania_challenge.desc", prefix("block/livingrock_bricks")))
 					.addCriterion("flower", onPickup(BotaniaTags.Items.MYSTICAL_FLOWERS))
 					.save(consumer, challengeId("root"));
 
