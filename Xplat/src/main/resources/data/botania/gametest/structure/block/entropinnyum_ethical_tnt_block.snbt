@@ -1,0 +1,25 @@
+{
+    DataVersion: 3465,
+    size: [19, 5, 19],
+    data: [
+        {pos: [9, 1, 9], state: "botania:floating_entropinnyum{waterlogged:false}", nbt: {floating: {islandType: "GRASS"}, id: "botania:entropinnyum", mana: 0, ticksExisted: 5718}},
+        {pos: [8, 2, 8], state: "minecraft:obsidian"},
+        {pos: [8, 2, 9], state: "minecraft:obsidian"},
+        {pos: [8, 2, 10], state: "minecraft:obsidian"},
+        {pos: [9, 2, 8], state: "minecraft:obsidian"},
+        {pos: [9, 2, 9], state: "minecraft:obsidian"},
+        {pos: [9, 2, 10], state: "minecraft:obsidian"},
+        {pos: [10, 2, 8], state: "minecraft:obsidian"},
+        {pos: [10, 2, 9], state: "minecraft:obsidian"},
+        {pos: [10, 2, 10], state: "minecraft:obsidian"},
+        {pos: [9, 3, 9], state: "minecraft:tnt{unstable:false}"},
+        {pos: [9, 4, 9], state: "minecraft:stone_button{face:floor,facing:south,powered:false}"}
+    ],
+    entities: [],
+    palette: [
+        "minecraft:obsidian",
+        "minecraft:tnt{unstable:false}",
+        "minecraft:stone_button{face:floor,facing:south,powered:false}",
+        "botania:floating_entropinnyum{waterlogged:false}"
+    ]
+}

@@ -24,6 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.resources.model.ModelManager;
@@ -78,10 +79,14 @@ public class FabricClientInitializer implements ClientModInitializer {
 		BotaniaAPI.LOGGER.debug("Client API instances: {}",
 				List.of(BotaniaAPIClient.instance(), ClientXplatAbstractions.instance()));
 
-		// 26.1: fabric's CoreShaderRegistrationCallback is gone and no replacement is
-		// exposed, so custom core shaders no longer load on Fabric (visual degradation:
-		// related effects fall back to vanilla rendering).
-		CoreShaders.init((id, vertexFormat, onLoaded) -> {});
+		// 26.1: Fabric's CoreShaderRegistrationCallback is gone and there is no replacement
+		// event. Shader sources are discovered automatically by ShaderManager; only the
+		// RenderPipeline objects need to exist. Register them through vanilla's (AW-exposed)
+		// private RenderPipelines.register so they are precompiled and validated on every
+		// resource reload, exactly like vanilla pipelines. Without this they would still work
+		// via GlDevice's lazy compilation, but GLSL errors would only surface on first draw.
+		CoreShaders.bootstrap();
+		CoreShaders.registerAll(RenderPipelines::register);
 		FabricPacketHandler.initClient();
 
 		// Trinkets renderer registration is client-only: TrinketsIntegration itself is loaded on

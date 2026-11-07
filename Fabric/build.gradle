@@ -8,17 +8,44 @@ if (System.getenv().RELEASE_MODE != "1") {
     version += '-SNAPSHOT'
 }
 
+// 26.1: the 93 ported GameTest cases live in their own sourceSet. Keeping them out of
+// Xplat/main avoids leaking Fabric's @GameTest annotation into the NeoForge compile
+// (NeoForge/build.gradle also pulls Xplat main sources into its compileJava). The
+// .snbt structures stay in Xplat main resources at data/botania/gametest/structure/
+// and are copied into the dev runtime by processResources below, so the gametest
+// resources dir is intentionally empty.
+sourceSets {
+    gametest {
+        java {
+            srcDir 'src/gametest/java'
+        }
+        resources {
+            srcDir 'src/gametest/resources'
+        }
+        // See Botania's main output (which also contains the Xplat classes pulled in
+        // by compileJava) and inherit the full Fabric compile/runtime dependency set.
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+
 loom {
     accessWidenerPath = file("src/main/resources/botania.accesswidener")
     // 26.1: MC is unobfuscated, mixins need no refmap and the mixin AP is off by default.
 
     runs {
-        // NOTE: this run currently starts an empty suite. Xplat excludes
-        // vazkii/botania/test/** (26.1 GameTest rewrite pending) and fabric.mod.json
-        // has no "fabric-gametest" entrypoints, so Fabric API finds no test methods.
-        // Kept ready for when the tests are ported; see Xplat/build.gradle.
+        // 26.1: this run is now wired up. The 93 cases in Fabric/src/gametest/java are
+        // discovered through the "fabric-gametest" entrypoints in fabric.mod.json and
+        // executed by fabric-gametest-api-v1 (already pulled in by the fabric-api dep).
         gameTest {
             server()
+            // Loom 1.18.4 RunConfigSettings#source(SourceSet) puts the gametest
+            // classes+resources on this run's dev classpath and makes gametest the
+            // run's source set. gametest.runtimeClasspath above explicitly includes
+            // main.output and main.runtimeClasspath so the mod itself stays loadable.
+            // (Fallback if that Loom API is unavailable: add sourceSets.gametest.output
+            // to this run config's classpath explicitly.)
+            source sourceSets.gametest
             vmArg "-Dfabric-api.gametest=1"
         }
 

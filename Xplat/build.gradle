@@ -111,13 +111,16 @@ sourceSets.main.resources {
     exclude 'assets/botania/patchouli_books/lexicon/en_us/README'
 }
 
-// TODO: GameTest framework rewritten in MC 26.1, tests need a full rewrite.
-// 26.1 deleted net.minecraft.gametest.framework.GameTest and reworked GameTestHelper
-// (Component-based messages, generic getBlockEntity, makeMockPlayer, assertBlockProperty)
-// in favour of the TEST_FUNCTION/TEST_INSTANCE registries. Fabric API offers its own
-// @GameTest(structure=...) + "fabric-gametest" entrypoint, so tests also need a
-// loader-facing side. Re-enabling this package produces ~430 compile errors; the
-// .snbt structures under data/botania/gametest/structures are intact and reusable.
+// 26.1: the GameTest suite has been ported and moved out of Xplat. See CONTRIBUTING.md for the
+// current pass/fail status; do not assume all 93 cases pass. All 23 test classes
+// (93 @GameTest cases), TestingUtil and DelegatingConfigAccess now live in
+// Fabric/src/gametest/java/vazkii/botania/test/ and use Fabric API's
+// net.fabricmc.fabric.api.gametest.v1.GameTest plus the "fabric-gametest" entrypoints
+// in Fabric/src/main/resources/fabric.mod.json. The .snbt structures were renamed to
+// the 26.1 layout data/botania/gametest/structure/ (singular). The exclude below is
+// kept as a guard: Xplat main no longer contains any test sources, and keeping it
+// prevents an accidental reintroduction from being compiled into the NeoForge side
+// (which has no Fabric gametest annotation on its compile classpath).
 sourceSets.main.java.exclude('vazkii/botania/test/**')
 // TODO: JEI/EMI/Patchouli versions for 26.1 not yet available
 sourceSets.main.java.exclude('vazkii/botania/client/integration/jei/**')

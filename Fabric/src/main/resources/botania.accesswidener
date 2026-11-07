@@ -12,3 +12,6 @@ accessible class net/minecraft/client/resources/model/ModelManager$ReloadState
 # 26.1: Fabric counterpart of NeoForge's GuiGraphicsExtractor#peekScissorStack extension
 accessible class net/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack
 accessible field net/minecraft/client/gui/GuiGraphicsExtractor scissorStack Lnet/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack;
+# 26.1: expose vanilla's private pipeline registrar so Botania's custom shaders are
+# precompiled/validated at resource reload (Fabric removed CoreShaderRegistrationCallback).
+accessible method net/minecraft/client/renderer/RenderPipelines register (Lcom/mojang/blaze3d/pipeline/RenderPipeline;)Lcom/mojang/blaze3d/pipeline/RenderPipeline;

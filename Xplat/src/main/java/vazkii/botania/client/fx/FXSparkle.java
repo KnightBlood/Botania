@@ -29,7 +29,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 
-import vazkii.botania.client.core.helper.CoreShaders;
 import vazkii.botania.xplat.ClientXplatAbstractions;
 
 public class FXSparkle extends SingleQuadParticle {

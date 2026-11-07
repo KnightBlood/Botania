@@ -184,7 +184,7 @@ public final class RenderHelper {
 			.createRenderSetup();
 		ICON_OVERLAY = makeLayer(ResourcesLib.PREFIX_MOD + "icon_overlay", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, iconOverlaySetup);
 
-		RenderSetup manaPoolWaterSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
+		RenderSetup manaPoolWaterSetup = RenderSetup.builder(CoreShaders.manaPool())
 			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
 			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.useLightmap()
@@ -196,7 +196,7 @@ public final class RenderHelper {
 			.createRenderSetup();
 		MANA_POOL_WATER = makeLayer(ResourcesLib.PREFIX_MOD + "mana_pool_water", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, manaPoolWaterSetup);
 
-		RenderSetup terraPlateSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
+		RenderSetup terraPlateSetup = RenderSetup.builder(CoreShaders.terraPlate())
 			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
 			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.useLightmap()
@@ -208,7 +208,7 @@ public final class RenderHelper {
 			.createRenderSetup();
 		TERRA_PLATE = makeLayer(ResourcesLib.PREFIX_MOD + "terra_plate_rune", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, terraPlateSetup);
 
-		RenderSetup enchanterSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
+		RenderSetup enchanterSetup = RenderSetup.builder(CoreShaders.enchanter())
 			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
 			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.useLightmap()
@@ -228,7 +228,7 @@ public final class RenderHelper {
 			.createRenderSetup();
 		BABYLON_ICON = makeLayer(ResourcesLib.PREFIX_MOD + "babylon", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, babylonSetup);
 
-		RenderSetup haloSetup = RenderSetup.builder(RenderPipelines.ITEM_CUTOUT)
+		RenderSetup haloSetup = RenderSetup.builder(CoreShaders.halo())
 			.withTexture("Sampler0", FlugelTiaraItem.textureHalo)
 			.useLightmap()
 			.createRenderSetup();
@@ -237,9 +237,14 @@ public final class RenderHelper {
 		// 1.20.1's starfield layer bound the end sky texture (MultiTextureStateShard with
 		// END_SKY_LOCATION + END_PORTAL_LOCATION); 26.1's END_SKY pipeline declares Sampler0
 		// and must have it bound or GlCommandEncoder throws "Missing sampler Sampler0".
+		// 26.1: the starfield pipeline is built from END_PORTAL_SNIPPET (POSITION vertices,
+		// texProj0 varying, Sampler0 + Sampler1), so both end portal textures must be bound.
+		// This also fixes the pre-existing vertex format mismatch: END_SKY expects
+		// POSITION_TEX_COLOR while StarfieldCreatorBlockEntityRenderer only writes POSITION.
 		STARFIELD = makeLayer(ResourcesLib.PREFIX_MOD + "starfield", DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS,
-				RenderSetup.builder(RenderPipelines.END_SKY)
+				RenderSetup.builder(CoreShaders.starfield())
 						.withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION)
+						.withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION)
 						.createRenderSetup());
 
 		RenderSetup lightningSetup = RenderSetup.builder(RenderPipelines.LIGHTNING)
@@ -269,7 +274,7 @@ public final class RenderHelper {
 	}
 
 	private static RenderType getPylonGlow(String name, Identifier texture, boolean direct) {
-		RenderSetup setup = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT)
+		RenderSetup setup = RenderSetup.builder(CoreShaders.pylon())
 			.withTexture("Sampler0", texture)
 			.setOutputTarget(direct ? OutputTarget.MAIN_TARGET : OutputTarget.ITEM_ENTITY_TARGET)
 			.useLightmap()
@@ -283,7 +288,7 @@ public final class RenderHelper {
 	}
 
 	public static RenderType getHaloLayer(Identifier texture) {
-		RenderSetup setup = RenderSetup.builder(RenderPipelines.ITEM_CUTOUT)
+		RenderSetup setup = RenderSetup.builder(CoreShaders.halo())
 			.withTexture("Sampler0", texture)
 			.useLightmap()
 			.createRenderSetup();

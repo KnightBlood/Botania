@@ -58,6 +58,31 @@
     ],
     "modmenu": [
       "vazkii.botania.fabric.integration.modmenu.BotaniaModMenu"
+    ],
+    "fabric-gametest": [
+      "vazkii.botania.test.block.ApothecaryRecipeTest",
+      "vazkii.botania.test.block.BindingTest",
+      "vazkii.botania.test.block.DandelifeonTest",
+      "vazkii.botania.test.block.DrumBlockTest",
+      "vazkii.botania.test.block.EntropinnyumUnethicalTntDetectionTest",
+      "vazkii.botania.test.block.ForceRelayTest",
+      "vazkii.botania.test.block.HopperhockTest",
+      "vazkii.botania.test.block.InterceptorTest",
+      "vazkii.botania.test.block.ManaSpreaderTest",
+      "vazkii.botania.test.block.OpenCrateTest",
+      "vazkii.botania.test.block.RannuncarpusTest",
+      "vazkii.botania.test.block.TargetBlockTest",
+      "vazkii.botania.test.item.AstrolabeTest",
+      "vazkii.botania.test.item.CacophoniumTest",
+      "vazkii.botania.test.item.FlowerPouchTest",
+      "vazkii.botania.test.item.GrassSeedDispensingTest",
+      "vazkii.botania.test.item.LifeAggregatorTest",
+      "vazkii.botania.test.item.SpectatorScanTest",
+      "vazkii.botania.test.item.lens.BoreLensTest",
+      "vazkii.botania.test.item.lens.BoreWarpLensTest",
+      "vazkii.botania.test.item.lens.EntropicWarpLensTest",
+      "vazkii.botania.test.item.lens.PaintslingerLensTest",
+      "vazkii.botania.test.item.lens.WarpForceTest"
     ]
   },
   "mixins": [

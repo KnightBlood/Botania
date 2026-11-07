@@ -1,17 +1,17 @@
-#version 150
-// [VanillaCopy] position_color_tex_lightmap.fsh, changes noted
+#version 330
+// Botania - MC 26.1 port of the 1.20.1 enchanter rune fragment shader.
+// Uses RenderPipelines.ENTITY_SNIPPET's vertex shader (core/entity.vsh).
+// GameTime / ColorModulator come from the Globals / DynamicTransforms UBOs.
+#moj_import <minecraft:globals.glsl>
+#moj_import <minecraft:dynamictransforms.glsl>
 
 uniform sampler2D Sampler0;
 
-uniform vec4 ColorModulator;
-
 in vec4 vertexColor;
 in vec2 texCoord0;
-in vec2 texCoord2;
 
 out vec4 fragColor;
 
-uniform float GameTime;
 void main() {
     vec4 color = texture(Sampler0, texCoord0) * vertexColor;
     if (color.a < 0.1) {

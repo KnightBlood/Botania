@@ -68,6 +68,37 @@ message.
    the announcement to Discord's #mod_updates channel and the Violet Moon Twitter account.
 
 ## Working with GameTest
+
+> **26.1 status (explicit, do not hide):** all 23 test classes / 93 cases compile and are
+> discovered by `fabric-gametest-api-v1`. `./gradlew :Fabric:runGameTest` currently reports
+> **27 required tests failed** (down from 82 after the two convention fixes below). The
+> remaining failures are real 26.1 behaviour gaps, not harness breakage: mana bursts / lenses
+> do not fire from structure-placed spreaders, and a handful of item / entity assertions differ
+> (`Expected item of type ...`, `Expected 5 entity hits, but got 4`, flower pouch, candle
+> colouring). No test was disabled, weakened or relabelled to make the suite look green.
+> See `.workbuddy/memory/` for the full diagnosis log.
+>
+> Two 1.20.1 -> 26.1 convention changes are already handled:
+> 1. **Structure origin.** 1.20.1 placed the template at `structureBlockPos.above()`, so a
+>    structure coordinate `(x, y, z)` appeared at test-relative `(x, y + 1, z)`. In 26.1
+>    `GameTestInfo.getTestOrigin()` *is* `TestInstanceBlockEntity.getStartCorner()`, i.e. the
+>    exact place position, so the two coordinate systems are identical. All 32 `.snbt`
+>    structures were shifted up by one on Y (blocks, entities and `size`) to restore the
+>    original test coordinates. Re-exporting a structure from 26.1 produces the new layout,
+>    so do **not** apply this shift again to freshly exported files.
+> 2. **Default timeout.** 1.20.1 `@GameTest.timeoutTicks` defaulted to 100; Fabric 26.1's
+>    `@GameTest.maxTicks` defaults to 20. All 71 annotations that relied on the old default now
+>    state `maxTicks = 100` explicitly; the 22 annotations with an explicit timeout keep it.
+>
+> Keep `DataVersion: 3465` in the shipped `.snbt` files: 26.1's
+> `DataFixTypes.STRUCTURE.updateToCurrentVersion` is required to upgrade the 1.20.1 block
+> entity data. Setting it to the current world version (4786) to skip DFU was measured to make
+> things worse (32 failures) and produces `Block-attached entity at invalid position` errors.
+>
+> Also note: 26.1 removed the old `batch` grouping and `@BeforeBatch`/`@AfterBatch` hooks.
+> `BoreLensTest`'s per-batch config mocks were inlined with an explicit loss of coverage,
+> documented in that class.
+
 1. Create a structure if wanted:
    1. Run `/test create <size>` to generate a test platform of the desired size. IMPORTANT:
       All tests should size themselves appropriately to ensure they don't interfere with
@@ -77,14 +108,14 @@ message.
       export <thename>`.
    3. The command will print the location of the saved `.snbt` file in
       `run/gameteststructures`.
-   4. Copy the file to `src/main/resources/data/botania/gametest/structures`.
-2. Create a class in `src/main/java/vazkii/botania/test`. Fill it with methods annotated
-   with `@GameTest`, see the other tests for examples.
+   4. Copy the file to `src/main/resources/data/botania/gametest/structure` (26.1: singular).
+2. Create a class in `Fabric/src/gametest/java/vazkii/botania/test`. Fill it with methods
+   annotated with Fabric's `@GameTest`, see the other tests for examples.
 3. List the class in the `fabric-gametest` entrypoint in Botania's `fabric.mod.json`.
 
 Tips:
-* The @GameTest annotation takes a `batch` argument. Any tests in the same batch run in
-  parallel. Tests in different batches will not run together.
+* 26.1's `@GameTest` has no `batch` argument. Batch isolation was replaced by the
+  `TEST_ENVIRONMENT` registry; all ported cases currently use `minecraft:default`.
 * Please keep 5 blocks of padding in the N/S/E/W directions of all tests that have mana
   pools, spreaders, or flowers in them. This prevents them interfering with the tests
   about seeing whether flowers bind to the closest spreader, if Gametest happens to put
@@ -100,7 +131,7 @@ Structures, doMobSpawning, and doWeatherCycle all disabled as its testing enviro
 To run tests headlessly (all of these do the same thing):
 * Use the `Minecraft Game Test` run configuration in your IDE.
 * Launch the server with the argument `-Dfabric-api.gametest=1`.
-* Use `./gradlew runGameTest`. (GitHub Actions does this)
+* Use `./gradlew :Fabric:runGameTest`. (GitHub Actions does this)
 
 After running tests headlessly, the testing world will be saved to `run/world`. Copy this
 directory into `run/saves` and it will appear as a save file in singleplayer.

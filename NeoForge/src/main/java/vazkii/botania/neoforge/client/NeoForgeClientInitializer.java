@@ -47,6 +47,7 @@ import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import net.neoforged.neoforge.client.event.RegisterRangeSelectItemModelPropertyEvent;
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
@@ -66,6 +67,7 @@ import vazkii.botania.api.block.WandHUD;
 import vazkii.botania.api.mana.ManaBarTooltip;
 import vazkii.botania.client.BotaniaItemProperties;
 import vazkii.botania.client.core.handler.*;
+import vazkii.botania.client.core.helper.CoreShaders;
 import vazkii.botania.client.ClothBotaniaConfigScreen;
 import vazkii.botania.client.core.proxy.ClientProxy;
 import vazkii.botania.client.fx.BotaniaParticles;
@@ -129,6 +131,9 @@ public class NeoForgeClientInitializer {
 		modBus.addListener(NeoForgeClientInitializer::registerItemProperties);
 		modBus.addListener(NeoForgeClientInitializer::registerMenuScreens);
 		modBus.addListener(NeoForgeClientInitializer::initAuxiliaryRender);
+		// 26.1: custom shaders are RenderPipelines, not ShaderInstances. Registering them here
+		// makes ShaderManager precompile/validate the GLSL on every resource reload.
+		modBus.addListener(RegisterRenderPipelinesEvent.class, e -> CoreShaders.registerAll(e::registerPipeline));
 	}
 
 	public static void clientInit(FMLClientSetupEvent evt) {
