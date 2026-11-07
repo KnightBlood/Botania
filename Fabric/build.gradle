@@ -13,6 +13,10 @@ loom {
     // 26.1: MC is unobfuscated, mixins need no refmap and the mixin AP is off by default.
 
     runs {
+        // NOTE: this run currently starts an empty suite. Xplat excludes
+        // vazkii/botania/test/** (26.1 GameTest rewrite pending) and fabric.mod.json
+        // has no "fabric-gametest" entrypoints, so Fabric API finds no test methods.
+        // Kept ready for when the tests are ported; see Xplat/build.gradle.
         gameTest {
             server()
             vmArg "-Dfabric-api.gametest=1"

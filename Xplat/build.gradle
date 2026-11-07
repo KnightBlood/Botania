@@ -111,7 +111,13 @@ sourceSets.main.resources {
     exclude 'assets/botania/patchouli_books/lexicon/en_us/README'
 }
 
-// TODO: GameTest framework removed in MC 26.1, tests need rewrite
+// TODO: GameTest framework rewritten in MC 26.1, tests need a full rewrite.
+// 26.1 deleted net.minecraft.gametest.framework.GameTest and reworked GameTestHelper
+// (Component-based messages, generic getBlockEntity, makeMockPlayer, assertBlockProperty)
+// in favour of the TEST_FUNCTION/TEST_INSTANCE registries. Fabric API offers its own
+// @GameTest(structure=...) + "fabric-gametest" entrypoint, so tests also need a
+// loader-facing side. Re-enabling this package produces ~430 compile errors; the
+// .snbt structures under data/botania/gametest/structures are intact and reusable.
 sourceSets.main.java.exclude('vazkii/botania/test/**')
 // TODO: JEI/EMI/Patchouli versions for 26.1 not yet available
 sourceSets.main.java.exclude('vazkii/botania/client/integration/jei/**')
