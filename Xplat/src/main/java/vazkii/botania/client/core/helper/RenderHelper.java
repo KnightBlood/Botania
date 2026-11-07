@@ -651,16 +651,25 @@ public final class RenderHelper {
 		float green = ((color >> 8) & 0xFF) / 255F;
 		float blue = (color & 0xFF) / 255F;
 
-		// 26.1: these layers run on entity-family pipelines whose vertex format is DefaultVertexFormat.ENTITY,
+		// 26.1: TextureAtlasSprite#getU/getV take a 0..1 fraction of the sprite, whereas
+		// 1.20.1 divided the argument by 16 (i.e. callers passed 0..16 pixel coordinates).
+		// The uv* parameters here are still pixel coordinates, so normalise them here;
+		// passing them raw would sample several sprites away in the block atlas.
+		float u0 = uvStartX / 16F;
+		float u1 = uvEndX / 16F;
+		float v0 = uvStartY / 16F;
+		float v1 = uvEndY / 16F;
+
+		// These layers run on entity-family pipelines whose vertex format is DefaultVertexFormat.ENTITY,
 		// so every vertex must supply the overlay (UV1) and normal elements as well, or BufferBuilder rejects
 		// the vertex with "Missing elements in vertex".
-		buffer.addVertex(mat, startX, endY, 0).setColor(red, green, blue, alpha).setUv(icon.getU(uvStartX), icon.getV(uvEndY))
+		buffer.addVertex(mat, startX, endY, 0).setColor(red, green, blue, alpha).setUv(icon.getU(u0), icon.getV(v1))
 				.setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(ms.last(), 0, 0, 1);
-		buffer.addVertex(mat, endX, endY, 0).setColor(red, green, blue, alpha).setUv(icon.getU(uvEndX), icon.getV(uvEndY))
+		buffer.addVertex(mat, endX, endY, 0).setColor(red, green, blue, alpha).setUv(icon.getU(u1), icon.getV(v1))
 				.setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(ms.last(), 0, 0, 1);
-		buffer.addVertex(mat, endX, startY, 0).setColor(red, green, blue, alpha).setUv(icon.getU(uvEndX), icon.getV(uvStartY))
+		buffer.addVertex(mat, endX, startY, 0).setColor(red, green, blue, alpha).setUv(icon.getU(u1), icon.getV(v0))
 				.setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(ms.last(), 0, 0, 1);
-		buffer.addVertex(mat, startX, startY, 0).setColor(red, green, blue, alpha).setUv(icon.getU(uvStartX), icon.getV(uvStartY))
+		buffer.addVertex(mat, startX, startY, 0).setColor(red, green, blue, alpha).setUv(icon.getU(u0), icon.getV(v0))
 				.setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(ms.last(), 0, 0, 1);
 	}
 

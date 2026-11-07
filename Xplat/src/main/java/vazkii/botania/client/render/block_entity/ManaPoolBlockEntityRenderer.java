@@ -11,23 +11,13 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.Minecraft;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.util.Mth;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.Nullable;
