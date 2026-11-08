@@ -18,6 +18,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -89,5 +90,19 @@ public abstract class SimpleInventoryBlockEntity extends BotaniaBlockEntity impl
 
 	public final Container getItemHandler() {
 		return itemHandler;
+	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		// NB: deliberately not calling super: the vanilla default drops only when the BE
+		// implements Container, which would double-drop for the WorldlyContainer subclasses
+		// (they override this method with their own conditions). Botania inventory BEs are
+		// not vanilla Containers, and the 1.20.1 onRemove container drop was (incorrectly)
+		// ported into the blocks' affectNeighborsAfterRemoval, which runs after the BE is
+		// already removed -- breaking these blocks silently deleted their contents. 26.1
+		// drops container contents here, BEFORE the block entity is removed.
+		if (level != null) {
+			Containers.dropContents(level, pos, getItemHandler());
+		}
 	}
 }

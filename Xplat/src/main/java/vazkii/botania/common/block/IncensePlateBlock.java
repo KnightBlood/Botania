@@ -13,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -157,16 +156,6 @@ public class IncensePlateBlock extends BotaniaWaterloggedBlock implements Entity
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
 		return createTickerHelper(type, BotaniaBlockEntities.INCENSE_PLATE, IncensePlateBlockEntity::commonTick);
-	}
-
-	@Override
-	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
-		BlockState newState = world.getBlockState(pos);
-		if (!state.is(newState.getBlock())
-				&& world.getBlockEntity(pos) instanceof IncensePlateBlockEntity plate && !plate.burning) {
-			Containers.dropContents(world, pos, plate.getItemHandler());
-		}
-		super.affectNeighborsAfterRemoval(state, world, pos, isMoving);
 	}
 
 	@Override

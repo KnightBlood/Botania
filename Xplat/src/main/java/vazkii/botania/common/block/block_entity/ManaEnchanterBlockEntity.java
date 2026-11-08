@@ -25,6 +25,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Clearable;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -535,6 +536,15 @@ public class ManaEnchanterBlockEntity extends BotaniaBlockEntity implements Mana
 				RenderHelper.renderProgressPie(gui, x + 4, y + 4, (float) enchanter.mana / (float) enchanter.manaRequired,
 						enchanter.itemToEnchant);
 			}
+		}
+	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		// 1.20.1 onRemove semantics: drop the item being enchanted. The old block-side drop
+		// lived in affectNeighborsAfterRemoval, which runs after the BE is gone -- dead code.
+		if (level != null && !itemToEnchant.isEmpty()) {
+			Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), itemToEnchant);
 		}
 	}
 

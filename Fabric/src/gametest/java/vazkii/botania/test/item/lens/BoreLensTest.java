@@ -21,19 +21,28 @@ import vazkii.botania.xplat.BotaniaConfig;
  * from the old GameTest API, in favour of the datapack-driven
  * TestEnvironmentDefinition registry. There is no equivalent mapping for a pure-Java
  * config mock, so the four per-batch {@code harvestLevelBore} overrides (0/1/2/3) that
- * used to be installed once per batch are now applied inline at the start of each case
- * and undone in a {@code finally} block. All nine cases run on Fabric's default
+ * used to be installed once per batch are now installed by each case's sequence and
+ * undone by the same sequence before it succeeds. All nine cases run on Fabric's default
  * {@code "minecraft:default"} environment.
- * <p>Known behavioural difference: a GameTest case only <em>starts</em> an asynchronous
- * GameTestSequence and returns immediately, so the {@code finally} restore runs before the
- * sequence's assertions actually execute. The mocked mining level is therefore no longer
- * guaranteed to still be in force while the sequence runs. On 1.20.1 the before/after-batch
- * hooks bracketed the whole batch and kept the value for the entire run. This
- * is a real loss of coverage that 26.1 cannot express with the available API; it is
- * documented here instead of being silently dropped.
+ * <p>26.1 limitation: a GameTest case only <em>starts</em> an asynchronous
+ * GameTestSequence and returns immediately, so a mock installed at case start would be
+ * undone before the sequence's assertions execute. The mock is therefore installed by the
+ * sequence's first step and restored by its last step (before {@code thenSucceed()}).
+ * Because {@code BotaniaConfig.common()} is a global singleton and the gametest runner
+ * executes the nine cases concurrently in separate structure areas, the active windows
+ * are additionally serialized through a static handoff flag ({@link #anotherCaseActive}):
+ * every case waits (polling via {@code thenWaitUntil}) until no sibling case is active,
+ * then installs its mock, runs, and clears the flag. This restores the determinism that
+ * the 1.20.1 before/after-batch hooks provided for whole batches. All nine cases run on
+ * Fabric's default {@code "minecraft:default"} environment.
  */
 public class BoreLensTest {
 	private static final String ARENA = "botania:item/lens/lens_mine";
+
+	// Serialize the config-mock windows of the nine concurrently running cases. All
+	// GameTest sequence steps run on the single server thread, so this flag needs no
+	// synchronization; see the class Javadoc.
+	private static boolean anotherCaseActive = false;
 
 	private void mockMiningLevel(int level) {
 		BotaniaConfig.setCommon(new DelegatingConfigAccess(BotaniaConfig.common()) {
@@ -48,7 +57,7 @@ public class BoreLensTest {
 		BotaniaConfig.setCommon(((DelegatingConfigAccess) BotaniaConfig.common()).getInner());
 	}
 
-	private void testMine(GameTestHelper helper, Block toMine, boolean expectSuccess) {
+	private void testMine(GameTestHelper helper, Block toMine, int harvestLevel, boolean expectSuccess) {
 		var spreaderPos = new BlockPos(1, 2, 0);
 		var manaVoidPos = new BlockPos(1, 2, 3);
 		var lampPos = new BlockPos(2, 2, 2);
@@ -66,105 +75,81 @@ public class BoreLensTest {
 
 		if (expectSuccess) {
 			helper.startSequence()
+					// 26.1: wait for any sibling bore case, then install the config mock inside
+					// the sequence (a mock installed at case start would be restored before the
+					// asynchronous sequence ran). The mock stays in force for the whole flight.
+					.thenWaitUntil(() -> helper.assertTrue(!anotherCaseActive, "Waiting for another bore lens case to release the config mock"))
+					.thenExecute(() -> {
+						anotherCaseActive = true;
+						mockMiningLevel(harvestLevel);
+					})
 					.thenExecuteAfter(1, () -> helper.pressButton(buttonPos))
 					.thenWaitUntil(() -> helper.assertBlockProperty(lampPos, RedstoneLampBlock.LIT, true))
+					.thenExecute(() -> {
+						restoreConfig();
+						anotherCaseActive = false;
+					})
 					.thenSucceed();
 		} else {
 			// todo can we use failIf or something else that doesn't hardcode a tick count?
 			helper.startSequence()
+					.thenWaitUntil(() -> helper.assertTrue(!anotherCaseActive, "Waiting for another bore lens case to release the config mock"))
+					.thenExecute(() -> {
+						anotherCaseActive = true;
+						mockMiningLevel(harvestLevel);
+					})
 					.thenExecuteAfter(1, () -> helper.pressButton(buttonPos))
 					.thenExecuteFor(60, () -> helper.assertBlockProperty(lampPos, RedstoneLampBlock.LIT, false))
+					.thenExecute(() -> {
+						restoreConfig();
+						anotherCaseActive = false;
+					})
 					.thenSucceed();
 		}
 	}
 
-	@GameTest(structure = ARENA, maxTicks = 100)
+	@GameTest(structure = ARENA, maxTicks = 600)
 	public void testSnow(GameTestHelper helper) {
-		mockMiningLevel(0);
-		try {
-			testMine(helper, Blocks.SNOW_BLOCK, true);
-		} finally {
-			restoreConfig();
-		}
+		testMine(helper, Blocks.SNOW_BLOCK, 0, true);
 	}
 
-	@GameTest(structure = ARENA, maxTicks = 100)
+	@GameTest(structure = ARENA, maxTicks = 600)
 	public void testStone(GameTestHelper helper) {
-		mockMiningLevel(0);
-		try {
-			testMine(helper, Blocks.STONE, true);
-		} finally {
-			restoreConfig();
-		}
+		testMine(helper, Blocks.STONE, 0, true);
 	}
 
-	@GameTest(structure = ARENA, maxTicks = 100)
+	@GameTest(structure = ARENA, maxTicks = 600)
 	public void testLog(GameTestHelper helper) {
-		mockMiningLevel(0);
-		try {
-			testMine(helper, Blocks.OAK_LOG, true);
-		} finally {
-			restoreConfig();
-		}
+		testMine(helper, Blocks.OAK_LOG, 0, true);
 	}
 
-	@GameTest(structure = ARENA, maxTicks = 100)
+	@GameTest(structure = ARENA, maxTicks = 600)
 	public void testIronBlockTooLow(GameTestHelper helper) {
-		mockMiningLevel(0);
-		try {
-			testMine(helper, Blocks.IRON_BLOCK, false);
-		} finally {
-			restoreConfig();
-		}
+		testMine(helper, Blocks.IRON_BLOCK, 0, false);
 	}
 
-	@GameTest(structure = ARENA, maxTicks = 100)
+	@GameTest(structure = ARENA, maxTicks = 600)
 	public void testIronBlock(GameTestHelper helper) {
-		mockMiningLevel(1);
-		try {
-			testMine(helper, Blocks.IRON_BLOCK, true);
-		} finally {
-			restoreConfig();
-		}
+		testMine(helper, Blocks.IRON_BLOCK, 1, true);
 	}
 
-	@GameTest(structure = ARENA, maxTicks = 100)
+	@GameTest(structure = ARENA, maxTicks = 600)
 	public void testGoldOreTooLow(GameTestHelper helper) {
-		mockMiningLevel(1);
-		try {
-			testMine(helper, Blocks.GOLD_ORE, false);
-		} finally {
-			restoreConfig();
-		}
+		testMine(helper, Blocks.GOLD_ORE, 1, false);
 	}
 
-	@GameTest(structure = ARENA, maxTicks = 100)
+	@GameTest(structure = ARENA, maxTicks = 600)
 	public void testGoldOre(GameTestHelper helper) {
-		mockMiningLevel(2);
-		try {
-			testMine(helper, Blocks.GOLD_ORE, true);
-		} finally {
-			restoreConfig();
-		}
+		testMine(helper, Blocks.GOLD_ORE, 2, true);
 	}
 
-	@GameTest(structure = ARENA, maxTicks = 100)
+	@GameTest(structure = ARENA, maxTicks = 600)
 	public void testObsidianTooLow(GameTestHelper helper) {
-		mockMiningLevel(2);
-		try {
-			testMine(helper, Blocks.OBSIDIAN, false);
-		} finally {
-			restoreConfig();
-		}
+		testMine(helper, Blocks.OBSIDIAN, 2, false);
 	}
 
-	@GameTest(structure = ARENA, maxTicks = 100)
+	@GameTest(structure = ARENA, maxTicks = 600)
 	public void testObsidian(GameTestHelper helper) {
-		mockMiningLevel(3);
-		try {
-			testMine(helper, Blocks.OBSIDIAN, true);
-		} finally {
-			restoreConfig();
-		}
+		testMine(helper, Blocks.OBSIDIAN, 3, true);
 	}
 }

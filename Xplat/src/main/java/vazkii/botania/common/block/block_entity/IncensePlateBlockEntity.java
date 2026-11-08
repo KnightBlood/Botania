@@ -15,6 +15,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -184,6 +185,16 @@ public class IncensePlateBlockEntity extends ExposedSimpleInventoryBlockEntity i
 		super.setChanged();
 		if (level != null && !level.isClientSide()) {
 			VanillaPacketDispatcher.dispatchTEToNearbyPlayers(this);
+		}
+	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		// 1.20.1 semantics: the incense stick only drops if the plate was NOT burning
+		// (burning incense is destroyed when the plate is broken). The vanilla Container
+		// default would drop unconditionally, so this override must not call super.
+		if (level != null && !burning) {
+			Containers.dropContents(level, pos, getItemHandler());
 		}
 	}
 

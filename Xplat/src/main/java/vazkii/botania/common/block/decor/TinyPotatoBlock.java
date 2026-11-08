@@ -12,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,7 +38,6 @@ import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.block.BotaniaWaterloggedBlock;
 import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
-import vazkii.botania.common.block.block_entity.SimpleInventoryBlockEntity;
 import vazkii.botania.common.block.block_entity.TinyPotatoBlockEntity;
 
 public class TinyPotatoBlock extends BotaniaWaterloggedBlock implements EntityBlock {
@@ -73,15 +71,10 @@ public class TinyPotatoBlock extends BotaniaWaterloggedBlock implements EntityBl
 
 	@Override
 	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
-		BlockState newState = world.getBlockState(pos);
-		if (!state.is(newState.getBlock())) {
-			BlockEntity be = world.getBlockEntity(pos);
-			if (be instanceof SimpleInventoryBlockEntity inventory) {
-				Containers.dropContents(world, pos, inventory.getItemHandler());
-				world.updateNeighbourForOutputSignal(pos, this);
-			}
-			super.affectNeighborsAfterRemoval(state, world, pos, isMoving);
-		}
+		// 1.20.1: after the container drop, comparator observers were notified that the
+		// analog signal is gone. The drop itself lives in the block entity now
+		// (preRemoveSideEffects runs before the BE is removed; this hook runs after).
+		world.updateNeighbourForOutputSignal(pos, this);
 	}
 
 	@NotNull

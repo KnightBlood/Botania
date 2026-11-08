@@ -18,12 +18,14 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -39,6 +41,7 @@ import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.BotaniaAPIClient;
+import vazkii.botania.api.state.BotaniaStateProperties;
 import vazkii.botania.api.block.WandBindable;
 import vazkii.botania.api.block.WandHUD;
 import vazkii.botania.api.block.Wandable;
@@ -54,6 +57,7 @@ import vazkii.botania.common.entity.ManaBurstEntity.PositionProperties;
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.handler.ManaNetworkHandler;
 import vazkii.botania.common.helper.MathHelper;
+import vazkii.botania.common.helper.ColorHelper;
 import vazkii.botania.common.item.LexicaBotaniaItem;
 import vazkii.botania.xplat.BotaniaConfig;
 import vazkii.botania.xplat.XplatAbstractions;
@@ -763,6 +767,24 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 	@Override
 	public UUID getIdentifier() {
 		return identity;
+	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		// 1.20.1 onRemove semantics, ported to the 26.1 BE removal hook: drop the padding
+		// wool, the scaffolding attachment and the container contents, in that order.
+		super.preRemoveSideEffects(pos, state);
+		if (level != null) {
+			if (paddingColor != null) {
+				ItemStack padding = new ItemStack(ColorHelper.WOOL_MAP.apply(paddingColor));
+				Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), padding);
+			}
+
+			if (state.getValue(BotaniaStateProperties.HAS_SCAFFOLDING)) {
+				ItemStack scaffolding = new ItemStack(Items.SCAFFOLDING);
+				Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), scaffolding);
+			}
+		}
 	}
 
 }

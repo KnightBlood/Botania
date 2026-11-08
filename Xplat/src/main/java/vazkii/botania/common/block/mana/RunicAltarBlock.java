@@ -9,7 +9,6 @@
 package vazkii.botania.common.block.mana;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -27,7 +26,6 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.Direction;
 
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +35,6 @@ import vazkii.botania.api.internal.VanillaPacketDispatcher;
 import vazkii.botania.common.block.BotaniaWaterloggedBlock;
 import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
 import vazkii.botania.common.block.block_entity.RunicAltarBlockEntity;
-import vazkii.botania.common.block.block_entity.SimpleInventoryBlockEntity;
 import vazkii.botania.common.helper.InventoryHelper;
 
 public class RunicAltarBlock extends BotaniaWaterloggedBlock implements EntityBlock {
@@ -85,17 +82,6 @@ public class RunicAltarBlock extends BotaniaWaterloggedBlock implements EntityBl
 		}
 
 		return InteractionResult.PASS;
-	}
-
-	@Override
-	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
-		BlockState newState = world.getBlockState(pos);
-		if (!state.is(newState.getBlock())) {
-			if (world.getBlockEntity(pos) instanceof SimpleInventoryBlockEntity inventory) {
-				Containers.dropContents(world, pos, inventory.getItemHandler());
-			}
-			super.affectNeighborsAfterRemoval(state, world, pos, isMoving);
-		}
 	}
 
 	@NotNull

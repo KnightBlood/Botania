@@ -92,9 +92,13 @@ public class DrumBlockTest {
 					helper.assertTrue(stewEffects != null, "Missing suspicious stew effects component");
 					helper.assertTrue(stewEffects.effects().size() == 1, "Exactly one effect expected");
 					final var effectEntry = stewEffects.effects().get(0);
-					final var effect = effectEntry.effect().value();
 					final var effectDuration = effectEntry.duration();
-					helper.assertTrue(effect == MobEffects.BLINDNESS && effectDuration == 15, "Unexpected effect type or duration");
+					// 26.1: MobEffects fields are Holder<MobEffect>; compare holders, not values
+					// (value() == holder would always be false and silently fail the case).
+					helper.assertTrue(effectEntry.effect() == MobEffects.BLINDNESS && effectDuration == 15,
+							"Unexpected effect type or duration: got " + effectEntry.effect()
+									+ " duration " + effectDuration
+									+ " (expected " + MobEffects.BLINDNESS + " duration 15)");
 				})
 				.thenSucceed();
 	}

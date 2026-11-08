@@ -19,6 +19,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -318,7 +319,16 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 		if (withVibration) {
 			level.gameEvent(null, fluid == State.EMPTY ? GameEvent.FLUID_PICKUP : GameEvent.FLUID_PLACE, getBlockPos());
 		}
-		level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(PetalApothecaryBlock.FLUID, fluid));
+		BlockState oldState = getBlockState();
+		BlockState newState = oldState.setValue(PetalApothecaryBlock.FLUID, fluid);
+		level.setBlockAndUpdate(getBlockPos(), newState);
+		// 1.20.1: changing the fluid state fired Block#onRemove, which dropped the container
+		// contents whenever the new fluid is not WATER (e.g. scooping the water out drops
+		// the petals). 26.1 fires no removal hook for same-block state changes, so the drop
+		// is replicated here.
+		if (newState != oldState && fluid != State.WATER && !level.isClientSide()) {
+			Containers.dropContents(level, getBlockPos(), getItemHandler());
+		}
 	}
 
 	@Override

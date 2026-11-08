@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -28,9 +29,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.block.Block;
@@ -98,6 +101,10 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 
 	private float accumulatedManaLoss = 0;
 	private boolean fake = false;
+	// 26.1: mirrors Projectile#hasBeenShot (private upstream); we reimplement the
+	// Projectile.tick hasBeenShot gameEvent because the burst overrides the whole
+	// ThrowableProjectile movement to restore 1.20.1 semantics. See tick().
+	private boolean botaniaShotEventFired = false;
 	private final Set<BlockPos> alreadyCollidedAt = new HashSet<>();
 	private boolean fullManaLastTick = true;
 	private UUID shooterIdentity = null;
@@ -177,7 +184,56 @@ public class ManaBurstEntity extends ThrowableProjectile implements ManaBurst {
 			entityData.set(LEFT_SOURCE_POS, true);
 		}
 
-		super.tick();
+		// 26.1: ThrowableProjectile.tick truncates projectile movement at the first hit
+		// point (the entity is placed at HitResult#getLocation instead of advancing by
+		// its full delta movement). A mana burst spawns *inside* its source spreader
+		// block and must pass through it: with the truncation the burst is jammed
+		// against the same clip result every tick, hasLeftSource() never becomes true,
+		// onHitBlock ignores the collision forever and the burst never reaches any
+		// receiver. Restore the 1.20.1 movement semantics: process the collision, but
+		// always advance by the full delta movement.
+		// [VanillaCopy 26.1 Projectile.tick + ThrowableProjectile.tick, 1.20.1 movement]
+		this.baseTick();
+		if (!botaniaShotEventFired) {
+			this.gameEvent(net.minecraft.world.level.gameevent.GameEvent.PROJECTILE_SHOOT, this.getOwner());
+			botaniaShotEventFired = true;
+		}
+		this.checkLeftOwner();
+		if (this.firstTick) {
+			// [VanillaCopy ThrowableProjectile#handleFirstTickBubbleColumn]
+			for (BlockPos pos : BlockPos.betweenClosed(this.getBoundingBox())) {
+				BlockState state = this.level().getBlockState(pos);
+				if (state.is(Blocks.BUBBLE_COLUMN)) {
+					state.entityInside(this.level(), pos, this,
+							net.minecraft.world.entity.InsideBlockEffectApplier.NOOP, true);
+				}
+			}
+		}
+		this.applyGravity();
+		// [VanillaCopy ThrowableProjectile#applyInertia] (private upstream)
+		Vec3 movement = this.getDeltaMovement();
+		float inertia;
+		if (this.isInWater()) {
+			for (int i = 0; i < 4; i++) {
+				float s = 0.25F;
+				this.level().addParticle(ParticleTypes.BUBBLE,
+						this.getX() - movement.x() * s, this.getY() - movement.y() * s, this.getZ() - movement.z() * s,
+						movement.x(), movement.y(), movement.z());
+			}
+			inertia = 0.8F;
+		} else {
+			inertia = 0.99F;
+		}
+		this.setDeltaMovement(movement.scale(inertia));
+		HitResult result = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+		if (result.getType() != HitResult.Type.MISS && this.isAlive()) {
+			// 1.20.1 semantics: dispatch the hit before moving; the movement itself is
+			// never truncated. 26.1 would move to the hit point and only dispatch after.
+			this.onHit(result);
+		}
+		this.setPos(this.position().add(this.getDeltaMovement()));
+		this.updateRotation();
+		this.applyEffectsFromBlocks();
 
 		if (!fake && isAlive() && !scanBeam) {
 			ping();

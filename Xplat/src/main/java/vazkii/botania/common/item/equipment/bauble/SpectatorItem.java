@@ -180,7 +180,10 @@ public class SpectatorItem extends BaubleItem {
 					}
 				}
 			} else if (e instanceof Container inv && (!(inv instanceof AbstractMinecartContainer minecart)
-					|| minecart.getLootTable() == null)) {
+					// 26.1: Entity#getLootTable() now returns a non-null Optional (the entity's own
+					// drops table) and silently shadowed the old container-vehicle getter; the
+					// container loot table is getContainerLootTable().
+					|| minecart.getContainerLootTable() == null)) {
 				if (scanInventory(inv, mainHandStack, offHandStack)) {
 					entityIds.add(e.getId());
 				}

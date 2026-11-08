@@ -100,8 +100,13 @@ public class FlowerPouchItem extends Item {
 				if (!bag.isEmpty() && bag.is(BotaniaItems.flowerBag)) {
 					SimpleContainer bagInv = getInventory(bag);
 					ItemStack existing = bagInv.getItem(slot);
+					// 26.1: ItemStack.EMPTY#getMaxStackSize() is derived from Items.AIR's
+					// MAX_STACK_SIZE component (1), not the 1.20.1 fallback of 64. Asking an empty
+					// slot for its limit would therefore cap a fresh pickup at one flower. The
+					// limit for an empty slot has to come from the stack being inserted instead.
+					int maxStack = existing.isEmpty() ? entityStack.getMaxStackSize() : existing.getMaxStackSize();
 					int newCount = Math.min(existing.getCount() + entityStack.getCount(),
-							Math.min(existing.getMaxStackSize(), bagInv.getMaxStackSize()));
+							Math.min(maxStack, bagInv.getMaxStackSize()));
 					int numPickedUp = newCount - existing.getCount();
 
 					if (numPickedUp > 0) {

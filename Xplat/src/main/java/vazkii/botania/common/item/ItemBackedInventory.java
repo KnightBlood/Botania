@@ -26,7 +26,11 @@ public class ItemBackedInventory extends SimpleContainer {
 
 	@SuppressWarnings("this-escape") // 1.20.1 pattern preserved: this escapes via lambda/setter in ctor
 	public ItemBackedInventory(ItemStack stack, int expectedSize) {
-		super(stack);
+		// 26.1 has SimpleContainer(ItemStack...) alongside SimpleContainer(int). Passing the
+		// backing stack here selects the varargs overload, which creates a ONE-slot container
+		// holding the bag itself; onPickupItem then writes to slots 16..31 and throws
+		// ArrayIndexOutOfBoundsException. Restore the 1.20.1 behaviour: size it explicitly.
+		super(expectedSize);
 		this.stack = stack;
 
 		ListTag lst = ItemNBTHelper.getList(stack, TAG_ITEMS, Tag.TAG_COMPOUND, false);

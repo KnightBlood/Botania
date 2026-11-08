@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.Containers;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
@@ -54,6 +55,16 @@ public class CacophoniumBlockEntity extends BotaniaBlockEntity {
 
 		CompoundTag cmp1 = cmp.getCompoundOrEmpty(TAG_STACK);
 		stack = ItemNBTHelper.deserializeStackNbt(cmp1, lookup);
+	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		// 1.20.1 onRemove semantics: drop the cacophonium item; the vanilla Container default
+		// does not apply (this BE is not a Container). The old block-side drop lived in
+		// affectNeighborsAfterRemoval, which runs after the BE is gone -- dead code.
+		if (level != null && !stack.isEmpty()) {
+			Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+		}
 	}
 
 }

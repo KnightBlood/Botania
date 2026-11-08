@@ -32,7 +32,6 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.server.level.ServerLevel;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -245,29 +244,10 @@ public class ManaSpreaderBlock extends BotaniaWaterloggedBlock implements Entity
 		return InteractionResult.PASS;
 	}
 
-	@Override
-	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
-		BlockState newState = world.getBlockState(pos);
-		if (!state.is(newState.getBlock())) {
-			if (!(world.getBlockEntity(pos) instanceof ManaSpreaderBlockEntity spreader)) {
-				return;
-			}
-
-			if (spreader.paddingColor != null) {
-				ItemStack padding = new ItemStack(ColorHelper.WOOL_MAP.apply(spreader.paddingColor));
-				Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), padding);
-			}
-
-			if (state.getValue(BotaniaStateProperties.HAS_SCAFFOLDING)) {
-				ItemStack scaffolding = new ItemStack(Items.SCAFFOLDING);
-				Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), scaffolding);
-			}
-
-			Containers.dropContents(world, pos, spreader.getItemHandler());
-
-			super.affectNeighborsAfterRemoval(state, world, pos, isMoving);
-		}
-	}
+	// NB: the 1.20.1 onRemove drop logic (padding wool, scaffolding, container contents)
+	// lives in ManaSpreaderBlockEntity#preRemoveSideEffects now: this hook runs after the
+	// block entity has already been removed, so the old port here was dead code and
+	// breaking a spreader silently deleted its contents.
 
 	@NotNull
 	@Override

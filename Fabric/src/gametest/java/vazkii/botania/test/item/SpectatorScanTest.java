@@ -116,7 +116,9 @@ public class SpectatorScanTest {
 		((SpectatorItem) BotaniaItems.itemFinder).scanForItems(spectatorStack, player);
 
 		// ensure loot content has not been rolled
-		TestingUtil.assertThat(lootChestCart.getLootTable() != null, () -> "Chest loot was rolled");
+		// 26.1: Entity#getLootTable() is a non-null Optional; the container loot tables
+		// live in getContainerLootTable() / RandomizableContainerBlockEntity's field.
+		TestingUtil.assertThat(lootChestCart.getContainerLootTable() != null, () -> "Chest loot was rolled");
 		TestingUtil.assertThat(lootChest.getLootTable() != null,
 				() -> "Chest loot was rolled");
 
@@ -128,7 +130,10 @@ public class SpectatorScanTest {
 				() -> "Chest position " + helper.absolutePos(POSITION_CHEST_NORMAL) + " not in result, but found " + chestPos);
 
 		int[] entities = ItemNBTHelper.getIntArray(spectatorStack, SpectatorItem.TAG_ENTITY_POSITIONS);
-		TestingUtil.assertEquals(entities.length, 5, () -> "Expected 5 entity hits, but got " + entities.length);
+		TestingUtil.assertEquals(entities.length, 5, () -> "Expected 5 entity hits, but got " + entities.length
+				+ ": " + Arrays.toString(entities) + " (villager=" + villager.getId()
+				+ " item=" + itemEntity.getId() + " cart=" + regularChestCart.getId()
+				+ " donkey=" + donkey.getId() + " allay=" + allay.getId() + ")");
 		TestingUtil.assertThat(Arrays.stream(entities).anyMatch(id -> villager.getId() == id), () -> "Villager not in result");
 		TestingUtil.assertThat(Arrays.stream(entities).anyMatch(id -> itemEntity.getId() == id), () -> "Item entity not in result");
 		TestingUtil.assertThat(Arrays.stream(entities).anyMatch(id -> regularChestCart.getId() == id), () -> "Minecart not in result");
