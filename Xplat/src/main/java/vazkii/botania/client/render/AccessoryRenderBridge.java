@@ -23,19 +23,22 @@ import vazkii.botania.common.item.equipment.bauble.BaubleItem;
 /**
  * Wires the 1.20.1 {@link AccessoryRenderer} renderers into MC 26.1's extract/submit pipeline.
  *
- * <p>Botania's bauble geometry (17 renderers registered through {@link AccessoryRenderRegistry})
+ * <p>
+ * Botania's bauble geometry (17 renderers registered through {@link AccessoryRenderRegistry})
  * still uses the immediate-mode {@code MultiBufferSource} API. MC 26.1 renders entities through
  * render states and a {@link SubmitNodeCollector} instead, so the two loader integrations call
  * this bridge from their respective renderer callbacks and the recorded geometry is replayed with
  * {@link BotaniaRenderContext#flush(SubmitNodeCollector)}.
  *
- * <p>Cosmetic overrides follow the 1.20.1 behaviour: both loaders ultimately resolved the
+ * <p>
+ * Cosmetic overrides follow the 1.20.1 behaviour: both loaders ultimately resolved the
  * override stack back through {@code AccessoryRenderRegistry} (Trinkets via the cosmetic item's
  * own {@code TrinketRenderer}, Curios via the bauble's own {@code ICurioRenderer}), so this bridge
  * looks up the override stack directly. A bauble with no registered renderer is intentionally not
  * drawn - most baubles have no worn geometry, exactly as in 1.20.1.
  *
- * <p>Parameter mapping for {@link AccessoryRenderer#doRender}: the limb-swing values come from
+ * <p>
+ * Parameter mapping for {@link AccessoryRenderer#doRender}: the limb-swing values come from
  * {@link LivingEntityRenderState#walkAnimationPos} / {@code walkAnimationSpeed}, and the head
  * rotation from the two floats passed to the layer's {@code submit}/{@code render} callback
  * (26.1 {@code RenderLayer#submit} names them {@code yRot}/{@code xRot}; Trinkets still calls them

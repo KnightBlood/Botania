@@ -19,12 +19,9 @@ import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
 
@@ -36,6 +33,7 @@ import vazkii.botania.common.entity.PinkWitherEntity;
 import vazkii.botania.common.handler.BotaniaSounds;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class PinkinatorItem extends Item {
 

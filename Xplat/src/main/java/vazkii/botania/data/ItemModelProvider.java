@@ -15,7 +15,6 @@ import com.google.gson.JsonPrimitive;
 
 import net.minecraft.client.data.models.model.DelegatedModel;
 import net.minecraft.client.data.models.model.ItemModelUtils;
-import net.minecraft.client.renderer.special.SkullSpecialRenderer;
 import net.minecraft.client.data.models.model.ModelInstance;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.ModelTemplate;
@@ -25,7 +24,7 @@ import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.RangeSelectItemModel;
-import net.minecraft.client.renderer.item.properties.conditional.ConditionalItemModelProperty;
+import net.minecraft.client.renderer.special.SkullSpecialRenderer;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
@@ -38,13 +37,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.WallBlock;
-import net.minecraft.world.level.block.SkullBlock;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.client.BotaniaItemProperties;
-import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.render.block_entity.TEISR;
 import vazkii.botania.common.block.*;
 import vazkii.botania.common.block.decor.BotaniaMushroomBlock;
@@ -56,7 +53,6 @@ import vazkii.botania.common.block.mana.ManaSpreaderBlock;
 import vazkii.botania.common.item.BottledManaItem;
 import vazkii.botania.common.item.brew.BaseBrewItem;
 import vazkii.botania.common.item.lens.LensItem;
-import vazkii.botania.common.item.material.MysticalPetalItem;
 import vazkii.botania.common.lib.LibMisc;
 import vazkii.botania.mixin.TextureSlotAccessor;
 import vazkii.botania.xplat.XplatAbstractions;
@@ -591,12 +587,10 @@ public class ItemModelProvider implements DataProvider {
 		takeAll(itemBlocks, BotaniaBlocks.avatar.asItem(), BotaniaBlocks.bellows.asItem(),
 				BotaniaBlocks.brewery.asItem(), BotaniaBlocks.corporeaIndex.asItem(), BotaniaBlocks.gaiaPylon.asItem(),
 				BotaniaBlocks.hourglass.asItem(), BotaniaBlocks.manaPylon.asItem(), BotaniaBlocks.naturaPylon.asItem())
-						.forEach(i -> builtinEntity(i, consumer, clientModels));
+				.forEach(i -> builtinEntity(i, consumer, clientModels));
 
 		takeAll(itemBlocks, BotaniaBlocks.teruTeruBozu.asItem())
 				.forEach(i -> builtinEntity(i, consumer, clientModels, 2.5));
-
-		
 
 		Identifier dreamwoodFence = ModelTemplates.FENCE_INVENTORY.create(ModelLocationUtils.getModelLocation(BotaniaBlocks.dreamwoodFence.asItem()),
 				TextureMapping.defaultTexture(BotaniaBlocks.dreamwoodPlanks), consumer);

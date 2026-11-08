@@ -10,9 +10,9 @@ package vazkii.botania.api.recipe;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 
 import org.jetbrains.annotations.NotNull;
@@ -38,9 +38,8 @@ public interface TerrestrialAgglomerationRecipe extends BotaniaRecipe<RecipeInpu
 		return (RecipeType<? extends Recipe<RecipeInput>>) BuiltInRegistries.RECIPE_TYPE.getValue(TYPE_ID);
 	}
 
-
 	@NotNull
-		default ItemStack getToastSymbol() {
+	default ItemStack getToastSymbol() {
 		return BuiltInRegistries.ITEM.getOptional(TERRA_PLATE_ID).map(ItemStack::new).orElse(ItemStack.EMPTY);
 	}
 

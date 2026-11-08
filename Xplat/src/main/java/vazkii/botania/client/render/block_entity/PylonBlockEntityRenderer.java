@@ -11,12 +11,11 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import org.jetbrains.annotations.Nullable;
@@ -133,4 +132,3 @@ public class PylonBlockEntityRenderer extends BotaniaBlockEntityRenderer<PylonBl
 		}
 	}
 }
-

@@ -11,8 +11,8 @@ package vazkii.botania.common.item.relic;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.core.Holder;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;

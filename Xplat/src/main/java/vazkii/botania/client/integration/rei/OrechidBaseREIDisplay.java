@@ -19,8 +19,8 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.api.recipe.OrechidRecipe;
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 
 import java.util.List;
 import java.util.Optional;

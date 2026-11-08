@@ -8,11 +8,9 @@
  */
 package vazkii.botania.mixin.client;
 
-import java.util.Optional;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -30,6 +28,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import vazkii.botania.client.render.block_entity.GaiaHeadBlockEntityRenderer;
 import vazkii.botania.common.block.GaiaHeadBlock;
+
+import java.util.Optional;
 
 @Mixin(SkullBlockRenderer.class)
 public abstract class SkullBlockRendererMixin {

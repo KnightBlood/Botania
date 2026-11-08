@@ -11,13 +11,12 @@ package vazkii.botania.common.item.equipment.bauble;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -29,12 +28,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.brew.Brew;
@@ -50,7 +45,7 @@ import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.CustomCreativeTabContents;
 import vazkii.botania.common.proxy.Proxy;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class TaintedBloodPendantItem extends BaubleItem implements BrewContainer, BrewItem, CustomCreativeTabContents {
 

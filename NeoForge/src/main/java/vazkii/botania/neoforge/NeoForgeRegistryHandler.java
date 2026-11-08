@@ -1,7 +1,5 @@
 package vazkii.botania.neoforge;
 
-import java.util.function.Supplier;
-
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
@@ -12,6 +10,8 @@ import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import vazkii.botania.api.BotaniaRegistries;
 import vazkii.botania.common.lib.LibMisc;
+
+import java.util.function.Supplier;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 

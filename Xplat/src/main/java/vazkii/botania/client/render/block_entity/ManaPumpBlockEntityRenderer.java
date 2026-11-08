@@ -21,8 +21,7 @@ import vazkii.botania.common.helper.VecHelper;
 public class ManaPumpBlockEntityRenderer extends BotaniaBlockEntityRenderer<ManaPumpBlockEntity> {
 	public static BlockStateModel headModel = null;
 
-	public ManaPumpBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-	}
+	public ManaPumpBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {}
 
 	@Override
 	public void render(ManaPumpBlockEntity pump, float partialTicks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {

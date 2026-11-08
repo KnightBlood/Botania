@@ -25,8 +25,8 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
-import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 
 import java.util.ArrayList;
 import java.util.List;

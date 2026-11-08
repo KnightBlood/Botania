@@ -16,8 +16,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
@@ -26,7 +26,6 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractSkullBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -61,8 +60,7 @@ public class TinyPotatoBlockEntityRenderer extends BotaniaBlockEntityRenderer<Ti
 	private static final Pattern ESCAPED = Pattern.compile("[^a-z0-9/._-]");
 	private static final BlockState CAKE = Blocks.CAKE.defaultBlockState();
 
-	public TinyPotatoBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-	}
+	public TinyPotatoBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {}
 
 	public static BlockStateModel getModelFromDisplayName(Component displayName) {
 		var nameBuilder = new StringBuilder();

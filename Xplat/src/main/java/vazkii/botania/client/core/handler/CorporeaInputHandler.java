@@ -22,8 +22,6 @@ import org.lwjgl.glfw.GLFW;
 import vazkii.botania.client.core.proxy.ClientProxy;
 import vazkii.botania.common.block.block_entity.corporea.CorporeaIndexBlockEntity;
 import vazkii.botania.mixin.client.AbstractContainerScreenAccessor;
-import vazkii.botania.mixin.client.RecipeBookComponentAccessor;
-import vazkii.botania.mixin.client.RecipeBookPageAccessor;
 import vazkii.botania.network.serverbound.IndexKeybindRequestPacket;
 import vazkii.botania.xplat.ClientXplatAbstractions;
 

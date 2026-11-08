@@ -16,8 +16,8 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
-import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.core.handler.ClientTickHandler;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.block.block_entity.AnimatedTorchBlockEntity;
 import vazkii.botania.common.helper.VecHelper;
 

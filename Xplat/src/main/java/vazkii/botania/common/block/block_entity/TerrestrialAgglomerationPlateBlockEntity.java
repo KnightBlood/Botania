@@ -31,7 +31,6 @@ import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.api.internal.VanillaPacketDispatcher;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
@@ -42,6 +41,7 @@ import vazkii.botania.api.recipe.TerrestrialAgglomerationRecipe;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.handler.BotaniaSounds;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.network.EffectType;
 import vazkii.botania.network.clientbound.BotaniaEffectPacket;
@@ -207,8 +207,8 @@ public class TerrestrialAgglomerationPlateBlockEntity extends BotaniaBlockEntity
 			return null;
 		}
 		return RecipeHelper.getRecipeManager(level)
-			.getRecipeFor(BotaniaRecipeTypes.TERRA_PLATE_TYPE, RecipeHelper.adapt(items), level)
-			.map(RecipeHolder::value).orElse(null);
+				.getRecipeFor(BotaniaRecipeTypes.TERRA_PLATE_TYPE, RecipeHelper.adapt(items), level)
+				.map(RecipeHolder::value).orElse(null);
 	}
 
 	private boolean isActive() {

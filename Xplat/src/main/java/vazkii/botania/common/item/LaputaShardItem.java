@@ -8,7 +8,6 @@
  */
 package vazkii.botania.common.item;
 
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -22,16 +21,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -55,7 +52,7 @@ import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.helper.MathHelper;
 import vazkii.botania.common.lib.BotaniaTags;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class LaputaShardItem extends Item implements LensEffectItem, TinyPlanetExcempt, CustomCreativeTabContents {
 
@@ -353,4 +350,3 @@ public class LaputaShardItem extends Item implements LensEffectItem, TinyPlanetE
 	}
 
 }
-

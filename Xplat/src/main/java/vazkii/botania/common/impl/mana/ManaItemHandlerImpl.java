@@ -18,13 +18,12 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 
-import vazkii.botania.common.helper.EnchHelper;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.item.ManaProficiencyArmor;
 import vazkii.botania.api.mana.*;
+import vazkii.botania.common.helper.EnchHelper;
 import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.*;

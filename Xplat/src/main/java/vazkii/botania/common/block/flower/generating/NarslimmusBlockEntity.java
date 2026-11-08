@@ -16,7 +16,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.AABB;

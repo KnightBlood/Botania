@@ -8,17 +8,16 @@
  */
 package vazkii.botania.common.block.block_entity;
 
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerType;
 import net.minecraft.world.level.Level;

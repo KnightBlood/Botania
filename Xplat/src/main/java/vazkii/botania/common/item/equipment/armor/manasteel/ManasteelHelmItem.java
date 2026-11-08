@@ -9,9 +9,9 @@
 package vazkii.botania.common.item.equipment.armor.manasteel;
 
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.ArmorType;
-import net.minecraft.world.item.Item.Properties;
 
 import org.jetbrains.annotations.Nullable;
 

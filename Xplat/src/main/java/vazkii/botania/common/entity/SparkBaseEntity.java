@@ -9,26 +9,24 @@
 package vazkii.botania.common.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.server.level.ServerEntity;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.item.SparkEntity;
 import vazkii.botania.api.mana.ManaCollisionGhost;
@@ -42,7 +40,8 @@ public abstract class SparkBaseEntity extends Entity implements SparkEntity, Man
 		super(type, world);
 	}
 
-	@NotNull @Override
+	@NotNull
+	@Override
 	public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
 		// sparks are invulnerable, matching pre-1.21 Entity#hurt default behaviour
 		return false;

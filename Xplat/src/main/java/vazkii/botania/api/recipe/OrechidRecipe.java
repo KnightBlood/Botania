@@ -8,19 +8,16 @@
  */
 package vazkii.botania.api.recipe;
 
-import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.CacheableFunction;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.BotaniaAPI;
 
@@ -68,8 +65,7 @@ public interface OrechidRecipe extends BotaniaRecipe<RecipeInput> {
 		return ItemStack.EMPTY;
 	}
 
-
-		default ItemStack getResultItem() {
+	default ItemStack getResultItem() {
 		return ItemStack.EMPTY;
 	}
 

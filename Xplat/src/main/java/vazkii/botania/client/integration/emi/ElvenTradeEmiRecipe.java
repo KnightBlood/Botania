@@ -6,19 +6,12 @@ import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.api.widget.WidgetHolder;
 
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.Minecraft;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 import vazkii.botania.api.recipe.ElvenTradeRecipe;

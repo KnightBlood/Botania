@@ -20,15 +20,13 @@ import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
-import vazkii.botania.common.helper.EnchHelper;
 import vazkii.botania.api.mana.ManaItemHandler;
+import vazkii.botania.common.helper.EnchHelper;
 import vazkii.botania.common.item.equipment.tool.ToolCommons;
 
 import java.util.function.Consumer;
@@ -83,10 +81,10 @@ public class CrystalBowItem extends LivingwoodBowItem {
 						if (power == 1.0F) {
 							arrow.setCritArrow(true);
 						}
-						
+
 						// 26.1: power/punch/flame are applied by AbstractArrow through the weapon stack
 						// passed to ArrowItem#createArrow, so no manual enchantment handling is needed.
-						
+
 						stack.hurtAndBreak(1, player, player.getUsedItemHand());
 						if (markUnpickable || player.getAbilities().instabuild && (arrowStack.is(Items.SPECTRAL_ARROW) || arrowStack.is(Items.TIPPED_ARROW))) {
 							arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;

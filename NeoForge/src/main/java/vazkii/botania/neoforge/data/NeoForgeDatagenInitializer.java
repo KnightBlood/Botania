@@ -3,8 +3,6 @@ package vazkii.botania.neoforge.data;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-import vazkii.botania.common.lib.LibMisc;
-
 public class NeoForgeDatagenInitializer {
 	public static void init(IEventBus modBus) {
 		// GatherDataEvent became abstract in NeoForge 26.1: listeners must target the
@@ -15,7 +13,7 @@ public class NeoForgeDatagenInitializer {
 	}
 
 	public static void configureNeoForgeDatagen(GatherDataEvent evt) {
-				var generator = evt.getGenerator();
+		var generator = evt.getGenerator();
 		var output = generator.getPackOutput();
 		// 26.1: vanilla datagen validates tag references against this run's builders and the
 		// parent lookup only (ExistingFileHelper is gone). The NeoForge providers therefore extend

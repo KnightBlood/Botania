@@ -12,78 +12,68 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-
-import org.apache.commons.lang3.mutable.MutableObject;
 
 import vazkii.botania.api.state.enums.CraftyCratePattern;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.crafting.recipe.*;
 import vazkii.botania.common.helper.ColorHelper;
+import vazkii.botania.common.helper.IngredientHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.common.lib.LibBlockNames;
 import vazkii.botania.common.lib.LibItemNames;
 import vazkii.botania.common.lib.ResourceLocationHelper;
 import vazkii.botania.mixin.RecipeProviderAccessor;
-import vazkii.botania.common.helper.IngredientHelper;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CraftingRecipeProvider extends BotaniaRecipeProvider {
-/**
- * 26.1: recipe builders resolve TagKey references through a HolderGetter at build time, but
- * Botania's own tags only exist as datagen output, not in the bootstrap lookup. This wrapper
- * hands out empty named holder sets for unknown tags, which still serialize to the tag id.
- */
-public static final HolderGetter<Item> TAG_TOLERANT_ITEMS = new HolderGetter<>() {
-@Override
-public Optional<Holder.Reference<Item>> get(ResourceKey<Item> key) {
-return BuiltInRegistries.ITEM.get(key.identifier());
-}
+	/**
+	 * 26.1: recipe builders resolve TagKey references through a HolderGetter at build time, but
+	 * Botania's own tags only exist as datagen output, not in the bootstrap lookup. This wrapper
+	 * hands out empty named holder sets for unknown tags, which still serialize to the tag id.
+	 */
+	public static final HolderGetter<Item> TAG_TOLERANT_ITEMS = new HolderGetter<>() {
+		@Override
+		public Optional<Holder.Reference<Item>> get(ResourceKey<Item> key) {
+			return BuiltInRegistries.ITEM.get(key.identifier());
+		}
 
-@Override
-public Optional<HolderSet.Named<Item>> get(TagKey<Item> tag) {
-return Optional.of(HolderSet.emptyNamed(BuiltInRegistries.ITEM, tag));
-}
-};
+		@Override
+		public Optional<HolderSet.Named<Item>> get(TagKey<Item> tag) {
+			return Optional.of(HolderSet.emptyNamed(BuiltInRegistries.ITEM, tag));
+		}
+	};
 
-public CraftingRecipeProvider(PackOutput packOutput) {
-super(packOutput);
-}
+	public CraftingRecipeProvider(PackOutput packOutput) {
+		super(packOutput);
+	}
 
 	@Override
 	public void buildRecipes(RecipeOutput output) {
@@ -2017,8 +2007,6 @@ super(packOutput);
 		compression(BotaniaBlocks.manaDiamondBlock, BotaniaTags.Items.GEMS_MANA_DIAMOND).save(output);
 		compression(BotaniaBlocks.dragonstoneBlock, BotaniaTags.Items.GEMS_DRAGONSTONE).save(output);
 
-		
-		
 		AtomicReference<BotaniaFinishedRecipe> blazeBase = new AtomicReference<>();
 		AtomicReference<BotaniaFinishedRecipe> blazeGog = new AtomicReference<>();
 		compression(BotaniaBlocks.blazeBlock, Items.BLAZE_ROD).save(capturing(blazeBase::set));
@@ -2030,7 +2018,6 @@ super(packOutput);
 				.unlockedBy("has_item", conditionsFromItem(Items.BLAZE_POWDER))
 				.save(capturing(blazeGog::set));
 		saveFinishedRecipe(output, new GogAlternationResult(blazeGog.get(), blazeBase.get()));
-
 
 		deconstructPetalBlock(output, BotaniaItems.whitePetal, BotaniaBlocks.petalBlockWhite);
 		deconstructPetalBlock(output, BotaniaItems.orangePetal, BotaniaBlocks.petalBlockOrange);

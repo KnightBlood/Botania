@@ -15,12 +15,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.brew.Brew;
@@ -31,6 +27,7 @@ import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.CustomCreativeTabContents;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class IncenseStickItem extends Item implements BrewItem, BrewContainer, CustomCreativeTabContents {
 

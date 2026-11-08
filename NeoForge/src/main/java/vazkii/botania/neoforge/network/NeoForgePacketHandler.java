@@ -1,10 +1,5 @@
 package vazkii.botania.neoforge.network;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -29,6 +24,11 @@ import vazkii.botania.network.serverbound.IndexStringRequestPacket;
 import vazkii.botania.network.serverbound.JumpPacket;
 import vazkii.botania.network.serverbound.LeftClickPacket;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 /**
@@ -38,7 +38,8 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
  */
 public class NeoForgePacketHandler {
 	public record BotaniaPayload<T extends BotaniaPacket>(T packet, Type<BotaniaPayload<T>> type)
-			implements CustomPacketPayload {
+			implements
+				CustomPacketPayload {
 
 		private void write(RegistryFriendlyByteBuf buf) {
 			packet.encode(buf);
@@ -47,11 +48,12 @@ public class NeoForgePacketHandler {
 
 	private record PayloadEntry<T extends BotaniaPacket>(
 			Type<BotaniaPayload<T>> type,
-			Function<RegistryFriendlyByteBuf, T> decoder) {}
+			Function<RegistryFriendlyByteBuf, T> decoder) {
+	}
 
 	private static final Map<Class<? extends BotaniaPacket>, PayloadEntry<? extends BotaniaPacket>> PAYLOADS = new HashMap<>();
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static CustomPacketPayload wrap(BotaniaPacket packet) {
 		PayloadEntry entry = PAYLOADS.get(packet.getClass());
 		if (entry == null) {

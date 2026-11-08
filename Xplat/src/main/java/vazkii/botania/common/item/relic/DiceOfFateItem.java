@@ -19,8 +19,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -28,7 +30,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.item.Relic;
 import vazkii.botania.client.gui.TooltipHandler;
@@ -36,15 +37,13 @@ import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.helper.PlayerHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.lib.ResourceLocationHelper;
-import vazkii.botania.xplat.XplatAbstractions;
 import vazkii.botania.common.loot.BotaniaLootTables;
+import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.component.TooltipDisplay;
 
 public class DiceOfFateItem extends RelicItem {
 	public DiceOfFateItem(Properties props) {

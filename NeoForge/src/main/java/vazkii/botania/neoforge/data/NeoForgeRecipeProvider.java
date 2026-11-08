@@ -1,19 +1,18 @@
 package vazkii.botania.neoforge.data;
 
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.data.recipes.RecipeCategory;
 import net.neoforged.neoforge.common.Tags;
-
-import net.minecraft.resources.Identifier;
-import net.minecraft.tags.TagKey;
-import net.minecraft.core.registries.Registries;
 
 import org.apache.commons.lang3.mutable.MutableObject;
 
@@ -31,6 +30,7 @@ import static vazkii.botania.data.recipes.CraftingRecipeProvider.*;
 public class NeoForgeRecipeProvider extends BotaniaRecipeProvider {
 	public static final TagKey<Item> QUARTZ_STORAGE = TagKey.create(Registries.ITEM,
 			Identifier.fromNamespaceAndPath("c", "storage_blocks/quartz"));
+
 	public NeoForgeRecipeProvider(PackOutput output) {
 		super(output);
 	}

@@ -11,11 +11,11 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -111,7 +111,7 @@ public class PetalApothecaryBlockEntityRenderer extends BotaniaBlockEntityRender
 			int color = lava ? -1
 					: altar.getLevel() instanceof BlockAndTintGetter tintGetter
 							? BiomeColors.getAverageWaterColor(tintGetter, altar.getBlockPos())
-							: -1;
+					: -1;
 			VertexConsumer buffer = buffers.getBuffer(RenderTypes.translucentMovingBlock());
 			renderIcon(ms, buffer, sprite, color, alpha, overlay, lava ? 0xF000F0 : light);
 			ms.popPose();

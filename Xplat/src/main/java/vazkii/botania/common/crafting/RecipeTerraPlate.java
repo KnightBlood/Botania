@@ -8,37 +8,30 @@
  */
 package vazkii.botania.common.crafting;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.api.recipe.TerrestrialAgglomerationRecipe;
+import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 import vazkii.botania.common.crafting.recipe.RecipeUtils;
 import vazkii.botania.common.helper.IngredientHelper;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import com.mojang.serialization.Codec;
-import net.minecraft.network.codec.ByteBufCodecs;
-import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 
 public class RecipeTerraPlate implements TerrestrialAgglomerationRecipe {
 	private Identifier id;

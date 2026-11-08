@@ -12,10 +12,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import vazkii.botania.common.helper.ItemNBTHelper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
+
+import vazkii.botania.common.helper.ItemNBTHelper;
 
 import java.util.Objects;
 

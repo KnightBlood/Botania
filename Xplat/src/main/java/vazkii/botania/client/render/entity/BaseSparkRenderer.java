@@ -11,26 +11,15 @@ package vazkii.botania.client.render.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.Minecraft;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.data.AtlasIds;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;

@@ -9,15 +9,10 @@
 package vazkii.botania.common.block.block_entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.level.storage.ValueInput;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
-
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class BifrostBlockEntity extends BotaniaBlockEntity {
 	private static final String TAG_TICKS = "ticks";

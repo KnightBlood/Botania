@@ -19,13 +19,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -33,10 +32,10 @@ import net.minecraft.world.phys.HitResult;
 
 import org.jetbrains.annotations.NotNull;
 
-import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.api.mana.ManaItemHandler;
 import vazkii.botania.client.fx.WispParticleData;
 import vazkii.botania.common.handler.BotaniaSounds;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.item.equipment.tool.ToolCommons;
 
 import java.util.Map;

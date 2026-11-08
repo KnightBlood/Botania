@@ -39,17 +39,17 @@ public class LexiconElvenTradeRecipe implements ElvenTradeRecipe {
 	}
 
 	@NotNull
-		public NonNullList<Ingredient> getIngredients() {
+	public NonNullList<Ingredient> getIngredients() {
 		return NonNullList.withSize(1, Ingredient.of(BotaniaItems.lexicon));
 	}
 
 	@NotNull
-		public ItemStack getToastSymbol() {
+	public ItemStack getToastSymbol() {
 		return new ItemStack(BotaniaBlocks.alfPortal);
 	}
 
 	@NotNull
-		public Identifier getId() {
+	public Identifier getId() {
 		return id;
 	}
 
@@ -83,4 +83,3 @@ public class LexiconElvenTradeRecipe implements ElvenTradeRecipe {
 		return BotaniaRecipeTypes.LEXICON_ELVEN_TRADE_SERIALIZER;
 	}
 }
-

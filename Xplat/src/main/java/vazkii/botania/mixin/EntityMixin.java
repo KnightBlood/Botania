@@ -23,7 +23,6 @@ import vazkii.botania.common.BotaniaDamageTypes;
 import vazkii.botania.common.item.EquestrianVirusItem;
 import vazkii.botania.common.item.equipment.bauble.CrimsonPendantItem;
 import vazkii.botania.common.lib.BotaniaTags;
-import vazkii.botania.xplat.XplatAbstractions;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {

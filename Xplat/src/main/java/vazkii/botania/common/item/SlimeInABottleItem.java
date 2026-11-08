@@ -8,12 +8,12 @@
  */
 package vazkii.botania.common.item;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.server.level.ServerLevel;
+
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.block.flower.generating.NarslimmusBlockEntity;

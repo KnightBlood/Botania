@@ -10,7 +10,6 @@ package vazkii.botania.data.recipes;
 
 import com.google.gson.JsonObject;
 
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -18,8 +17,6 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.crafting.recipe.NbtOutputRecipe;
-
-import java.util.function.Consumer;
 
 public class NbtOutputResult implements BotaniaFinishedRecipe {
 	private final BotaniaFinishedRecipe innerRecipe;
@@ -30,14 +27,13 @@ public class NbtOutputResult implements BotaniaFinishedRecipe {
 		this.tag = tag;
 	}
 
-
 	@Override
 	public void serializeRecipeData(JsonObject json) {
 		json.add("recipe", innerRecipe.serializeRecipe());
 		json.addProperty("nbt", tag.toString());
 	}
 
-		public Identifier getId() {
+	public Identifier getId() {
 		return innerRecipe.getId();
 	}
 

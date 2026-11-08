@@ -14,4 +14,5 @@ import vazkii.botania.common.integration.rei.BotaniaREICommonPlugin;
 
 /** NeoForge common plugin discovery; all logic lives in Xplat. */
 @REIPluginCommon
-public final class NeoForgeREICommonPlugin extends BotaniaREICommonPlugin {}
+public final class NeoForgeREICommonPlugin extends BotaniaREICommonPlugin {
+}

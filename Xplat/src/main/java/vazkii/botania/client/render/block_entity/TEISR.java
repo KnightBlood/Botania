@@ -82,8 +82,7 @@ public class TEISR implements SpecialModelRenderer<Unit> {
 
 	@SuppressWarnings("unchecked")
 	private static BlockEntityRenderer<BlockEntity, ?> resolveRenderer(BlockEntity blockEntity) {
-		return (BlockEntityRenderer<BlockEntity, ?>) (BlockEntityRenderer<?, ?>)
-				Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(blockEntity);
+		return (BlockEntityRenderer<BlockEntity, ?>) (BlockEntityRenderer<?, ?>) Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(blockEntity);
 	}
 
 	/**

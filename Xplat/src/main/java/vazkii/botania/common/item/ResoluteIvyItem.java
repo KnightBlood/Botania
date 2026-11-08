@@ -69,4 +69,3 @@ public class ResoluteIvyItem extends Item {
 	}
 
 }
-

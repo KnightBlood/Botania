@@ -8,7 +8,6 @@
  */
 package vazkii.botania.client.gui;
 
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

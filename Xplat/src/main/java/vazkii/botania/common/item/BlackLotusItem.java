@@ -14,12 +14,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import vazkii.botania.api.item.ManaDissolvable;
 import vazkii.botania.api.mana.ManaPool;
@@ -29,7 +25,7 @@ import vazkii.botania.network.EffectType;
 import vazkii.botania.network.clientbound.BotaniaEffectPacket;
 import vazkii.botania.xplat.XplatAbstractions;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class BlackLotusItem extends Item implements ManaDissolvable {
 

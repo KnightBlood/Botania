@@ -8,29 +8,20 @@
  */
 package vazkii.botania.common.crafting.recipe;
 
-import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.MapCodec;
-import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.commands.CacheableFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.block_entity.SpecialFlowerBlockEntity;
 import vazkii.botania.api.recipe.StateIngredient;

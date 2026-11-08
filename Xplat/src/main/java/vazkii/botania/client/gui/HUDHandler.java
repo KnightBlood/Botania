@@ -11,7 +11,6 @@ package vazkii.botania.client.gui;
 import com.google.common.collect.Iterables;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -21,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Container;
@@ -31,8 +31,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-
-import org.lwjgl.opengl.GL11;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.mana.ManaItemHandler;
@@ -267,7 +265,6 @@ public final class HUDHandler {
 
 			int u = tile.getCurrentMana() >= recipe.getManaToConsume() ? 0 : 22;
 			int v = mc.player.getName().getString().equals("haighyorkie") && mc.player.isShiftKeyDown() ? 23 : 8;
-
 
 			RenderHelper.drawTexturedModalRect(gui, manaBar, x, y, u, v, 22, 15);
 

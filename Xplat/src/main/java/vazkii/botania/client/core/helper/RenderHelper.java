@@ -8,18 +8,12 @@
  */
 package vazkii.botania.client.core.helper;
 
-import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.QuadInstance;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
-import net.minecraft.util.ARGB;
-import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.*;
@@ -27,52 +21,47 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.BlockQuadOutput;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
 
 import vazkii.botania.client.core.handler.ClientTickHandler;
 import vazkii.botania.client.lib.ResourcesLib;
-import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
 import vazkii.botania.client.render.block_entity.PylonBlockEntityRenderer;
 import vazkii.botania.common.helper.VecHelper;
 import vazkii.botania.common.item.equipment.bauble.FlugelTiaraItem;
-import vazkii.botania.xplat.ClientXplatAbstractions;
 import vazkii.botania.mixin.client.ItemStackRenderStateAccessor;
 import vazkii.botania.mixin.client.ItemStackRenderStateLayerAccessor;
-
+import vazkii.botania.xplat.ClientXplatAbstractions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.OptionalDouble;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -132,15 +121,15 @@ public final class RenderHelper {
 		// 1.20.1 star used, and declares no samplers. (SOLID_BLOCK's shader samples
 		// Sampler0/Sampler2, so it crashes with "Missing sampler" unless textures are bound.)
 		RenderSetup starSetup = RenderSetup.builder(RenderPipelines.LIGHTNING)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			.createRenderSetup();
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				.createRenderSetup();
 		STAR = makeLayer(ResourcesLib.PREFIX_MOD + "star", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, starSetup);
 
 		// DEBUG_QUADS: position_color, QUADS, translucent blend, no cull, and no sampler
 		// declarations - matches the 1.20.1 rectangle/circle state (TRANSLUCENT + NO_CULL).
 		RenderSetup rectangleSetup = RenderSetup.builder(RenderPipelines.DEBUG_QUADS)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			.createRenderSetup();
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				.createRenderSetup();
 		RECTANGLE = makeLayer(ResourcesLib.PREFIX_MOD + "rectangle_highlight", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, rectangleSetup);
 		CIRCLE = makeLayer(ResourcesLib.PREFIX_MOD + "circle_highlight", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, rectangleSetup);
 
@@ -151,87 +140,87 @@ public final class RenderHelper {
 		LINE_8_NO_DEPTH = makeLayer(ResourcesLib.PREFIX_MOD + "line_8_no_depth", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, RenderSetup.builder(RenderPipelines.LINES).createRenderSetup());
 
 		RenderSetup sparkSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
-			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			.useLightmap()
-			// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
-			// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
-			// where pass validation is off, the stale previous binding leaks in and corrupts
-			// the rendering - the mana pool water / lexicon visual pollution).
-			.useOverlay()
-			.createRenderSetup();
+				.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				.useLightmap()
+				// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
+				// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
+				// where pass validation is off, the stale previous binding leaks in and corrupts
+				// the rendering - the mana pool water / lexicon visual pollution).
+				.useOverlay()
+				.createRenderSetup();
 		SPARK = makeLayer(ResourcesLib.PREFIX_MOD + "spark", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, sparkSetup);
 
 		RenderSetup lightRelaySetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
-			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			// ENTITY_SOLID's program requires both overlay (Sampler1) and lightmap (Sampler2)
-			// bindings even when the vertex format carries no UV1/UV2.
-			.useLightmap()
-			.useOverlay()
-			.createRenderSetup();
+				.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				// ENTITY_SOLID's program requires both overlay (Sampler1) and lightmap (Sampler2)
+				// bindings even when the vertex format carries no UV1/UV2.
+				.useLightmap()
+				.useOverlay()
+				.createRenderSetup();
 		LIGHT_RELAY = makeLayer(ResourcesLib.PREFIX_MOD + "light_relay", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, lightRelaySetup);
 
 		RenderSetup iconOverlaySetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
-			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			.useLightmap()
-			// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
-			// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
-			// where pass validation is off, the stale previous binding leaks in and corrupts
-			// the rendering - the mana pool water / lexicon visual pollution).
-			.useOverlay()
-			.createRenderSetup();
+				.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				.useLightmap()
+				// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
+				// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
+				// where pass validation is off, the stale previous binding leaks in and corrupts
+				// the rendering - the mana pool water / lexicon visual pollution).
+				.useOverlay()
+				.createRenderSetup();
 		ICON_OVERLAY = makeLayer(ResourcesLib.PREFIX_MOD + "icon_overlay", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, iconOverlaySetup);
 
 		RenderSetup manaPoolWaterSetup = RenderSetup.builder(CoreShaders.manaPool())
-			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			.useLightmap()
-			// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
-			// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
-			// where pass validation is off, the stale previous binding leaks in and corrupts
-			// the rendering - the mana pool water / lexicon visual pollution).
-			.useOverlay()
-			.createRenderSetup();
+				.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				.useLightmap()
+				// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
+				// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
+				// where pass validation is off, the stale previous binding leaks in and corrupts
+				// the rendering - the mana pool water / lexicon visual pollution).
+				.useOverlay()
+				.createRenderSetup();
 		MANA_POOL_WATER = makeLayer(ResourcesLib.PREFIX_MOD + "mana_pool_water", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, manaPoolWaterSetup);
 
 		RenderSetup terraPlateSetup = RenderSetup.builder(CoreShaders.terraPlate())
-			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			.useLightmap()
-			// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
-			// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
-			// where pass validation is off, the stale previous binding leaks in and corrupts
-			// the rendering - the mana pool water / lexicon visual pollution).
-			.useOverlay()
-			.createRenderSetup();
+				.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				.useLightmap()
+				// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
+				// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
+				// where pass validation is off, the stale previous binding leaks in and corrupts
+				// the rendering - the mana pool water / lexicon visual pollution).
+				.useOverlay()
+				.createRenderSetup();
 		TERRA_PLATE = makeLayer(ResourcesLib.PREFIX_MOD + "terra_plate_rune", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, terraPlateSetup);
 
 		RenderSetup enchanterSetup = RenderSetup.builder(CoreShaders.enchanter())
-			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			.useLightmap()
-			// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
-			// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
-			// where pass validation is off, the stale previous binding leaks in and corrupts
-			// the rendering - the mana pool water / lexicon visual pollution).
-			.useOverlay()
-			.createRenderSetup();
+				.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				.useLightmap()
+				// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
+				// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
+				// where pass validation is off, the stale previous binding leaks in and corrupts
+				// the rendering - the mana pool water / lexicon visual pollution).
+				.useOverlay()
+				.createRenderSetup();
 		ENCHANTER = makeLayer(ResourcesLib.PREFIX_MOD + "enchanter_rune", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, enchanterSetup);
 
 		RenderSetup babylonSetup = RenderSetup.builder(RenderPipelines.ITEM_CUTOUT)
-			.withTexture("Sampler0", Identifier.parse(ResourcesLib.MISC_BABYLON))
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			// item.vsh samples Sampler2 (lightmap) - ITEM_CUTOUT setups must bind it.
-			.useLightmap()
-			.createRenderSetup();
+				.withTexture("Sampler0", Identifier.parse(ResourcesLib.MISC_BABYLON))
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				// item.vsh samples Sampler2 (lightmap) - ITEM_CUTOUT setups must bind it.
+				.useLightmap()
+				.createRenderSetup();
 		BABYLON_ICON = makeLayer(ResourcesLib.PREFIX_MOD + "babylon", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, babylonSetup);
 
 		RenderSetup haloSetup = RenderSetup.builder(CoreShaders.halo())
-			.withTexture("Sampler0", FlugelTiaraItem.textureHalo)
-			.useLightmap()
-			.createRenderSetup();
+				.withTexture("Sampler0", FlugelTiaraItem.textureHalo)
+				.useLightmap()
+				.createRenderSetup();
 		HALO = makeLayer(ResourcesLib.PREFIX_MOD + "halo", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, haloSetup);
 
 		// 1.20.1's starfield layer bound the end sky texture (MultiTextureStateShard with
@@ -248,20 +237,20 @@ public final class RenderHelper {
 						.createRenderSetup());
 
 		RenderSetup lightningSetup = RenderSetup.builder(RenderPipelines.LIGHTNING)
-			.createRenderSetup();
+				.createRenderSetup();
 		LIGHTNING = makeLayer(ResourcesLib.PREFIX_MOD + "lightning", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, lightningSetup);
 		TRANSLUCENT = RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS);
 
 		RenderSetup astrolabePreviewSetup = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT_CULL)
-			.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			.useLightmap()
-			// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
-			// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
-			// where pass validation is off, the stale previous binding leaks in and corrupts
-			// the rendering - the mana pool water / lexicon visual pollution).
-			.useOverlay()
-			.createRenderSetup();
+				.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				.useLightmap()
+				// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
+				// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
+				// where pass validation is off, the stale previous binding leaks in and corrupts
+				// the rendering - the mana pool water / lexicon visual pollution).
+				.useOverlay()
+				.createRenderSetup();
 		ASTROLABE_PREVIEW = makeLayer(ResourcesLib.PREFIX_MOD + "astrolabe_preview", DefaultVertexFormat.ENTITY, VertexFormat.Mode.QUADS, astrolabePreviewSetup);
 	}
 
@@ -275,37 +264,37 @@ public final class RenderHelper {
 
 	private static RenderType getPylonGlow(String name, Identifier texture, boolean direct) {
 		RenderSetup setup = RenderSetup.builder(CoreShaders.pylon())
-			.withTexture("Sampler0", texture)
-			.setOutputTarget(direct ? OutputTarget.MAIN_TARGET : OutputTarget.ITEM_ENTITY_TARGET)
-			.useLightmap()
-			// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
-			// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
-			// where pass validation is off, the stale previous binding leaks in and corrupts
-			// the rendering - the mana pool water / lexicon visual pollution).
-			.useOverlay()
-			.createRenderSetup();
+				.withTexture("Sampler0", texture)
+				.setOutputTarget(direct ? OutputTarget.MAIN_TARGET : OutputTarget.ITEM_ENTITY_TARGET)
+				.useLightmap()
+				// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
+				// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
+				// where pass validation is off, the stale previous binding leaks in and corrupts
+				// the rendering - the mana pool water / lexicon visual pollution).
+				.useOverlay()
+				.createRenderSetup();
 		return makeLayer(ResourcesLib.PREFIX_MOD + name, DefaultVertexFormat.ENTITY, VertexFormat.Mode.QUADS, setup);
 	}
 
 	public static RenderType getHaloLayer(Identifier texture) {
 		RenderSetup setup = RenderSetup.builder(CoreShaders.halo())
-			.withTexture("Sampler0", texture)
-			.useLightmap()
-			.createRenderSetup();
+				.withTexture("Sampler0", texture)
+				.useLightmap()
+				.createRenderSetup();
 		return makeLayer(ResourcesLib.PREFIX_MOD + "crafting_halo", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, setup);
 	}
 
 	private static final Function<Identifier, RenderType> DOPPLEGANGER = Util.memoize(texture -> {
 		RenderSetup setup = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT)
-			.withTexture("Sampler0", texture)
-			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-			.useLightmap()
-			// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
-			// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
-			// where pass validation is off, the stale previous binding leaks in and corrupts
-			// the rendering - the mana pool water / lexicon visual pollution).
-			.useOverlay()
-			.createRenderSetup();
+				.withTexture("Sampler0", texture)
+				.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+				.useLightmap()
+				// entity.vsh texelFetches Sampler1 (overlay) - every ENTITY_* pipeline setup must
+				// bind it or GlCommandEncoder throws "Missing sampler Sampler1" (and on Fabric,
+				// where pass validation is off, the stale previous binding leaks in and corrupts
+				// the rendering - the mana pool water / lexicon visual pollution).
+				.useOverlay()
+				.createRenderSetup();
 		return makeLayer(ResourcesLib.PREFIX_MOD + "doppleganger", DefaultVertexFormat.ENTITY, VertexFormat.Mode.QUADS, setup);
 	});
 
@@ -362,7 +351,8 @@ public final class RenderHelper {
 	}
 
 	/**
-	 * 26.1 submit-pipeline variant of {@link #renderStar(PoseStack, MultiBufferSource, int, float, float, float, long)}.
+	 * 26.1 submit-pipeline variant of
+	 * {@link #renderStar(PoseStack, MultiBufferSource, int, float, float, float, long)}.
 	 */
 	public static void renderStar(PoseStack ms, OrderedSubmitNodeCollector collector, int color, float xScale, float yScale, float zScale, long seed) {
 		float ticks = ClientTickHandler.ticksInGame + ClientTickHandler.partialTicks;

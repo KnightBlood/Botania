@@ -1,11 +1,10 @@
 package vazkii.botania.test.block;
 
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.fabricmc.fabric.api.gametest.v1.GameTest;
-import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.effect.MobEffect;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -17,11 +16,12 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
-import java.util.List;
 import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.mixin.MushroomCowAccessor;
 import vazkii.botania.test.TestingUtil;
+
+import java.util.List;
 
 public class DrumBlockTest {
 	private static final String TEMPLATE = "botania:block/drum_gathering";

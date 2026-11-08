@@ -19,8 +19,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import vazkii.botania.common.block.BotaniaBlocks;
-import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.helper.IngredientHelper;
+import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.data.recipes.BotaniaFinishedRecipe;
 import vazkii.botania.data.recipes.BotaniaRecipeProvider;

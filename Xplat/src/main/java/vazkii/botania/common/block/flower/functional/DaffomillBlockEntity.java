@@ -99,7 +99,8 @@ public class DaffomillBlockEntity extends FunctionalFlowerBlockEntity implements
 			case SOUTH -> axis = new AABB(x - w, y - h, z + 1, x + w + 1, y + h, z + l + 1);
 			case WEST -> axis = new AABB(x - l, y - h, z - w, x, y + h, z + w + 1);
 			case EAST -> axis = new AABB(x + 1, y - h, z - w, x + l + 1, y + h, z + w + 1);
-			default -> {}
+			default -> {
+			}
 		}
 		return axis;
 	}

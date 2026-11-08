@@ -10,10 +10,6 @@ package vazkii.botania.fabric.integration.trinkets;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.api.client.TrinketRenderer;
-import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
-
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -26,10 +22,15 @@ import net.minecraft.world.item.ItemStack;
 import vazkii.botania.client.render.AccessoryRenderBridge;
 import vazkii.botania.common.item.equipment.bauble.BaubleItem;
 
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.client.TrinketRenderer;
+import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
+
 /**
  * Client-only Trinkets renderer registration.
  *
- * <p>This must stay out of {@link TrinketsIntegration}: that class implements the server-side
+ * <p>
+ * This must stay out of {@link TrinketsIntegration}: that class implements the server-side
  * {@code EquipmentHandler} and is therefore loaded on a dedicated server, where Fabric's
  * environment transformer rejects {@code eu.pb4.trinkets.api.client.*} and
  * {@code net.minecraft.client.*}. Deciding not to run a lambda at runtime is not enough - the

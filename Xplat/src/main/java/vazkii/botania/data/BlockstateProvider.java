@@ -8,11 +8,12 @@
  */
 package vazkii.botania.data;
 
-
 import com.mojang.math.Quadrant;
 
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.MultiVariant;
+import net.minecraft.client.data.models.blockstates.*;
+import net.minecraft.client.data.models.model.*;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.client.renderer.block.dispatch.VariantMutator;
@@ -22,13 +23,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.client.data.models.blockstates.*;
-import net.minecraft.client.data.models.model.*;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.*;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.properties.*;
 
 import org.jetbrains.annotations.NotNull;

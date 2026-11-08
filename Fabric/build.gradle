@@ -51,6 +51,10 @@ loom {
 
         xplatDatagen {
             client()
+            // The fabric-gametest entrypoint classes must be on the classpath even here:
+            // fabric-gametest-api-v1 resolves all declared entrypoints during the main
+            // stage and crashes with ClassNotFoundException otherwise.
+            source sourceSets.gametest
             vmArg "-Dbotania.xplat_datagen=1"
             vmArg "-Dfabric-api.datagen"
             vmArg "-Dfabric-api.datagen.modid=botania"
@@ -59,6 +63,8 @@ loom {
 
         fabricDatagen {
             client()
+            // See xplatDatagen above.
+            source sourceSets.gametest
             vmArg "-Dfabric-api.datagen"
             vmArg "-Dfabric-api.datagen.modid=botania"
             vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"

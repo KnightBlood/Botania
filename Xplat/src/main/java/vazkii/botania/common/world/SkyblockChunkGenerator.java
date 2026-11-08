@@ -25,7 +25,6 @@ import net.minecraft.world.level.levelgen.blending.Blender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;

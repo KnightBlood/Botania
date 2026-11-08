@@ -2,8 +2,8 @@ package vazkii.botania.api;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 
 import vazkii.botania.api.brew.Brew;

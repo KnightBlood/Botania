@@ -10,7 +10,6 @@ package vazkii.botania.common.item.equipment.bauble;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -25,8 +24,8 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 
-import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.api.mana.ManaItemHandler;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.render.AccessoryRenderRegistry;
 import vazkii.botania.client.render.AccessoryRenderer;
 import vazkii.botania.common.block.flower.functional.HeiseiDreamBlockEntity;
@@ -57,7 +56,7 @@ public class CharmOfTheDivaItem extends BaubleItem {
 		return mob -> mob != mobToCharm && mob.isAlive() && mob.canBeSeenAsEnemy() && !mob.isPassengerOfSameVehicle(mobToCharm)
 				&& (!(mob instanceof TamableAnimal tamable) || !tamable.isOwnedBy(player))
 				&& (mob instanceof Enemy || mob instanceof NeutralMob neutralMob && (neutralMob.isAngryAt(player,
-																						(ServerLevel) player.level())
+						(ServerLevel) player.level())
 						|| mob.getTarget() instanceof TamableAnimal targetTamable && targetTamable.isOwnedBy(player)));
 	}
 

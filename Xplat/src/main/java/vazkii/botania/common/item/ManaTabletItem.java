@@ -14,20 +14,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.TooltipDisplay;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
-import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.api.mana.ManaBarTooltip;
 import vazkii.botania.api.mana.ManaItem;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.xplat.XplatAbstractions;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -160,4 +155,3 @@ public class ManaTabletItem extends Item implements CustomCreativeTabContents {
 		return Mth.hsvToRgb(ManaBarTooltip.getFractionForDisplay(manaItem) / 3.0F, 1.0F, 1.0F);
 	}
 }
-

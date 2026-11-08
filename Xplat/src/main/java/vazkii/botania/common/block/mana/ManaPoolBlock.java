@@ -10,10 +10,12 @@ package vazkii.botania.common.block.mana;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
@@ -33,22 +35,19 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.core.Direction;
-import net.minecraft.world.entity.InsideBlockEffectApplier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.state.BotaniaStateProperties.OptionalDyeColor;
 import vazkii.botania.common.block.BotaniaWaterloggedBlock;
-import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
 import vazkii.botania.common.block.TooltipBlock;
+import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
 import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
 import vazkii.botania.common.block.decor.BotaniaMushroomBlock;
 import vazkii.botania.common.entity.ManaBurstEntity;
 import vazkii.botania.common.item.material.MysticalPetalItem;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 

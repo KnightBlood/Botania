@@ -28,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.*;
 import net.minecraft.world.Container;
@@ -36,6 +37,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEquipment;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -55,15 +57,11 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-
-import java.util.List;
 
 import vazkii.botania.client.core.handler.ClientTickHandler;
 import vazkii.botania.client.core.helper.RenderHelper;
@@ -71,12 +69,14 @@ import vazkii.botania.client.gui.crafting.AssemblyHaloContainer;
 import vazkii.botania.client.lib.ResourcesLib;
 import vazkii.botania.common.annotations.SoftImplement;
 import vazkii.botania.common.helper.ItemNBTHelper;
-import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.helper.PlayerHelper;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.helper.VecHelper;
 import vazkii.botania.network.EffectType;
 import vazkii.botania.network.clientbound.BotaniaEffectPacket;
 import vazkii.botania.xplat.XplatAbstractions;
+
+import java.util.List;
 
 public class AssemblyHaloItem extends Item {
 

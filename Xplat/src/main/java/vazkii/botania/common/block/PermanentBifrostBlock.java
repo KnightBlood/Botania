@@ -13,7 +13,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BeaconBeamBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;

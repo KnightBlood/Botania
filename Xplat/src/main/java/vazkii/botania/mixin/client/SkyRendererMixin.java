@@ -16,7 +16,6 @@ import net.minecraft.client.renderer.SkyRenderer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.MoonPhase;
 
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;

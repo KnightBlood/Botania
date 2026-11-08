@@ -42,7 +42,6 @@ import vazkii.botania.api.block.FloatingFlower;
 import vazkii.botania.api.block_entity.SpecialFlowerBlockEntity;
 import vazkii.botania.common.block.block_entity.FloatingFlowerBlockEntity;
 import vazkii.botania.common.block.decor.FloatingFlowerBlock;
-import vazkii.botania.common.lib.LibMisc;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +52,8 @@ import java.util.function.BiConsumer;
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 /**
- * In MC 26.1 the NeoForge-specific {@code IUnbakedGeometry}/{@code ModelData} system is gone (geometry handling is vanilla now).
+ * In MC 26.1 the NeoForge-specific {@code IUnbakedGeometry}/{@code ModelData} system is gone (geometry handling is
+ * vanilla now).
  * The {@code botania:floating_flower} loader JSON is still parsed by {@link Loader} to
  * produce a static flower + grass island geometry for item rendering, while the actual
  * per-position island selection is done by {@link Baked}, a {@link DynamicBlockStateModel}

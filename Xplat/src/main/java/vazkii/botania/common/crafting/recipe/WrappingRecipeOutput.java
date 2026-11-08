@@ -8,21 +8,20 @@
  */
 package vazkii.botania.common.crafting.recipe;
 
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.world.item.crafting.Recipe;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.function.Function;
-
-import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.crafting.Recipe;
 
 /**
  * A {@link RecipeOutput} that replaces the recipe that is passed to it with another one. This is used
  * to register Botania's own crafting recipe types, which are variants of the vanilla shaped and
  * shapeless recipes.
  *
- * <p>Implemented with a dynamic proxy because the Xplat sources are compiled against both load
+ * <p>
+ * Implemented with a dynamic proxy because the Xplat sources are compiled against both load
  * classpaths: NeoForge's {@code RecipeOutput} inherits an extra abstract conditional
  * {@code accept} overload (with {@code ICondition} varargs) that does not exist on vanilla.
  * Invoking the {@code accept} method reflectively on the delegate sidesteps the divergent
@@ -33,7 +32,7 @@ public final class WrappingRecipeOutput {
 	private WrappingRecipeOutput() {}
 
 	public static RecipeOutput of(RecipeOutput delegate, Function<Recipe<?>, Recipe<?>> wrapper) {
-		return (RecipeOutput) Proxy.newProxyInstance(RecipeOutput.class.getClassLoader(), new Class<?>[] {RecipeOutput.class},
+		return (RecipeOutput) Proxy.newProxyInstance(RecipeOutput.class.getClassLoader(), new Class<?>[] { RecipeOutput.class },
 				(proxy, method, args) -> {
 					switch (method.getName()) {
 						case "accept" -> {

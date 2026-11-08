@@ -15,7 +15,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -32,12 +31,12 @@ import vazkii.botania.api.block_entity.GeneratingFlowerBlockEntity;
 import vazkii.botania.api.block_entity.RadiusDescriptor;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.helper.DelayHelper;
+import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import vazkii.botania.common.helper.ItemNBTHelper;
 
 public class GourmaryllisBlockEntity extends GeneratingFlowerBlockEntity {
 	private static final String TAG_COOLDOWN = "cooldown";

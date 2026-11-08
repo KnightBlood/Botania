@@ -5,7 +5,8 @@ import vazkii.botania.api.BotaniaAPI;
 /**
  * Optional-dependency probe for Sodium's animated-sprite API, shared by both loaders.
  *
- * <p>Sodium 0.8.9 for MC 26.1 ships an official build for BOTH Fabric and NeoForge under the
+ * <p>
+ * Sodium 0.8.9 for MC 26.1 ships an official build for BOTH Fabric and NeoForge under the
  * same mod id {@code sodium} and the same {@code net.caffeinemc.mods.sodium} package. The old
  * Forge-side ports (Rubidium / Embeddium) used {@code me.jellysquid.mods.sodium} and have no
  * 26.1 release at all. Their mod ids are still probed so a third-party 26.1 port that happens
@@ -13,7 +14,8 @@ import vazkii.botania.api.BotaniaAPI;
  * references a Sodium class: if only a legacy port is installed, Botania logs a warning and
  * leaves animated sprites alone instead of throwing {@link NoClassDefFoundError}.
  *
- * <p>This class deliberately contains no hard reference to any Sodium type, mirroring the
+ * <p>
+ * This class deliberately contains no hard reference to any Sodium type, mirroring the
  * optional-dependency isolation used for Trinkets on NeoForge.
  */
 public final class SodiumPresence {

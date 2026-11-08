@@ -9,16 +9,14 @@
 package vazkii.botania.api.recipe;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -48,7 +46,7 @@ public interface ElvenTradeRecipe extends BotaniaRecipe<RecipeInput> {
 	 * @return Preview of the inputs
 	 */
 	@NotNull
-		NonNullList<Ingredient> getIngredients();
+	NonNullList<Ingredient> getIngredients();
 
 	/**
 	 * @return Preview of the outputs
@@ -60,7 +58,7 @@ public interface ElvenTradeRecipe extends BotaniaRecipe<RecipeInput> {
 	 */
 	List<ItemStack> getOutputs(List<ItemStack> inputs);
 
-@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@NotNull
 	@Override
 	default RecipeType<? extends Recipe<RecipeInput>> getType() {
@@ -80,8 +78,7 @@ public interface ElvenTradeRecipe extends BotaniaRecipe<RecipeInput> {
 		return ItemStack.EMPTY;
 	}
 
-
-		default ItemStack getResultItem() {
+	default ItemStack getResultItem() {
 		return ItemStack.EMPTY;
 	}
 

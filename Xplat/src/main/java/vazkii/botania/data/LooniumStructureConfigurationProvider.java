@@ -2,7 +2,6 @@ package vazkii.botania.data;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 
 import net.minecraft.data.CachedOutput;
@@ -14,7 +13,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,7 +34,6 @@ import vazkii.botania.common.loot.BotaniaLootTables;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -751,6 +748,7 @@ public class LooniumStructureConfigurationProvider implements DataProvider {
 			memories.add(type, ExpirableValue.of(true));
 		}
 	}
+
 	@NotNull
 	@Override
 	public String getName() {

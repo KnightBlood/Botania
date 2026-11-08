@@ -11,9 +11,9 @@ package vazkii.botania.api.recipe;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 
@@ -41,7 +41,7 @@ public interface ManaInfusionRecipe extends BotaniaRecipe<RecipeInput> {
 	 * @return The output stack of the recipe.
 	 */
 	@NotNull
-		ItemStack getResultItem();
+	ItemStack getResultItem();
 
 	/**
 	 * Get the actual recipe output, not just for display. Defaults to a copy of {@link #getResultItem}.
@@ -67,7 +67,7 @@ public interface ManaInfusionRecipe extends BotaniaRecipe<RecipeInput> {
 	 */
 	int getManaToConsume();
 
-@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@NotNull
 	@Override
 	default RecipeType<? extends Recipe<RecipeInput>> getType() {
@@ -86,7 +86,6 @@ public interface ManaInfusionRecipe extends BotaniaRecipe<RecipeInput> {
 	default boolean matches(@NotNull RecipeInput inv, @NotNull Level world) {
 		return false;
 	}
-
 
 	@Override
 	default boolean isSpecial() {

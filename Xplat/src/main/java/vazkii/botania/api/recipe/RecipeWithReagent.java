@@ -1,10 +1,8 @@
 package vazkii.botania.api.recipe;
 
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.item.crafting.RecipeInput;
 
 public interface RecipeWithReagent extends BotaniaRecipe<RecipeInput> {
 	/**
@@ -19,7 +17,6 @@ public interface RecipeWithReagent extends BotaniaRecipe<RecipeInput> {
 	default ItemStack getResultItem() {
 		return ItemStack.EMPTY;
 	}
-
 
 	@Override
 	default boolean isSpecial() {

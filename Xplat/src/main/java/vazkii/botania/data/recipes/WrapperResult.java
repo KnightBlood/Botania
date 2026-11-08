@@ -35,7 +35,7 @@ public final class WrapperResult {
 	 */
 	@SuppressWarnings("unchecked") // Proxy.invocation handler args are typed Object
 	public static RecipeOutput ofType(UnaryOperator<Recipe<?>> wrapper, RecipeOutput parent) {
-		return (RecipeOutput) Proxy.newProxyInstance(RecipeOutput.class.getClassLoader(), new Class<?>[] {RecipeOutput.class},
+		return (RecipeOutput) Proxy.newProxyInstance(RecipeOutput.class.getClassLoader(), new Class<?>[] { RecipeOutput.class },
 				(proxy, method, args) -> switch (method.getName()) {
 					case "accept" -> {
 						parent.accept((ResourceKey<Recipe<?>>) args[0], transform(wrapper, (Recipe<?>) args[1]), (AdvancementHolder) args[2]);

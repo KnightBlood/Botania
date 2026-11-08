@@ -8,8 +8,6 @@
  */
 package vazkii.botania.fabric.mixin.client;
 
-import java.util.concurrent.CompletableFuture;
-
 import net.minecraft.client.resources.model.ModelManager;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import vazkii.botania.fabric.client.FabricClientInitializer;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 26.1: NeoForge fires {@code ModelEvent.ModifyBakingResult} once the models are baked, but Fabric

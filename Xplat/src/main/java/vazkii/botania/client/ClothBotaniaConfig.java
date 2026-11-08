@@ -8,17 +8,6 @@
  */
 package vazkii.botania.client;
 
-import blue.endless.jankson.Jankson;
-import blue.endless.jankson.JsonArray;
-import blue.endless.jankson.JsonElement;
-import blue.endless.jankson.JsonGrammar;
-import blue.endless.jankson.JsonNull;
-import blue.endless.jankson.JsonObject;
-import blue.endless.jankson.JsonPrimitive;
-import blue.endless.jankson.api.SyntaxError;
-
-
-
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.common.lib.LibMisc;
 import vazkii.botania.xplat.BotaniaConfig;
@@ -28,6 +17,15 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import blue.endless.jankson.Jankson;
+import blue.endless.jankson.JsonArray;
+import blue.endless.jankson.JsonElement;
+import blue.endless.jankson.JsonGrammar;
+import blue.endless.jankson.JsonNull;
+import blue.endless.jankson.JsonObject;
+import blue.endless.jankson.JsonPrimitive;
+import blue.endless.jankson.api.SyntaxError;
 
 public final class ClothBotaniaConfig {
 	private static final Jankson JANKSON = Jankson.builder().build();
@@ -52,21 +50,80 @@ public final class ClothBotaniaConfig {
 		public List<String> rannuncarpusItemBlacklist = new ArrayList<>();
 		public List<String> rannuncarpusModBlacklist = new ArrayList<>(List.of("storagedrawers"));
 
-		@Override public boolean blockBreakParticles() { return blockBreakParticles; }
-		@Override public boolean blockBreakParticlesTool() { return blockBreakParticlesTool; }
-		@Override public boolean chargingAnimationEnabled() { return chargingAnimationEnabled; }
-		@Override public boolean silentSpreaders() { return silentSpreaders; }
-		@Override public int spreaderTraceTime() { return spreaderTraceTime; }
-		@Override public boolean enderPickpocketEnabled() { return enderPickpocketEnabled; }
-		@Override public boolean enchanterEnabled() { return enchanterEnabled; }
-		@Override public boolean relicsEnabled() { return relicsEnabled; }
-		@Override public boolean invertMagnetRing() { return invertMagnetRing; }
-		@Override public int harvestLevelWeight() { return harvestLevelWeight; }
-		@Override public int harvestLevelBore() { return harvestLevelBore; }
-		@Override public boolean gogSpawnWithLexicon() { return gogSpawnWithLexicon; }
-		@Override public int gogIslandScaleMultiplier() { return gogIslandScaleMultiplier; }
-		@Override public List<String> rannuncarpusItemBlacklist() { return rannuncarpusItemBlacklist; }
-		@Override public List<String> rannuncarpusModBlacklist() { return rannuncarpusModBlacklist; }
+		@Override
+		public boolean blockBreakParticles() {
+			return blockBreakParticles;
+		}
+
+		@Override
+		public boolean blockBreakParticlesTool() {
+			return blockBreakParticlesTool;
+		}
+
+		@Override
+		public boolean chargingAnimationEnabled() {
+			return chargingAnimationEnabled;
+		}
+
+		@Override
+		public boolean silentSpreaders() {
+			return silentSpreaders;
+		}
+
+		@Override
+		public int spreaderTraceTime() {
+			return spreaderTraceTime;
+		}
+
+		@Override
+		public boolean enderPickpocketEnabled() {
+			return enderPickpocketEnabled;
+		}
+
+		@Override
+		public boolean enchanterEnabled() {
+			return enchanterEnabled;
+		}
+
+		@Override
+		public boolean relicsEnabled() {
+			return relicsEnabled;
+		}
+
+		@Override
+		public boolean invertMagnetRing() {
+			return invertMagnetRing;
+		}
+
+		@Override
+		public int harvestLevelWeight() {
+			return harvestLevelWeight;
+		}
+
+		@Override
+		public int harvestLevelBore() {
+			return harvestLevelBore;
+		}
+
+		@Override
+		public boolean gogSpawnWithLexicon() {
+			return gogSpawnWithLexicon;
+		}
+
+		@Override
+		public int gogIslandScaleMultiplier() {
+			return gogIslandScaleMultiplier;
+		}
+
+		@Override
+		public List<String> rannuncarpusItemBlacklist() {
+			return rannuncarpusItemBlacklist;
+		}
+
+		@Override
+		public List<String> rannuncarpusModBlacklist() {
+			return rannuncarpusModBlacklist;
+		}
 	}
 
 	public static class ClientConfig implements BotaniaConfig.ClientConfigAccess {
@@ -88,23 +145,90 @@ public final class ClothBotaniaConfig {
 		public boolean splashesEnabled = true;
 		public boolean useShaders = true;
 
-		@Override public boolean lexiconRotatingItems() { return lexiconRotatingItems; }
-		@Override public boolean subtlePowerSystem() { return subtlePowerSystem; }
-		@Override public boolean staticWandBeam() { return staticWandBeam; }
-		@Override public boolean boundBlockWireframe() { return boundBlockWireframe; }
-		@Override public boolean lexicon3dModel() { return lexicon3dModel; }
-		@Override public double flowerParticleFrequency() { return flowerParticleFrequency; }
-		@Override public boolean elfPortalParticlesEnabled() { return elfPortalParticlesEnabled; }
-		@Override public boolean renderAccessories() { return renderAccessories; }
-		@Override public boolean enableSeasonalFeatures() { return enableSeasonalFeatures; }
-		@Override public boolean enableFancySkybox() { return enableFancySkybox; }
-		@Override public boolean enableFancySkyboxInNormalWorlds() { return enableFancySkyboxInNormalWorlds; }
-		@Override public int manaBarHeight() { return manaBarHeight; }
-		@Override public boolean staticFloaters() { return staticFloaters; }
-		@Override public boolean debugInfo() { return debugInfo; }
-		@Override public boolean referencesEnabled() { return referencesEnabled; }
-		@Override public boolean splashesEnabled() { return splashesEnabled; }
-		@Override public boolean useShaders() { return useShaders; }
+		@Override
+		public boolean lexiconRotatingItems() {
+			return lexiconRotatingItems;
+		}
+
+		@Override
+		public boolean subtlePowerSystem() {
+			return subtlePowerSystem;
+		}
+
+		@Override
+		public boolean staticWandBeam() {
+			return staticWandBeam;
+		}
+
+		@Override
+		public boolean boundBlockWireframe() {
+			return boundBlockWireframe;
+		}
+
+		@Override
+		public boolean lexicon3dModel() {
+			return lexicon3dModel;
+		}
+
+		@Override
+		public double flowerParticleFrequency() {
+			return flowerParticleFrequency;
+		}
+
+		@Override
+		public boolean elfPortalParticlesEnabled() {
+			return elfPortalParticlesEnabled;
+		}
+
+		@Override
+		public boolean renderAccessories() {
+			return renderAccessories;
+		}
+
+		@Override
+		public boolean enableSeasonalFeatures() {
+			return enableSeasonalFeatures;
+		}
+
+		@Override
+		public boolean enableFancySkybox() {
+			return enableFancySkybox;
+		}
+
+		@Override
+		public boolean enableFancySkyboxInNormalWorlds() {
+			return enableFancySkyboxInNormalWorlds;
+		}
+
+		@Override
+		public int manaBarHeight() {
+			return manaBarHeight;
+		}
+
+		@Override
+		public boolean staticFloaters() {
+			return staticFloaters;
+		}
+
+		@Override
+		public boolean debugInfo() {
+			return debugInfo;
+		}
+
+		@Override
+		public boolean referencesEnabled() {
+			return referencesEnabled;
+		}
+
+		@Override
+		public boolean splashesEnabled() {
+			return splashesEnabled;
+		}
+
+		@Override
+		public boolean useShaders() {
+			return useShaders;
+		}
 	}
 
 	static final CommonConfig COMMON = new CommonConfig();
@@ -115,8 +239,7 @@ public final class ClothBotaniaConfig {
 	private static void writeDefaultConfig(Path path, JsonObject obj) {
 		try (OutputStream s = new BufferedOutputStream(Files.newOutputStream(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW))) {
 			s.write(obj.toJson(JsonGrammar.JANKSON).getBytes());
-		} catch (FileAlreadyExistsException ignored) {
-		} catch (IOException e) {
+		} catch (FileAlreadyExistsException ignored) {} catch (IOException e) {
 			BotaniaAPI.LOGGER.error("Error writing default config", e);
 		}
 	}
@@ -160,7 +283,8 @@ public final class ClothBotaniaConfig {
 		for (var field : obj.getClass().getDeclaredFields()) {
 			field.setAccessible(true);
 			JsonElement elem = json.get(field.getName());
-			if (elem == null || elem instanceof JsonNull) continue;
+			if (elem == null || elem instanceof JsonNull)
+				continue;
 			try {
 				if (elem instanceof JsonPrimitive prim) {
 					if (field.getType() == boolean.class) {
@@ -190,8 +314,7 @@ public final class ClothBotaniaConfig {
 	public static void setup() {
 		try {
 			Files.createDirectory(CONFIG_DIR);
-		} catch (FileAlreadyExistsException ignored) {
-		} catch (IOException e) {
+		} catch (FileAlreadyExistsException ignored) {} catch (IOException e) {
 			BotaniaAPI.LOGGER.warn("Failed to make config dir", e);
 		}
 

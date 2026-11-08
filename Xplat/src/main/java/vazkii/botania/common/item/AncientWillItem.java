@@ -12,17 +12,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import vazkii.botania.api.item.AncientWillContainer;
 
-import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 public class AncientWillItem extends Item {
 	public final AncientWillContainer.AncientWillType type;

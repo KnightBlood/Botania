@@ -23,9 +23,9 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.api.recipe.BotaniaRecipe;
 import vazkii.botania.common.helper.RecipeHelper;
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 
 import java.util.Collections;
 import java.util.List;

@@ -11,7 +11,6 @@ package vazkii.botania.api.mana;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * A block that implements this can provide a sprite

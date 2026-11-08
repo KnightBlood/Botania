@@ -11,31 +11,28 @@ package vazkii.botania.common.item.equipment.tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.server.level.ServerLevel;
-import org.jetbrains.annotations.Nullable;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.block.state.BlockState;
 
-import vazkii.botania.common.helper.EnchHelper;
+import org.jetbrains.annotations.Nullable;
+
 import vazkii.botania.common.annotations.SoftImplement;
+import vazkii.botania.common.helper.EnchHelper;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.equipment.tool.manasteel.ManasteelPickaxeItem;
 import vazkii.botania.xplat.XplatAbstractions;
-
-import java.util.Map;
 
 public class VitreousPickaxeItem extends ManasteelPickaxeItem {
 	private static final String TAG_SILK_HACK = "botania:silk_hack";
@@ -103,4 +100,3 @@ public class VitreousPickaxeItem extends ManasteelPickaxeItem {
 	}
 
 }
-

@@ -9,7 +9,6 @@
 package vazkii.botania.common.block.block_entity.mana;
 
 import com.google.common.base.Predicates;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import it.unimi.dsi.fastutil.ints.*;
 
@@ -35,7 +34,6 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.BotaniaAPIClient;
@@ -538,7 +536,6 @@ public class ManaPoolBlockEntity extends BotaniaBlockEntity implements ManaPool,
 			RenderHelper.renderHUDBox(gui, centerX - width / 2, centerY + 8, centerX + width / 2, centerY + 48);
 
 			BotaniaAPIClient.instance().drawSimpleManaHUD(gui, 0x0095FF, pool.getCurrentMana(), pool.getMaxMana(), name);
-
 
 			int arrowU = pool.outputting ? 22 : 0;
 			int arrowV = 38;

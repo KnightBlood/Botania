@@ -8,8 +8,8 @@
  */
 package vazkii.botania.test.block;
 
-import net.minecraft.core.BlockPos;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 import vazkii.botania.common.block.block_entity.corporea.CorporeaRetainerBlockEntity;

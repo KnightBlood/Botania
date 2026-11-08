@@ -11,7 +11,6 @@ package vazkii.botania.common.block.mana;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 

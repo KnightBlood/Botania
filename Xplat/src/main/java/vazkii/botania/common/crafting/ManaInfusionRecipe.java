@@ -9,37 +9,29 @@
 package vazkii.botania.common.crafting;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.ShapedRecipe;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.recipe.StateIngredient;
 import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 import vazkii.botania.common.helper.IngredientHelper;
 
-import java.util.Objects;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import com.mojang.serialization.Codec;
-import net.minecraft.network.codec.ByteBufCodecs;
 import java.util.Optional;
-import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 
 public class ManaInfusionRecipe implements vazkii.botania.api.recipe.ManaInfusionRecipe {
 	private Identifier id;
@@ -121,7 +113,7 @@ public class ManaInfusionRecipe implements vazkii.botania.api.recipe.ManaInfusio
 	}
 
 	@NotNull
-		public ItemStack getToastSymbol() {
+	public ItemStack getToastSymbol() {
 		return new ItemStack(BotaniaBlocks.manaPool);
 	}
 

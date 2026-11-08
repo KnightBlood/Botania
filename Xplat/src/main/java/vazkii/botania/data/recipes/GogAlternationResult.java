@@ -10,7 +10,6 @@ package vazkii.botania.data.recipes;
 
 import com.google.gson.JsonObject;
 
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
@@ -39,7 +38,7 @@ public class GogAlternationResult implements BotaniaFinishedRecipe {
 	}
 
 	// Take these from the base recipe
-		public Identifier getId() {
+	public Identifier getId() {
 		return baseRecipe.getId();
 	}
 

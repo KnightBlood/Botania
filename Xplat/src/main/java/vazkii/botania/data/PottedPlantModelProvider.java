@@ -3,13 +3,13 @@ package vazkii.botania.data;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import net.minecraft.client.data.models.MultiVariant;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.client.data.models.MultiVariant;
-import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
-import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.random.WeightedList;

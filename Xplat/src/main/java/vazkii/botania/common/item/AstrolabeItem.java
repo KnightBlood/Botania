@@ -23,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -50,7 +51,6 @@ import vazkii.botania.xplat.XplatAbstractions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 
 public class AstrolabeItem extends Item {
 
@@ -316,4 +316,3 @@ public class AstrolabeItem extends Item {
 	}
 
 }
-

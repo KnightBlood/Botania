@@ -9,7 +9,6 @@ import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.SingleVariant;
@@ -21,10 +20,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,7 +35,6 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
@@ -47,12 +43,13 @@ import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import net.neoforged.neoforge.client.event.RegisterRangeSelectItemModelPropertyEvent;
+import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneModel;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.NeoForge;
@@ -60,15 +57,15 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.api.BotaniaNeoForgeClientCapabilities;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.BotaniaAPIClient;
+import vazkii.botania.api.BotaniaNeoForgeClientCapabilities;
 import vazkii.botania.api.block.WandHUD;
 import vazkii.botania.api.mana.ManaBarTooltip;
 import vazkii.botania.client.BotaniaItemProperties;
+import vazkii.botania.client.ClothBotaniaConfigScreen;
 import vazkii.botania.client.core.handler.*;
 import vazkii.botania.client.core.helper.CoreShaders;
-import vazkii.botania.client.ClothBotaniaConfigScreen;
 import vazkii.botania.client.core.proxy.ClientProxy;
 import vazkii.botania.client.fx.BotaniaParticles;
 import vazkii.botania.client.gui.HUDHandler;
@@ -246,10 +243,8 @@ public class NeoForgeClientInitializer {
 	});
 
 	public static void registerWandHudCaps(RegisterCapabilitiesEvent evt) {
-		WAND_HUD.get().forEach((type, factory) ->
-				evt.registerBlockEntity(BotaniaNeoForgeClientCapabilities.WAND_HUD, type, (be, side) -> factory.apply(be)));
-		ENTITY_WAND_HUD.get().forEach((type, factory) ->
-				evt.registerEntity(BotaniaNeoForgeClientCapabilities.ENTITY_WAND_HUD, type, (entity, side) -> factory.apply(entity)));
+		WAND_HUD.get().forEach((type, factory) -> evt.registerBlockEntity(BotaniaNeoForgeClientCapabilities.WAND_HUD, type, (be, side) -> factory.apply(be)));
+		ENTITY_WAND_HUD.get().forEach((type, factory) -> evt.registerEntity(BotaniaNeoForgeClientCapabilities.ENTITY_WAND_HUD, type, (entity, side) -> factory.apply(entity)));
 	}
 
 	public static void registerModelLoaders(ModelEvent.RegisterLoaders evt) {

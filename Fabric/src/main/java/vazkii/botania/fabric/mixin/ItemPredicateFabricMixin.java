@@ -8,12 +8,6 @@
  */
 package vazkii.botania.fabric.mixin;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.ImmutableSet;
 
 import net.minecraft.advancements.criterion.ItemPredicate;
@@ -28,6 +22,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import vazkii.botania.common.item.BotaniaItems;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mixin(ItemPredicate.class)
 public abstract class ItemPredicateFabricMixin {

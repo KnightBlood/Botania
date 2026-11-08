@@ -8,41 +8,34 @@
  */
 package vazkii.botania.common.crafting;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-
-import vazkii.botania.api.recipe.BotaniaRecipe;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.brew.Brew;
 import vazkii.botania.api.brew.BrewContainer;
+import vazkii.botania.api.recipe.BotaniaRecipe;
 import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 import vazkii.botania.common.helper.IngredientHelper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 
 public class BotanicalBreweryRecipe implements vazkii.botania.api.recipe.BotanicalBreweryRecipe {
 	private Identifier id;
@@ -90,17 +83,17 @@ public class BotanicalBreweryRecipe implements vazkii.botania.api.recipe.Botanic
 	}
 
 	@NotNull
-		public NonNullList<Ingredient> getIngredients() {
+	public NonNullList<Ingredient> getIngredients() {
 		return inputs;
 	}
 
 	@NotNull
-		public ItemStack getToastSymbol() {
+	public ItemStack getToastSymbol() {
 		return new ItemStack(BotaniaBlocks.brewery);
 	}
 
 	@NotNull
-		public Identifier getId() {
+	public Identifier getId() {
 		return id;
 	}
 

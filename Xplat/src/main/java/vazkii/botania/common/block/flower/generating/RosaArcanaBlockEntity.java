@@ -32,11 +32,9 @@ import vazkii.botania.api.block_entity.RadiusDescriptor;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.helper.EntityHelper;
-import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.mixin.ExperienceOrbAccessor;
 
 import java.util.List;
-import java.util.Map;
 
 public class RosaArcanaBlockEntity extends GeneratingFlowerBlockEntity {
 	private static final int MANA_PER_XP = 50;

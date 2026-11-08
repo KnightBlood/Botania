@@ -12,10 +12,10 @@ import net.minecraft.network.chat.Component;
 
 import org.jetbrains.annotations.NotNull;
 
-import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.api.recipe.OrechidRecipe;
 import vazkii.botania.client.integration.shared.OrechidUIHelper;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 
 import java.util.stream.Stream;
 

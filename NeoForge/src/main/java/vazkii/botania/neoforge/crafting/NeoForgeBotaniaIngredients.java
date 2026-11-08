@@ -8,8 +8,6 @@
  */
 package vazkii.botania.neoforge.crafting;
 
-import net.minecraft.resources.Identifier;
-
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.neoforged.neoforge.registries.DeferredRegister;

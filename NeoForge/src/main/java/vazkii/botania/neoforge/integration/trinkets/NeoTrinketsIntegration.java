@@ -13,16 +13,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import dev.yumi.commons.TriState;
 
-import eu.pb4.trinkets.api.TrinketAttachment;
-import eu.pb4.trinkets.api.TrinketDropRule;
-import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.api.TrinketsApi;
-import eu.pb4.trinkets.api.callback.TrinketCallback;
-import eu.pb4.trinkets.api.client.TrinketRenderer;
-import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
-import eu.pb4.trinkets.api.event.TrinketDropCallback;
-import eu.pb4.trinkets.api.event.TrinketSlotCompatibilityCallback;
-
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -47,22 +37,35 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+import eu.pb4.trinkets.api.TrinketAttachment;
+import eu.pb4.trinkets.api.TrinketDropRule;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketsApi;
+import eu.pb4.trinkets.api.callback.TrinketCallback;
+import eu.pb4.trinkets.api.client.TrinketRenderer;
+import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
+import eu.pb4.trinkets.api.event.TrinketDropCallback;
+import eu.pb4.trinkets.api.event.TrinketSlotCompatibilityCallback;
+
 /**
  * NeoForge-side integration with Trinkets Updated 4.x ({@code eu.pb4:trinkets:4.0.1+26.1}).
  *
- * <p>That artifact is a single jar for both loaders: it carries a {@code fabric.mod.json} and a
+ * <p>
+ * That artifact is a single jar for both loaders: it carries a {@code fabric.mod.json} and a
  * {@code META-INF/neoforge.mods.toml} with an {@code @Mod("trinkets_updated")} entry point, plus
  * its own NeoForge mixin/interface-injection configs. Curios stays Botania's primary accessory
  * backend on NeoForge; when Trinkets is also present, baubles get a Trinkets callback and the
  * Curios lookups fall back to (or are merged with) the Trinkets slots. If Curios is somehow
  * absent, {@link Handler} can serve as the sole equipment handler.
  *
- * <p>Every call into Trinkets must be guarded by {@link TrinketsPresence#isLoaded()}: the
+ * <p>
+ * Every call into Trinkets must be guarded by {@link TrinketsPresence#isLoaded()}: the
  * classes are only on the classpath when the optional mod is installed. The probe lives in a
  * separate class so that checking it never initializes this one (whose static callback wrapper
  * needs Trinkets types).
  *
- * <p>Trinkets 4.0.x+26.1's NeoForge side needs {@code TagsUpdatedEvent$ClientPacketReceived}
+ * <p>
+ * Trinkets 4.0.x+26.1's NeoForge side needs {@code TagsUpdatedEvent$ClientPacketReceived}
  * and {@code common.tooltip.ItemTooltipHandler}, which only exist in the NeoForge 26.1.2.x line.
  * The port was originally pinned to 26.1.0.1-beta; {@code gradle.properties} now targets a
  * compatible NeoForge version so this integration is actually exercised at runtime.

@@ -8,13 +8,6 @@
  */
 package vazkii.botania.common.lib;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
-
 import net.minecraft.core.component.DataComponentInitializers;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -30,6 +23,13 @@ import vazkii.botania.mixin.BlockPropertiesAccessor;
 import vazkii.botania.mixin.ItemAccessor;
 import vazkii.botania.mixin.ItemPropertiesAccessor;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+
 /**
  * 26.1 requires {@code Properties.setId} to be called before a Block/Item is constructed, but
  * Botania constructs its registry objects as static fields whose registration ids are only known
@@ -38,8 +38,7 @@ import vazkii.botania.mixin.ItemPropertiesAccessor;
  * derived from them) right before actual registration, so behaviour matches vanilla.
  */
 public final class RegistrationBackfill {
-	private RegistrationBackfill() {
-	}
+	private RegistrationBackfill() {}
 
 	// Placeholder key handed to the (skipped) DataComponentInitializers.add call during
 	// pending item construction; the real initializer is added during backfill.

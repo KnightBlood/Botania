@@ -15,8 +15,8 @@ import me.shedaniel.rei.api.client.gui.widgets.Label;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
-import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
+import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 
@@ -27,10 +27,10 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.common.integration.rei.BotaniaREIView;
 import vazkii.botania.api.recipe.OrechidRecipe;
 import vazkii.botania.client.integration.shared.OrechidUIHelper;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
+import vazkii.botania.common.integration.rei.BotaniaREIView;
 
 import java.util.List;
 import java.util.stream.Stream;

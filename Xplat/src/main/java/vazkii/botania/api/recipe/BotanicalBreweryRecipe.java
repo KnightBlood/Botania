@@ -8,12 +8,11 @@
  */
 package vazkii.botania.api.recipe;
 
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 
 import org.jetbrains.annotations.NotNull;
@@ -30,7 +29,7 @@ public interface BotanicalBreweryRecipe extends BotaniaRecipe<RecipeInput> {
 
 	ItemStack getOutput(ItemStack container);
 
-@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@NotNull
 	@Override
 	default RecipeType<? extends Recipe<RecipeInput>> getType() {
@@ -38,7 +37,7 @@ public interface BotanicalBreweryRecipe extends BotaniaRecipe<RecipeInput> {
 	}
 
 	@NotNull
-		default ItemStack getResultItem() {
+	default ItemStack getResultItem() {
 		return ItemStack.EMPTY;
 	}
 
@@ -47,7 +46,6 @@ public interface BotanicalBreweryRecipe extends BotaniaRecipe<RecipeInput> {
 	default ItemStack assemble(@NotNull RecipeInput inv) {
 		return ItemStack.EMPTY;
 	}
-
 
 	@Override
 	default boolean isSpecial() {

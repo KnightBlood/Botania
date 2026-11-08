@@ -24,7 +24,8 @@ import vazkii.botania.xplat.BotaniaConfig;
  * used to be installed once per batch are now installed by each case's sequence and
  * undone by the same sequence before it succeeds. All nine cases run on Fabric's default
  * {@code "minecraft:default"} environment.
- * <p>26.1 limitation: a GameTest case only <em>starts</em> an asynchronous
+ * <p>
+ * 26.1 limitation: a GameTest case only <em>starts</em> an asynchronous
  * GameTestSequence and returns immediately, so a mock installed at case start would be
  * undone before the sequence's assertions execute. The mock is therefore installed by the
  * sequence's first step and restored by its last step (before {@code thenSucceed()}).

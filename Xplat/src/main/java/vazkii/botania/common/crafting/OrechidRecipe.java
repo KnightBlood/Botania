@@ -8,32 +8,27 @@
  */
 package vazkii.botania.common.crafting;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.CacheableFunction;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeInput;
-
-import vazkii.botania.api.recipe.BotaniaRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 
 import org.jetbrains.annotations.NotNull;
-
-import vazkii.botania.api.recipe.StateIngredient;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import com.mojang.serialization.Codec;
-import net.minecraft.network.codec.ByteBufCodecs;
-import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
+
+import vazkii.botania.api.recipe.BotaniaRecipe;
+import vazkii.botania.api.recipe.StateIngredient;
 import vazkii.botania.common.crafting.recipe.RecipeSerializers;
+
+import java.util.Optional;
 
 public class OrechidRecipe implements vazkii.botania.api.recipe.OrechidRecipe {
 	protected Identifier id;
@@ -70,7 +65,7 @@ public class OrechidRecipe implements vazkii.botania.api.recipe.OrechidRecipe {
 		return this.successFunction;
 	}
 
-		public Identifier getId() {
+	public Identifier getId() {
 		return id;
 	}
 

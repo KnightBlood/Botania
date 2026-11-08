@@ -45,6 +45,7 @@ public class ManaBlasterTrigger extends SimpleCriterionTrigger<ManaBlasterTrigge
 
 	public record Instance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item,
 			Optional<EntityPredicate> user) implements SimpleCriterionTrigger.SimpleInstance {
+
 		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
 				i -> i.group(
 						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),

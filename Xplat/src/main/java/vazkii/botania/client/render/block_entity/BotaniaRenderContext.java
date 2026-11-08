@@ -101,10 +101,13 @@ public class BotaniaRenderContext implements MultiBufferSource {
 		this.actions.clear();
 	}
 
-	private sealed interface Action permits Segment, EntityAction {}
+	private sealed interface Action permits Segment, EntityAction {
+	}
 
 	private record EntityAction(EntityRenderState state, PoseStack.Pose pose, double x, double y, double z)
-			implements Action {}
+			implements
+				Action {
+	}
 
 	private static final class Segment implements Action {
 		final RenderType renderType;

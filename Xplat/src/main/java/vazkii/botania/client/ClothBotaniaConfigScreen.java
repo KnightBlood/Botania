@@ -8,9 +8,6 @@
  */
 package vazkii.botania.client;
 
-import blue.endless.jankson.JsonGrammar;
-import blue.endless.jankson.JsonObject;
-
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -27,6 +24,9 @@ import java.nio.file.*;
 import java.util.Collections;
 import java.util.List;
 
+import blue.endless.jankson.JsonGrammar;
+import blue.endless.jankson.JsonObject;
+
 /**
  * Cloth Config screen for Botania, kept separate from {@link ClothBotaniaConfig} so that a
  * dedicated server can load the JSON5 storage class without resolving {@code Screen} (which
@@ -34,7 +34,6 @@ import java.util.List;
  */
 public final class ClothBotaniaConfigScreen {
 	private ClothBotaniaConfigScreen() {}
-
 
 	public static Screen create(Screen parent) {
 		ConfigBuilder builder = ConfigBuilder.create()

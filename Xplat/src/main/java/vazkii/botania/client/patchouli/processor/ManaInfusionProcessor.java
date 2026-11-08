@@ -18,7 +18,6 @@ import net.minecraft.world.level.Level;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.recipe.ManaInfusionRecipe;
-import vazkii.botania.api.recipe.StateIngredient;
 import vazkii.botania.client.patchouli.PatchouliUtils;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.patchouli.api.IComponentProcessor;

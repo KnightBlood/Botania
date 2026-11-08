@@ -23,7 +23,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.Vec3;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -146,7 +145,7 @@ public class BoltRenderer {
 			for (int i = bounds.getLeft(); i < bounds.getRight(); i++) {
 				renderQuads.get(i).getVecs().forEach(v -> buffer.addVertex(matrix, (float) v.x, (float) v.y, (float) v.z)
 						.setColor(options.getColor().x(), options.getColor().y(), options.getColor().z(), options.getColor().w())
-						);
+				);
 			}
 		}
 

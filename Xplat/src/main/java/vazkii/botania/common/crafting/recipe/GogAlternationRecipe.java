@@ -8,24 +8,18 @@
  */
 package vazkii.botania.common.crafting.recipe;
 
-import com.google.gson.JsonObject;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-
-import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.xplat.XplatAbstractions;
 
 public class GogAlternationRecipe {
-	
+
 	public static final MapCodec<Recipe<?>> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MapCodec.assumeMapUnsafe(Recipe.CODEC).fieldOf("gog").forGetter(r -> null),
 			MapCodec.assumeMapUnsafe(Recipe.CODEC).fieldOf("base").forGetter(r -> null)

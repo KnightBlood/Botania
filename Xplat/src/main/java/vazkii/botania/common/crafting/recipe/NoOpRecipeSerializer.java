@@ -20,8 +20,7 @@ import java.util.function.Function;
 public final class NoOpRecipeSerializer {
 	private static final Identifier PLACEHOLDER_ID = Identifier.parse("botania:dynamic_recipe");
 
-	private NoOpRecipeSerializer() {
-	}
+	private NoOpRecipeSerializer() {}
 
 	public static <T extends Recipe<?>> RecipeSerializer<T> create(Function<Identifier, T> constructor) {
 		MapCodec<T> codec = MapCodec.unit(() -> constructor.apply(PLACEHOLDER_ID));
@@ -32,8 +31,7 @@ public final class NoOpRecipeSerializer {
 			}
 
 			@Override
-			public void encode(RegistryFriendlyByteBuf buffer, T recipe) {
-			}
+			public void encode(RegistryFriendlyByteBuf buffer, T recipe) {}
 		};
 		return new RecipeSerializer<>(codec, streamCodec);
 	}

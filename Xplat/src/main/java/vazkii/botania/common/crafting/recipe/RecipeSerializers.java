@@ -31,8 +31,7 @@ public final class RecipeSerializers {
 	 */
 	public static final Identifier UNKNOWN_ID = Identifier.fromNamespaceAndPath(BotaniaAPI.MODID, "unknown");
 
-	private RecipeSerializers() {
-	}
+	private RecipeSerializers() {}
 
 	public static StreamCodec<RegistryFriendlyByteBuf, List<Ingredient>> ingredientList() {
 		return Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list());
@@ -45,7 +44,8 @@ public final class RecipeSerializers {
 	/**
 	 * Stream codec for a list of item stack templates.
 	 *
-	 * <p>26.1: recipes that are sent over the network have to carry their result as an
+	 * <p>
+	 * 26.1: recipes that are sent over the network have to carry their result as an
 	 * {@link net.minecraft.world.item.ItemStackTemplate} rather than a materialized
 	 * {@link ItemStack}, because the client may receive the packet before item components have been
 	 * bound.

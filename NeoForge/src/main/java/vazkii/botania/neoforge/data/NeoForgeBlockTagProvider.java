@@ -14,7 +14,6 @@ import net.neoforged.neoforge.common.Tags;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.helper.ColorHelper;
 import vazkii.botania.common.lib.BotaniaTags;
-import vazkii.botania.common.lib.LibMisc;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;

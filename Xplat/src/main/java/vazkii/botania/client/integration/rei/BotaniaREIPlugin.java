@@ -11,9 +11,10 @@ package vazkii.botania.client.integration.rei;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import dev.architectury.event.EventResult;
+
 import me.shedaniel.math.Point;
 import me.shedaniel.math.impl.PointHelper;
-import dev.architectury.event.EventResult;
 import me.shedaniel.rei.api.client.REIRuntime;
 import me.shedaniel.rei.api.client.config.addon.ConfigAddon;
 import me.shedaniel.rei.api.client.config.addon.ConfigAddonRegistry;
@@ -51,23 +52,15 @@ import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.item.AncientWillContainer;
-import vazkii.botania.api.recipe.BotanicalBreweryRecipe;
 import vazkii.botania.api.recipe.ElvenTradeRecipe;
-import vazkii.botania.api.recipe.ManaInfusionRecipe;
-import vazkii.botania.api.recipe.PetalApothecaryRecipe;
-import vazkii.botania.api.recipe.PureDaisyRecipe;
-import vazkii.botania.api.recipe.RunicAltarRecipe;
-import vazkii.botania.api.recipe.TerrestrialAgglomerationRecipe;
 import vazkii.botania.client.ClothBotaniaConfigScreen;
 import vazkii.botania.client.core.handler.CorporeaInputHandler;
 import vazkii.botania.common.block.BotaniaBlocks;
-import vazkii.botania.common.integration.rei.BotaniaSyncedDisplay;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.crafting.LexiconElvenTradeRecipe;
-import vazkii.botania.common.crafting.MarimorphosisRecipe;
-import vazkii.botania.common.crafting.OrechidIgnemRecipe;
 import vazkii.botania.common.helper.RecipeHelper;
+import vazkii.botania.common.integration.rei.BotaniaSyncedDisplay;
 import vazkii.botania.common.item.AncientWillItem;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.equipment.tool.terrasteel.TerraShattererItem;
@@ -88,12 +81,14 @@ import java.util.stream.StreamSupport;
 /**
  * Shared REI client plugin, compiled into both loader modules.
  *
- * <p>MC 26.1 recipes are only exposed as vanilla {@code RecipeDisplay}s for crafting-grid recipes;
+ * <p>
+ * MC 26.1 recipes are only exposed as vanilla {@code RecipeDisplay}s for crafting-grid recipes;
  * Botania's special recipes have no such display, so REI's automatic recipe fillers never see them.
  * Like the EMI integration, the displays are built explicitly in
  * {@link #registerDisplays(DisplayRegistry)} from a real {@code RecipeManager}.
  *
- * <p>MC 26.1 no longer syncs full {@code RecipeHolder}s to clients - a {@code ClientLevel} only
+ * <p>
+ * MC 26.1 no longer syncs full {@code RecipeHolder}s to clients - a {@code ClientLevel} only
  * exposes {@code RecipeAccess} (property sets + stonecutter recipes). In singleplayer, including
  * dev runs, the integrated server is already running when REI reloads its plugins, so its
  * {@code RecipeManager} is used to build the full client-side displays (which keep the
@@ -103,7 +98,8 @@ import java.util.stream.StreamSupport;
  * a local display with the same category + recipe id exists, so singleplayer shows no duplicates.
  * See {@link #recipeManager()}.
  *
- * <p>Platform-specific parts are supplied by thin subclasses: Fabric registers this as a
+ * <p>
+ * Platform-specific parts are supplied by thin subclasses: Fabric registers this as a
  * {@code rei_client} entrypoint, NeoForge uses {@code @REIPluginClient}; both override
  * {@link #customStripping()} to expose their own axe-stripping map.
  */
@@ -264,7 +260,8 @@ public class BotaniaREIPlugin implements REIClientPlugin {
 	/**
 	 * Returns a {@code RecipeManager} that still holds the full {@code RecipeHolder} list.
 	 *
-	 * <p>REI reloads its client plugins while joining a world, before {@code Minecraft#level} is
+	 * <p>
+	 * REI reloads its client plugins while joining a world, before {@code Minecraft#level} is
 	 * populated, and a {@code ClientLevel} only exposes a {@code RecipeAccess} anyway. The
 	 * integrated server, however, is already up at that point (it logged the player in), so its
 	 * {@code RecipeManager} is the reliable source in singleplayer / dev runs. A dedicated server

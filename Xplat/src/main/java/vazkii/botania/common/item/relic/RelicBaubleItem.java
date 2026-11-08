@@ -9,24 +9,22 @@
 package vazkii.botania.common.item.relic;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.component.TooltipDisplay;
+
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.item.equipment.bauble.BaubleItem;
 import vazkii.botania.xplat.XplatAbstractions;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class RelicBaubleItem extends BaubleItem {
 

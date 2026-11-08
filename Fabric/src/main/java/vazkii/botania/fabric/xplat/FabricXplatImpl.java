@@ -2,10 +2,7 @@ package vazkii.botania.fabric.xplat;
 
 import com.redlimerl.speedrunigt.timer.InGameTimer;
 
-import io.netty.buffer.Unpooled;
-
 import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
@@ -38,9 +35,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
@@ -48,11 +44,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Unit;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.effect.MobEffect;
@@ -121,9 +115,9 @@ import vazkii.botania.fabric.integration.tr_energy.FluxfieldTRStorage;
 import vazkii.botania.fabric.integration.trinkets.TrinketsIntegration;
 import vazkii.botania.fabric.internal_caps.CCAInternalEntityComponents;
 import vazkii.botania.fabric.mixin.AbstractFurnaceBlockEntityFabricAccessor;
+import vazkii.botania.fabric.network.FabricPacketHandler;
 import vazkii.botania.network.BotaniaPacket;
 import vazkii.botania.xplat.XplatAbstractions;
-import vazkii.botania.fabric.network.FabricPacketHandler;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -136,6 +130,8 @@ import java.util.function.Supplier;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 import static vazkii.botania.integration.speedrunigt.BotaniaSpeedrunCategories.BotaniaSpeedrunCategory;
+
+import io.netty.buffer.Unpooled;
 
 public class FabricXplatImpl implements XplatAbstractions {
 	/** 26.1: no static server accessor; kept in sync via ServerLifecycleEvents. */
@@ -644,8 +640,8 @@ public class FabricXplatImpl implements XplatAbstractions {
 		if (recipe == null || furnace.getLevel() == null) {
 			return false;
 		}
-		@SuppressWarnings({"unchecked", "rawtypes"})
-			ItemStack result = ((Recipe) recipe).assemble(new SingleRecipeInput(furnace.getItem(0)));
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		ItemStack result = ((Recipe) recipe).assemble(new SingleRecipeInput(furnace.getItem(0)));
 		return !result.isEmpty()
 				&& AbstractFurnaceBlockEntityFabricAccessor.callCanBurn(items, maxStackSize, result);
 	}

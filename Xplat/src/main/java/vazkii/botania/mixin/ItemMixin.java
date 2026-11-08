@@ -28,8 +28,7 @@ import vazkii.botania.common.lib.RegistrationBackfill;
 public class ItemMixin {
 	// Marker passed to DataComponentInitializers.add when construction happens without an id
 	// (queued for later backfill instead); replaced by the real initializer during registration.
-	private static final DataComponentInitializers.Initializer<Item> NO_OP_INIT = (builder, provider, key) -> {
-	};
+	private static final DataComponentInitializers.Initializer<Item> NO_OP_INIT = (builder, provider, key) -> {};
 
 	@Inject(at = @At("HEAD"), method = "getCraftingRemainder", cancellable = true)
 	private void returnSelf(CallbackInfoReturnable<ItemStackTemplate> cir) {

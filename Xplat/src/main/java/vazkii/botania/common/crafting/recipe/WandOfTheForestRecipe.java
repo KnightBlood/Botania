@@ -24,7 +24,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.block.decor.BotaniaMushroomBlock;
 import vazkii.botania.common.item.WandOfTheForestItem;

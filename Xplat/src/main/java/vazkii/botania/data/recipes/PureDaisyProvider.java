@@ -28,7 +28,6 @@ import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.crafting.StateIngredientHelper;
 
-
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class PureDaisyProvider extends BotaniaRecipeProvider {
@@ -101,7 +100,7 @@ public class PureDaisyProvider extends BotaniaRecipeProvider {
 			}
 		}
 
-				public Identifier getId() {
+		public Identifier getId() {
 			return id;
 		}
 

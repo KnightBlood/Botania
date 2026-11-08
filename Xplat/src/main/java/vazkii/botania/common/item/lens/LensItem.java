@@ -17,12 +17,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.HitResult;
 
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +31,7 @@ import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.proxy.Proxy;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class LensItem extends Item implements ControlLensItem, CompositableLensItem, TinyPlanetExcempt {
 	public static final int PROP_NONE = 0,
@@ -255,4 +252,3 @@ public class LensItem extends Item implements ControlLensItem, CompositableLensI
 	}
 
 }
-

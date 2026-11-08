@@ -8,12 +8,8 @@
  */
 package vazkii.botania.common.block.block_entity;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import org.joml.Matrix3x2fStack;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,7 +30,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
+import org.joml.Matrix3x2fStack;
 
 import vazkii.botania.api.block.Wandable;
 import vazkii.botania.api.internal.VanillaPacketDispatcher;
@@ -47,10 +43,10 @@ import vazkii.botania.client.gui.HUDHandler;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.handler.BotaniaSounds;
-import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.helper.EntityHelper;
 import vazkii.botania.common.helper.InventoryHelper;
 import vazkii.botania.common.helper.PlayerHelper;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.WandOfTheForestItem;
 import vazkii.botania.common.item.material.RuneItem;
@@ -218,8 +214,8 @@ public class RunicAltarBlockEntity extends SimpleInventoryBlockEntity implements
 			this.manaToGet = currentRecipe.getManaUsage();
 		} else {
 			this.manaToGet = RecipeHelper.getRecipeManager(level)
-				.getRecipeFor(BotaniaRecipeTypes.RUNE_TYPE, RecipeHelper.adapt(getItemHandler()), level)
-				.map(RecipeHolder::value)
+					.getRecipeFor(BotaniaRecipeTypes.RUNE_TYPE, RecipeHelper.adapt(getItemHandler()), level)
+					.map(RecipeHolder::value)
 					.map(RunicAltarRecipe::getManaUsage)
 					.orElse(0);
 		}
@@ -271,8 +267,8 @@ public class RunicAltarBlockEntity extends SimpleInventoryBlockEntity implements
 			recipe = currentRecipe;
 		} else {
 			Optional<RunicAltarRecipe> maybeRecipe = RecipeHelper.getRecipeManager(level)
-			.getRecipeFor(BotaniaRecipeTypes.RUNE_TYPE, RecipeHelper.adapt(getItemHandler()), level)
-			.map(RecipeHolder::value);
+					.getRecipeFor(BotaniaRecipeTypes.RUNE_TYPE, RecipeHelper.adapt(getItemHandler()), level)
+					.map(RecipeHolder::value);
 			if (maybeRecipe.isPresent()) {
 				recipe = maybeRecipe.get();
 			}
@@ -415,34 +411,34 @@ public class RunicAltarBlockEntity extends SimpleInventoryBlockEntity implements
 			if (amt > 0 && altar.manaToGet > 0) {
 				float anglePer = 360F / amt;
 				RecipeHelper.getRecipeManager(altar.level)
-				.getRecipeFor(BotaniaRecipeTypes.RUNE_TYPE, RecipeHelper.adapt(altar.getItemHandler()), altar.level)
-				.map(RecipeHolder::value).ifPresent(recipe -> {
+						.getRecipeFor(BotaniaRecipeTypes.RUNE_TYPE, RecipeHelper.adapt(altar.getItemHandler()), altar.level)
+						.map(RecipeHolder::value).ifPresent(recipe -> {
 
-					float progress = (float) altar.mana / (float) altar.manaToGet;
+							float progress = (float) altar.mana / (float) altar.manaToGet;
 
-					RenderHelper.drawTexturedModalRect(gui, HUDHandler.manaBar, xc + radius + 9, yc - 8, progress == 1F ? 0 : 22, 8, 22, 15);
+							RenderHelper.drawTexturedModalRect(gui, HUDHandler.manaBar, xc + radius + 9, yc - 8, progress == 1F ? 0 : 22, 8, 22, 15);
 
-					if (progress == 1F) {
-						gui.fakeItem(new ItemStack(BotaniaBlocks.livingrock), xc + radius + 16, yc + 8);
-						ms.pushMatrix();
-						gui.nextStratum();
-						// If the player is holding a WandOfTheForestItem or has one in their inventory, render that instead of a generic twigWand
-						ItemStack playerWand = PlayerHelper.getFirstHeldItemClass(mc.player, WandOfTheForestItem.class);
-						if (playerWand.isEmpty()) {
-							playerWand = PlayerHelper.getItemClassFromInventory(mc.player, WandOfTheForestItem.class);
-						}
-						ItemStack wandToRender = playerWand.isEmpty() ? new ItemStack(BotaniaItems.twigWand) : playerWand;
-						gui.fakeItem(wandToRender, xc + radius + 24, yc + 8);
-						ms.popMatrix();
-					}
+							if (progress == 1F) {
+								gui.fakeItem(new ItemStack(BotaniaBlocks.livingrock), xc + radius + 16, yc + 8);
+								ms.pushMatrix();
+								gui.nextStratum();
+								// If the player is holding a WandOfTheForestItem or has one in their inventory, render that instead of a generic twigWand
+								ItemStack playerWand = PlayerHelper.getFirstHeldItemClass(mc.player, WandOfTheForestItem.class);
+								if (playerWand.isEmpty()) {
+									playerWand = PlayerHelper.getItemClassFromInventory(mc.player, WandOfTheForestItem.class);
+								}
+								ItemStack wandToRender = playerWand.isEmpty() ? new ItemStack(BotaniaItems.twigWand) : playerWand;
+								gui.fakeItem(wandToRender, xc + radius + 24, yc + 8);
+								ms.popMatrix();
+							}
 
-					RenderHelper.renderProgressPie(gui, xc + radius + 32, yc - 8, progress,
-							recipe.assemble(RecipeHelper.adapt(altar.getItemHandler())));
+							RenderHelper.renderProgressPie(gui, xc + radius + 32, yc - 8, progress,
+									recipe.assemble(RecipeHelper.adapt(altar.getItemHandler())));
 
-					if (progress == 1F) {
-						gui.text(mc.font, "+", xc + radius + 14, yc + 12, 0xFFFFFF, false);
-					}
-				});
+							if (progress == 1F) {
+								gui.text(mc.font, "+", xc + radius + 14, yc + 12, 0xFFFFFF, false);
+							}
+						});
 
 				for (int i = 0; i < amt; i++) {
 					double xPos = xc + Math.cos(angle * Math.PI / 180D) * radius - 8;

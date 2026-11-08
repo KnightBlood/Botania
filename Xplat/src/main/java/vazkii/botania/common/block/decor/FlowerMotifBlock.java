@@ -16,15 +16,11 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.FlowerBlock;
 
-import org.jetbrains.annotations.Nullable;
-
-import vazkii.botania.common.item.CustomCreativeTabContents;
 import vazkii.botania.common.block.TooltipBlock;
+import vazkii.botania.common.item.CustomCreativeTabContents;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class FlowerMotifBlock extends FlowerBlock implements CustomCreativeTabContents, TooltipBlock {

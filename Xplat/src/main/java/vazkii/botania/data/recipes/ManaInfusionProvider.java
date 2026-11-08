@@ -15,8 +15,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -31,11 +29,9 @@ import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.crafting.StateIngredientHelper;
-import vazkii.botania.common.helper.ColorHelper;
+import vazkii.botania.common.helper.IngredientHelper;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.BotaniaItems;
-import vazkii.botania.common.helper.IngredientHelper;
-
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
@@ -266,7 +262,7 @@ public class ManaInfusionProvider extends BotaniaRecipeProvider {
 			}
 		}
 
-				public Identifier getId() {
+		public Identifier getId() {
 			return id;
 		}
 

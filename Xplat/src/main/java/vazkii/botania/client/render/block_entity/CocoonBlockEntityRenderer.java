@@ -22,8 +22,7 @@ import vazkii.botania.common.block.block_entity.CocoonBlockEntity;
 import vazkii.botania.common.helper.VecHelper;
 
 public class CocoonBlockEntityRenderer extends BotaniaBlockEntityRenderer<CocoonBlockEntity> {
-	public CocoonBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-	}
+	public CocoonBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {}
 
 	@Override
 	public void render(@NotNull CocoonBlockEntity cocoon, float partialTicks, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {

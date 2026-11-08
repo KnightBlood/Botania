@@ -13,7 +13,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -51,7 +50,7 @@ public class FloralObedienceStickItem extends Item {
 					continue;
 				}
 
-				if (world.getBlockEntity(iterPos) instanceof BindableSpecialFlowerBlockEntity<?>bindable
+				if (world.getBlockEntity(iterPos) instanceof BindableSpecialFlowerBlockEntity<?> bindable
 						&& bindable.wouldBeValidBinding(pos)) {
 					bindable.setBindingPos(pos);
 					WandOfTheForestItem.doParticleBeamWithOffset(world, iterPos, pos);
@@ -60,7 +59,7 @@ public class FloralObedienceStickItem extends Item {
 
 			return true;
 		}
-		if (world.getBlockEntity(pos) instanceof BindableSpecialFlowerBlockEntity<?>bindableFlower) {
+		if (world.getBlockEntity(pos) instanceof BindableSpecialFlowerBlockEntity<?> bindableFlower) {
 			bindableFlower.setBindingPos(null);
 			return true;
 		}

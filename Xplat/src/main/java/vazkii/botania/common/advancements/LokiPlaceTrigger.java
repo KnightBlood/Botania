@@ -47,6 +47,7 @@ public class LokiPlaceTrigger extends SimpleCriterionTrigger<LokiPlaceTrigger.In
 
 	public record Instance(Optional<ContextAwarePredicate> player, Optional<EntityPredicate> playerEntity,
 			Optional<ItemPredicate> ring, Optional<MinMaxBounds.Ints> blocksPlaced) implements SimpleCriterionTrigger.SimpleInstance {
+
 		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
 				i -> i.group(
 						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),

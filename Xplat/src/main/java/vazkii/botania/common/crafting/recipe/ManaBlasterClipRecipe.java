@@ -8,15 +8,12 @@
  */
 package vazkii.botania.common.crafting.recipe;
 
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -75,7 +72,6 @@ public class ManaBlasterClipRecipe extends CustomRecipe {
 		ManaBlasterItem.setLensAtPos(gunCopy, lens, 0);
 		return gunCopy;
 	}
-
 
 	@NotNull
 	@Override

@@ -59,24 +59,28 @@ import java.util.Optional;
  * {@code RecipeManager} and registers a {@code DisplaySerializer} so REI can sync them with
  * {@code DisplaySyncPacket}.
  *
- * <p>MC 26.1 only syncs vanilla {@code RecipeDisplay}s to clients; Botania's special recipes
+ * <p>
+ * MC 26.1 only syncs vanilla {@code RecipeDisplay}s to clients; Botania's special recipes
  * have none, so without this plugin the ten categories are empty on a dedicated server. REI
  * itself skips its own recipe fill when {@code GameInstance.getServer()} is null
  * ({@code ServerDisplayRegistryImpl#fillRecipes}), and this plugin follows the same convention:
  * a client connected to a remote server registers nothing locally and simply receives the
  * server's displays.
  *
- * <p>The client plugin still builds the same displays locally in singleplayer (where the
+ * <p>
+ * The client plugin still builds the same displays locally in singleplayer (where the
  * integrated server's {@code RecipeManager} is available) so the biome-sensitive Orechid
  * tooltip keeps its 1.20.1 behaviour; {@code BotaniaREIPlugin} hides synced duplicates by
  * recipe id. On a dedicated server only the synced displays remain, carrying the generic
  * chance computed here - see {@link BotaniaSyncedDisplay} for the explicit limitation.
  *
- * <p><b>Explicit requirement:</b> REI must also be installed on the dedicated server. Without it
+ * <p>
+ * <b>Explicit requirement:</b> REI must also be installed on the dedicated server. Without it
  * there is no {@code REICommonPlugin} and no {@code DisplaySyncPacket}, so the ten categories stay
  * empty on a remote client; Botania deliberately does not invent a second, private sync channel.
  *
- * <p><b>Known dev-only limitation:</b> a NeoForge {@code runServer} cannot be used to verify this
+ * <p>
+ * <b>Known dev-only limitation:</b> a NeoForge {@code runServer} cannot be used to verify this
  * plugin. REI 26.1.819's own {@code DefaultRuntimePlugin} instantiates
  * {@code ItemEntryDefinition}, whose only {@code LocalPlayer} reference sits in a method annotated
  * {@code @OnlyIn(Dist.CLIENT)}. Production FML dist cleaning strips that method; the dev-only

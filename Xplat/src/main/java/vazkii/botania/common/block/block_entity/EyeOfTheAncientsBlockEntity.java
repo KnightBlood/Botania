@@ -11,7 +11,6 @@ package vazkii.botania.common.block.block_entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;

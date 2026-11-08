@@ -29,10 +29,10 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.Level;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,9 +46,8 @@ import vazkii.botania.common.item.CustomCreativeTabContents;
 
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
@@ -242,4 +241,3 @@ public class BaseBrewItem extends Item implements BrewItem, CustomCreativeTabCon
 		return new ItemStack(baseItem.get());
 	}
 }
-

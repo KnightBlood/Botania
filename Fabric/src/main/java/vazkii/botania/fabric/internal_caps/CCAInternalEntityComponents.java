@@ -8,18 +8,18 @@
  */
 package vazkii.botania.fabric.internal_caps;
 
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.monster.*;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+
 import org.ladysnake.cca.api.v3.component.Component;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistryV3;
 import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
 import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer;
 import org.ladysnake.cca.api.v3.entity.RespawnCopyStrategy;
-
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.monster.*;
-import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 
 import vazkii.botania.common.internal_caps.*;
 

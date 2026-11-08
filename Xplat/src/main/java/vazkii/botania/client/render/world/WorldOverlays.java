@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.fx.BoltRenderer;

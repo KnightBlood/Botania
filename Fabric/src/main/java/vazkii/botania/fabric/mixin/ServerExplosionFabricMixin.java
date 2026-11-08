@@ -22,9 +22,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
-
 import vazkii.botania.common.item.equipment.bauble.BenevolentGoddessCharmItem;
+
+import java.util.List;
 
 /**
  * 26.1: {@code Explosion} became an interface and the old {@code toBlow}/{@code clearToBlow}
@@ -44,8 +44,12 @@ public abstract class ServerExplosionFabricMixin {
 	@Final
 	private Vec3 center;
 
-	@Inject(method = "explode", at = @At(value = "INVOKE", shift = At.Shift.AFTER,
-			target = "Lnet/minecraft/world/level/ServerExplosion;hurtEntities()V"))
+	@Inject(
+		method = "explode", at = @At(
+			value = "INVOKE", shift = At.Shift.AFTER,
+			target = "Lnet/minecraft/world/level/ServerExplosion;hurtEntities()V"
+		)
+	)
 	private void botania$protectBlocks(CallbackInfoReturnable<Integer> cir, @Local List<BlockPos> positions) {
 		if (BenevolentGoddessCharmItem.shouldProtectExplosion(level, center)) {
 			positions.clear();

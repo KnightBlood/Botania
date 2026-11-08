@@ -9,8 +9,8 @@
 package vazkii.botania.common.impl;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -18,20 +18,17 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
-import vazkii.botania.common.lib.BotaniaTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
-import net.minecraft.world.item.*;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.BotaniaAPI;
@@ -43,17 +40,15 @@ import vazkii.botania.api.internal.ManaNetwork;
 import vazkii.botania.client.fx.SparkleParticleData;
 import vazkii.botania.common.block.flower.functional.SolegnoliaBlockEntity;
 import vazkii.botania.common.config.ConfigDataManagerImpl;
-import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.handler.EquipmentHandler;
 import vazkii.botania.common.handler.ManaNetworkHandler;
 import vazkii.botania.common.integration.corporea.CorporeaNodeDetectors;
-import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.relic.RingOfLokiItem;
+import vazkii.botania.common.lib.BotaniaTags;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class BotaniaAPIImpl implements BotaniaAPI {
 
@@ -65,7 +60,8 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 	 * Each key resolves to {@code assets/botania/equipment/<name>.json}; its layers point at
 	 * {@code assets/botania/textures/entity/equipment/<layer>/<name>.png}.
 	 *
-	 * <p>The old 64x128 atlases in {@code textures/model/} were UV maps for Botania's custom
+	 * <p>
+	 * The old 64x128 atlases in {@code textures/model/} were UV maps for Botania's custom
 	 * ArmorModel geometry (Forge {@code getArmorTexture} / Fabric {@code ArmorRenderer}). 26.1
 	 * removed both hooks and uses a different vanilla UV layout, so the shipped equipment
 	 * textures are a recoloured conversion of those atlases onto the vanilla silhouette.
@@ -78,67 +74,67 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 	}
 
 	private static final ArmorMaterial MANASTEEL = new ArmorMaterial(
-		16,
-		Map.of(
-			ArmorType.BOOTS, 2,
-			ArmorType.LEGGINGS, 5,
-			ArmorType.CHESTPLATE, 6,
-			ArmorType.HELMET, 2
-		),
-		18,
-		Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_manasteel"))),
-		0.0F,
-		0.0F,
-		ItemTags.WOODEN_TOOL_MATERIALS,
-		armorAsset("manasteel")
+			16,
+			Map.of(
+					ArmorType.BOOTS, 2,
+					ArmorType.LEGGINGS, 5,
+					ArmorType.CHESTPLATE, 6,
+					ArmorType.HELMET, 2
+			),
+			18,
+			Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_manasteel"))),
+			0.0F,
+			0.0F,
+			ItemTags.WOODEN_TOOL_MATERIALS,
+			armorAsset("manasteel")
 	);
 
 	private static final ArmorMaterial MANAWEAVE = new ArmorMaterial(
-		5,
-		Map.of(
-			ArmorType.BOOTS, 1,
-			ArmorType.LEGGINGS, 2,
-			ArmorType.CHESTPLATE, 3,
-			ArmorType.HELMET, 1
-		),
-		18,
-		Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_manaweave"))),
-		0.0F,
-		0.0F,
-		ItemTags.WOODEN_TOOL_MATERIALS,
-		armorAsset("manaweave")
+			5,
+			Map.of(
+					ArmorType.BOOTS, 1,
+					ArmorType.LEGGINGS, 2,
+					ArmorType.CHESTPLATE, 3,
+					ArmorType.HELMET, 1
+			),
+			18,
+			Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_manaweave"))),
+			0.0F,
+			0.0F,
+			ItemTags.WOODEN_TOOL_MATERIALS,
+			armorAsset("manaweave")
 	);
 
 	private static final ArmorMaterial ELEMENTIUM = new ArmorMaterial(
-		18,
-		Map.of(
-			ArmorType.BOOTS, 2,
-			ArmorType.LEGGINGS, 5,
-			ArmorType.CHESTPLATE, 6,
-			ArmorType.HELMET, 2
-		),
-		18,
-		Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_elementium"))),
-		0.0F,
-		0.0F,
-		ItemTags.WOODEN_TOOL_MATERIALS,
-		armorAsset("elementium")
+			18,
+			Map.of(
+					ArmorType.BOOTS, 2,
+					ArmorType.LEGGINGS, 5,
+					ArmorType.CHESTPLATE, 6,
+					ArmorType.HELMET, 2
+			),
+			18,
+			Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_elementium"))),
+			0.0F,
+			0.0F,
+			ItemTags.WOODEN_TOOL_MATERIALS,
+			armorAsset("elementium")
 	);
 
 	private static final ArmorMaterial TERRASTEEL = new ArmorMaterial(
-		34,
-		Map.of(
-			ArmorType.BOOTS, 3,
-			ArmorType.LEGGINGS, 6,
-			ArmorType.CHESTPLATE, 8,
-			ArmorType.HELMET, 3
-		),
-		26,
-		Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_terrasteel"))),
-		3.0F,
-		0.0F,
-		ItemTags.WOODEN_TOOL_MATERIALS,
-		armorAsset("terrasteel")
+			34,
+			Map.of(
+					ArmorType.BOOTS, 3,
+					ArmorType.LEGGINGS, 6,
+					ArmorType.CHESTPLATE, 8,
+					ArmorType.HELMET, 3
+			),
+			26,
+			Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse("botania:equip_terrasteel"))),
+			3.0F,
+			0.0F,
+			ItemTags.WOODEN_TOOL_MATERIALS,
+			armorAsset("terrasteel")
 	);
 
 	@Override
@@ -175,7 +171,7 @@ public class BotaniaAPIImpl implements BotaniaAPI {
 
 	@Override
 	public ToolMaterial getManasteelItemTier() {
-				return new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL, 300, 6.2F, 2, 20, BotaniaTags.Items.INGOTS_MANASTEEL);
+		return new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL, 300, 6.2F, 2, 20, BotaniaTags.Items.INGOTS_MANASTEEL);
 	}
 
 	@Override

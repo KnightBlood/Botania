@@ -3,7 +3,6 @@ package vazkii.botania.network;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 
-
 import io.netty.buffer.Unpooled;
 
 public interface BotaniaPacket {

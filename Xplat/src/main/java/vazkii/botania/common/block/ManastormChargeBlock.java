@@ -8,12 +8,11 @@
  */
 package vazkii.botania.common.block;
 
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 
 import vazkii.botania.api.internal.ManaBurst;
@@ -50,8 +49,8 @@ public class ManastormChargeBlock extends BotaniaBlock {
 				if (storm == null) {
 					return;
 				}
-								var ownerRef = ((ProjectileAccessor) entity).botania_getOwnerRef();
-								storm.setOwner(entity.getOwner(), ownerRef == null ? null : ownerRef.getUUID());
+				var ownerRef = ((ProjectileAccessor) entity).botania_getOwnerRef();
+				storm.setOwner(entity.getOwner(), ownerRef == null ? null : ownerRef.getUUID());
 				storm.burstColor = burst.getColor();
 				storm.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
 				world.addFreshEntity(storm);

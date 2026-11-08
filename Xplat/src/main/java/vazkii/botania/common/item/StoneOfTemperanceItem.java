@@ -19,19 +19,16 @@ import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.helper.ItemNBTHelper;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class StoneOfTemperanceItem extends Item {
 	public static final String TAG_ACTIVE = "active";
@@ -86,4 +83,3 @@ public class StoneOfTemperanceItem extends Item {
 	}
 
 }
-

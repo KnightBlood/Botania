@@ -27,7 +27,8 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 /**
  * Botania's custom shaders, ported to Minecraft 26.1's {@link RenderPipeline} system.
  *
- * <p>26.1 removed {@code ShaderInstance} / {@code shaders/core/*.json}: shader sources are now
+ * <p>
+ * 26.1 removed {@code ShaderInstance} / {@code shaders/core/*.json}: shader sources are now
  * discovered automatically by {@code ShaderManager} from {@code assets/<ns>/shaders/**}{@code .vsh/.fsh},
  * while the pipeline (shader ids, samplers, UBOs, defines, vertex format, blend state) is a plain Java
  * object. There is no public vanilla registration method -- {@code RenderPipelines.register} is private --
@@ -36,33 +37,36 @@ import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
  * {@link #registerAll(Consumer)}. Fabric has no equivalent event (the old
  * {@code CoreShaderRegistrationCallback} is gone), so it relies on lazy compilation.
  *
- * <p>All six pipelines reuse a vanilla {@link RenderPipeline.Snippet} so their vertex format stays
+ * <p>
+ * All six pipelines reuse a vanilla {@link RenderPipeline.Snippet} so their vertex format stays
  * exactly the one the existing Botania render code writes. Only the fragment shader is replaced.
  * The GLSL sources were rewritten for GLSL 330 + UBOs: {@code GameTime} now lives in the
  * {@code Globals} UBO, {@code ColorModulator} in {@code DynamicTransforms}, fog in {@code Fog}.
  *
- * <p><b>Explicitly NOT ported (visual degradation, no silent fallback):</b>
+ * <p>
+ * <b>Explicitly NOT ported (visual degradation, no silent fallback):</b>
  * {@code doppleganger}, {@code doppleganger_bar} and {@code film_grain_particle}. These are real
  * 1.20.1 features, not dead resources: on the {@code 1.20.x} branch they were driven by
  * {@code GaiaGuardianRenderer}, {@code PixieRenderer}, {@code GaiaHeadBlockEntityRenderer},
  * {@code BossBarHandler} and {@code FXSparkle#CORRUPT_RENDER}.
  * <ul>
- *   <li>{@code doppleganger} / {@code doppleganger_bar} need per-draw custom float uniforms
- *       ({@code BotaniaDisfiguration}, {@code BotaniaGrainIntensity}, {@code BotaniaHpFract}) that
- *       1.20.1 uploaded through {@code ShaderInstance#getUniform}. 26.1's {@code RenderType} draw
- *       path only binds the default UBOs, so these need a custom UBO plus new upload hooks in the
- *       renderers. The Gaia renderers currently use vanilla entity layers and {@code BossBarHandler}
- *       uses {@code RenderPipelines.GUI_TEXTURED}.</li>
- *   <li>{@code film_grain_particle} needs no custom uniform at all, but 26.1 replaced
- *       {@code ParticleRenderType} with the {@code SingleQuadParticle} layer system.
- *       {@code FXSparkle#CORRUPT_RENDER} was dropped in the port and every sparkle now renders via
- *       vanilla {@code ParticleRenderType.SINGLE_QUADS}, so there is no longer a draw path that could
- *       select this shader. Restoring it requires reintroducing a custom particle group first.</li>
+ * <li>{@code doppleganger} / {@code doppleganger_bar} need per-draw custom float uniforms
+ * ({@code BotaniaDisfiguration}, {@code BotaniaGrainIntensity}, {@code BotaniaHpFract}) that
+ * 1.20.1 uploaded through {@code ShaderInstance#getUniform}. 26.1's {@code RenderType} draw
+ * path only binds the default UBOs, so these need a custom UBO plus new upload hooks in the
+ * renderers. The Gaia renderers currently use vanilla entity layers and {@code BossBarHandler}
+ * uses {@code RenderPipelines.GUI_TEXTURED}.</li>
+ * <li>{@code film_grain_particle} needs no custom uniform at all, but 26.1 replaced
+ * {@code ParticleRenderType} with the {@code SingleQuadParticle} layer system.
+ * {@code FXSparkle#CORRUPT_RENDER} was dropped in the port and every sparkle now renders via
+ * vanilla {@code ParticleRenderType.SINGLE_QUADS}, so there is no longer a draw path that could
+ * select this shader. Restoring it requires reintroducing a custom particle group first.</li>
  * </ul>
  * Their 1.20.1 GLSL/JSON sources were removed rather than left as dead files that are never
  * referenced. This is tracked as an explicit port gap, not a silent fallback.
  *
- * <p><b>Behavior difference:</b> on 1.20.1 {@code useShaders()} was evaluated per draw through a
+ * <p>
+ * <b>Behavior difference:</b> on 1.20.1 {@code useShaders()} was evaluated per draw through a
  * supplier. A 26.1 {@code RenderType} stores its pipeline at construction time, so the config is
  * evaluated once when {@code RenderHelper} is class-initialized (i.e. at client startup).
  */

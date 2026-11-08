@@ -40,8 +40,8 @@ import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.brew.BotaniaBrews;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.handler.BotaniaSounds;
-import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.common.helper.EntityHelper;
+import vazkii.botania.common.helper.RecipeHelper;
 
 import java.util.List;
 import java.util.Optional;
@@ -93,8 +93,8 @@ public class BreweryBlockEntity extends SimpleInventoryBlockEntity implements Ma
 
 	private void findRecipe() {
 		Optional<BotanicalBreweryRecipe> maybeRecipe = RecipeHelper.getRecipeManager(level)
-			.getRecipeFor(BotaniaRecipeTypes.BREW_TYPE, RecipeHelper.adapt(getItemHandler()), level)
-			.map(RecipeHolder::value);
+				.getRecipeFor(BotaniaRecipeTypes.BREW_TYPE, RecipeHelper.adapt(getItemHandler()), level)
+				.map(RecipeHolder::value);
 		maybeRecipe.ifPresent(recipeBrew -> {
 			this.recipe = recipeBrew;
 			level.setBlockAndUpdate(worldPosition, BotaniaBlocks.brewery.defaultBlockState().setValue(BlockStateProperties.POWERED, true));

@@ -8,8 +8,6 @@
  */
 package vazkii.botania.fabric.mixin;
 
-import java.util.Map;
-
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagBuilder;
@@ -17,8 +15,10 @@ import net.minecraft.tags.TagBuilder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
+import java.util.Map;
+
 @Mixin(TagsProvider.class)
 public interface TagsProviderFabricAccessor<T> {
-@Accessor("builders")
-Map<Identifier, TagBuilder> botania$getBuilders();
+	@Accessor("builders")
+	Map<Identifier, TagBuilder> botania$getBuilders();
 }

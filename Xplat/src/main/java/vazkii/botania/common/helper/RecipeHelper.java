@@ -22,7 +22,6 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.recipe.BotaniaRecipe;
 
@@ -33,8 +32,7 @@ import vazkii.botania.api.recipe.BotaniaRecipe;
  * Botania's code only has a plain {@link Level} at hand.
  */
 public final class RecipeHelper {
-	private RecipeHelper() {
-	}
+	private RecipeHelper() {}
 
 	/**
 	 * Adapts a {@link Container} into a {@link RecipeInput}, which is what MC 26.1 recipes consume.

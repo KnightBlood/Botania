@@ -47,6 +47,7 @@ public class CorporeaRequestTrigger extends SimpleCriterionTrigger<CorporeaReque
 
 	public record Instance(Optional<ContextAwarePredicate> player, Optional<MinMaxBounds.Ints> count,
 			Optional<LocationPredicate> location) implements SimpleCriterionTrigger.SimpleInstance {
+
 		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
 				i -> i.group(
 						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),

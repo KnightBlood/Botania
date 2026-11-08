@@ -10,16 +10,15 @@ package vazkii.botania.client.render.block_entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
-import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.api.mana.BasicLensItem;
 import vazkii.botania.client.core.handler.ClientTickHandler;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.block.block_entity.mana.ManaPrismBlockEntity;
 import vazkii.botania.common.helper.VecHelper;
 

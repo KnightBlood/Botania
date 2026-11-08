@@ -41,13 +41,13 @@ import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.BotaniaAPIClient;
-import vazkii.botania.api.state.BotaniaStateProperties;
 import vazkii.botania.api.block.WandBindable;
 import vazkii.botania.api.block.WandHUD;
 import vazkii.botania.api.block.Wandable;
 import vazkii.botania.api.internal.ManaBurst;
 import vazkii.botania.api.internal.VanillaPacketDispatcher;
 import vazkii.botania.api.mana.*;
+import vazkii.botania.api.state.BotaniaStateProperties;
 import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.block.block_entity.BotaniaBlockEntities;
 import vazkii.botania.common.block.block_entity.ExposedSimpleInventoryBlockEntity;
@@ -56,8 +56,8 @@ import vazkii.botania.common.entity.ManaBurstEntity;
 import vazkii.botania.common.entity.ManaBurstEntity.PositionProperties;
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.handler.ManaNetworkHandler;
-import vazkii.botania.common.helper.MathHelper;
 import vazkii.botania.common.helper.ColorHelper;
+import vazkii.botania.common.helper.MathHelper;
 import vazkii.botania.common.item.LexicaBotaniaItem;
 import vazkii.botania.xplat.BotaniaConfig;
 import vazkii.botania.xplat.XplatAbstractions;
@@ -702,7 +702,8 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 			case CLOCKWISE_90 -> rotationX += 270F;
 			case CLOCKWISE_180 -> rotationX += 180F;
 			case COUNTERCLOCKWISE_90 -> rotationX += 90F;
-			case NONE -> {}
+			case NONE -> {
+			}
 		}
 
 		if (rotationX >= 360F) {
@@ -714,7 +715,8 @@ public class ManaSpreaderBlockEntity extends ExposedSimpleInventoryBlockEntity i
 		switch (mirror) {
 			case LEFT_RIGHT -> rotationX = 360F - rotationX;
 			case FRONT_BACK -> rotationX = 180F - rotationX;
-			case NONE -> {}
+			case NONE -> {
+			}
 		}
 
 		if (rotationX < 0F) {

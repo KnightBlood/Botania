@@ -8,11 +8,10 @@
  */
 package vazkii.botania.common.integration.inventorysorter;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
-
 import net.kyrptonaught.inventorysorter.InventorySorterMod;
 import net.kyrptonaught.inventorysorter.compat.sources.CompatibilityLoader;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.common.item.BotaniaItems;
@@ -23,7 +22,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Keeps the flower bag out of Inventory Sorting 3.x's sortable screens, on both loaders.
  *
- * <p>Botania issue 4068: the flower pouch has one slot per mystical flower colour, so sorting
+ * <p>
+ * Botania issue 4068: the flower pouch has one slot per mystical flower colour, so sorting
  * it destroys the colour→slot mapping. The 1.20.1 port blacklisted the menu through the cpw
  * build's {@code containerblacklist} InterModComms message (still handled by the NeoForge-only
  * {@code InventorySorterIntegration}). Meza / KyrptonaughtMC's 3.x rewrite dropped IMC and
@@ -31,11 +31,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * {@code BuiltInRegistries.MENU.getKey(menu.getType())}. That is exactly the id the old IMC
  * message carried, so this is a like-for-like replacement rather than a new behaviour.
  *
- * <p>Both sets are populated: {@code getPreventSort()} is the functional blacklist, while
+ * <p>
+ * Both sets are populated: {@code getPreventSort()} is the functional blacklist, while
  * {@code getShouldHideSortButtons()} also removes the buttons so the player is not offered an
  * action that would be refused.
  *
- * <p>3.0.0 and 3.0.1 expose the same {@code Compatibility} / {@code CompatibilityLoader}
+ * <p>
+ * 3.0.0 and 3.0.1 expose the same {@code Compatibility} / {@code CompatibilityLoader}
  * signatures on Fabric and NeoForge (checked with javap on the 3.0.0-fabric, 3.0.1-fabric
  * and 3.0.1-neoforge jars), so one shared implementation covers the 3.0.x line.
  * This class hard-references Inventory Sorting types and must only be loaded after

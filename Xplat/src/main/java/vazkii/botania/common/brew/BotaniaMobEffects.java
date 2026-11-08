@@ -31,8 +31,7 @@ public class BotaniaMobEffects {
 	 * Forces this class to be loaded, which registers Botania's mob effects into the built-in
 	 * MOB_EFFECT registry. Must be called before that registry is frozen.
 	 */
-	public static void init() {
-	}
+	public static void init() {}
 
 	private static Holder<MobEffect> register(String name, MobEffect effect) {
 		return Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT, prefix(name), effect);

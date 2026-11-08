@@ -1,17 +1,15 @@
 package vazkii.botania.neoforge.xplat;
 
-import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
@@ -21,8 +19,6 @@ import net.minecraft.tags.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -45,8 +41,6 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FlowerBlock;
@@ -62,16 +56,14 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
-import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.common.ItemAbility;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
-// LazyOptional removed in NeoForge 26.1 - using java.util.Optional
-import java.util.Optional;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -79,9 +71,6 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.neoforged.neoforge.transfer.ResourceHandler;
@@ -599,8 +588,8 @@ public class NeoForgeXplatImpl implements XplatAbstractions {
 		if (recipe == null || furnace.getLevel() == null) {
 			return false;
 		}
-		@SuppressWarnings({"unchecked", "rawtypes"})
-			ItemStack result = ((Recipe) recipe).assemble(new SingleRecipeInput(furnace.getItem(0)));
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		ItemStack result = ((Recipe) recipe).assemble(new SingleRecipeInput(furnace.getItem(0)));
 		return !result.isEmpty()
 				&& AbstractFurnaceBlockEntityNeoForgeAccessor.callCanBurn(items, maxStackSize, result);
 	}

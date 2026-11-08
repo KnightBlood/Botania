@@ -19,7 +19,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.particle.ParticleProvider;
@@ -73,6 +72,7 @@ import java.util.function.Function;
 public class FabricClientInitializer implements ClientModInitializer {
 	// Extra model keys registered through the ModelLoadingPlugin, by their model id.
 	private static final Map<Identifier, ExtraModelKey<net.minecraft.client.renderer.block.dispatch.BlockStateModel>> EXTRA_MODEL_KEYS = new HashMap<>();
+
 	@Override
 	public void onInitializeClient() {
 		// ensure API implementations are loaded
@@ -247,7 +247,7 @@ public class FabricClientInitializer implements ClientModInitializer {
 		// registration yet, so ColorHandler.submitItems has no recipient here (TODO 26.1).
 	}
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void initAuxiliaryRender(EntityType<? extends LivingEntity> type, net.minecraft.client.renderer.entity.LivingEntityRenderer<?, ?, ?> renderer,
 			LivingEntityRenderLayerRegistrationCallback.RegistrationHelper helper, EntityRendererProvider.Context ctx) {
 		if (type == EntityType.PLAYER && renderer instanceof AvatarRenderer avatarRenderer) {

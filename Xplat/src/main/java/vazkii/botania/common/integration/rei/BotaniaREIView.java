@@ -17,7 +17,8 @@ import vazkii.botania.api.recipe.OrechidRecipe;
 /**
  * The read side shared by Botania's REI categories.
  *
- * <p>Two kinds of display implement this view: the original client-side displays built from a
+ * <p>
+ * Two kinds of display implement this view: the original client-side displays built from a
  * real {@code RecipeHolder}, and {@link BotaniaSyncedDisplay} deserialised from REI's
  * {@code DisplaySyncPacket}. Categories only ever talk to this interface, so both sources can
  * coexist in the same category without the client-side classes leaking into the dedicated

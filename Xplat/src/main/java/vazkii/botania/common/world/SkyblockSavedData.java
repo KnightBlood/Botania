@@ -10,15 +10,14 @@ package vazkii.botania.common.world;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-
 import com.mojang.serialization.Codec;
 
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.util.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 

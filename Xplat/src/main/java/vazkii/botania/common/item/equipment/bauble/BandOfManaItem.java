@@ -120,4 +120,3 @@ public class BandOfManaItem extends BaubleItem implements CustomCreativeTabConte
 		return Mth.hsvToRgb(ManaBarTooltip.getFractionForDisplay(manaItem) / 3.0F, 1.0F, 1.0F);
 	}
 }
-

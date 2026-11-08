@@ -1,15 +1,14 @@
 package vazkii.botania.data;
 
 import com.google.gson.JsonElement;
-
 import com.mojang.serialization.JsonOps;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;

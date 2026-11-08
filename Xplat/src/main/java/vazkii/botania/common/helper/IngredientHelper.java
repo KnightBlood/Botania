@@ -37,8 +37,7 @@ public final class IngredientHelper {
 	 */
 	public static final Ingredient EMPTY = EmptyIngredient.EMPTY;
 
-	private IngredientHelper() {
-	}
+	private IngredientHelper() {}
 
 	/**
 	 * Creates an ingredient matching everything in the given tag.

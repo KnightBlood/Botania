@@ -17,15 +17,11 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import vazkii.botania.api.item.CosmeticBauble;
 import vazkii.botania.client.core.helper.RenderHelper;
@@ -34,7 +30,7 @@ import vazkii.botania.client.render.AccessoryRenderer;
 import vazkii.botania.common.helper.VecHelper;
 import vazkii.botania.common.proxy.Proxy;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class CosmeticBaubleItem extends BaubleItem implements CosmeticBauble {
 
@@ -224,7 +220,8 @@ public class CosmeticBaubleItem extends BaubleItem implements CosmeticBauble {
 						ms.scale(0.5F, -0.5F, -0.5F);
 						renderItem(stack, ms, buffers, light);
 					}
-					default -> {}
+					default -> {
+					}
 				}
 			} else { // body cosmetics
 				bipedModel.body.translateAndRotate(ms);
@@ -278,7 +275,8 @@ public class CosmeticBaubleItem extends BaubleItem implements CosmeticBauble {
 						ms.scale(0.6F, -0.6F, -0.6F);
 						renderItem(stack, ms, buffers, light);
 					}
-					default -> {}
+					default -> {
+					}
 				}
 			}
 		}

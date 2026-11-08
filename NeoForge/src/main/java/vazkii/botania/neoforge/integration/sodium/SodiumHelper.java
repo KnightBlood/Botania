@@ -1,7 +1,6 @@
 package vazkii.botania.neoforge.integration.sodium;
 
 import net.caffeinemc.mods.sodium.api.texture.SpriteUtil;
-
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 /**
@@ -10,7 +9,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
  * now use the identical integration; the old Rubidium/Embeddium
  * {@code me.jellysquid.mods.sodium} bridge is gone.
  *
- * <p>Only ever called through {@link vazkii.botania.xplat.SodiumPresence#isActive()}.
+ * <p>
+ * Only ever called through {@link vazkii.botania.xplat.SodiumPresence#isActive()}.
  */
 public final class SodiumHelper {
 	private SodiumHelper() {}

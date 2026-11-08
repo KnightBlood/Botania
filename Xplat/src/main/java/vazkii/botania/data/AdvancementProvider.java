@@ -28,7 +28,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
@@ -36,7 +35,6 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 
 import vazkii.botania.common.advancements.*;
-import java.util.Optional;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.block.block_entity.corporea.CorporeaIndexBlockEntity;
@@ -48,6 +46,7 @@ import vazkii.botania.common.item.equipment.bauble.FlugelTiaraItem;
 import vazkii.botania.common.lib.BotaniaTags;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;

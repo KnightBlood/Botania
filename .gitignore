@@ -84,3 +84,6 @@ run/
 .vscode/
 .workbuddy/
 NeoForge/.eclipse/
+
+# 26.1 datagen hash cache (breaks check_datagen.sh if tracked)
+**/src/generated/resources/.cache/

@@ -20,9 +20,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 
-import java.util.Optional;
-
 import vazkii.botania.common.entity.GaiaGuardianEntity;
+
+import java.util.Optional;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
@@ -47,6 +47,7 @@ public class GaiaGuardianNoArmorTrigger extends SimpleCriterionTrigger<GaiaGuard
 
 	public record Instance(Optional<ContextAwarePredicate> player, Optional<EntityPredicate> guardian,
 			Optional<DamageSourcePredicate> killingBlow) implements SimpleCriterionTrigger.SimpleInstance {
+
 		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
 				i -> i.group(
 						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),

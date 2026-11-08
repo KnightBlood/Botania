@@ -15,25 +15,23 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
@@ -48,7 +46,7 @@ import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.helper.PlayerHelper;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class BlackHoleTalismanItem extends Item {
 	public static final String TAG_ACTIVE = "active";
@@ -142,7 +140,7 @@ public class BlackHoleTalismanItem extends Item {
 			}
 
 			if (toTake.asItem() == stack.getItem()
-				&& !stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
+					&& !stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
 				counts[i] = stack.getCount();
 				if (highestIdx == -1) {
 					highestIdx = i;
@@ -322,4 +320,3 @@ public class BlackHoleTalismanItem extends Item {
 		return false;
 	}
 }
-

@@ -8,8 +8,6 @@
  */
 package vazkii.botania.fabric.network;
 
-import io.netty.buffer.Unpooled;
-
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -35,7 +33,8 @@ public final class FabricPacketHandler {
 	 * so Botania's raw {@link BotaniaPacket}s are wrapped in this record for transport.
 	 */
 	public record Payload<T extends BotaniaPacket>(CustomPacketPayload.Type<Payload<T>> type, T packet)
-			implements CustomPacketPayload {
+			implements
+				CustomPacketPayload {
 		// The record-generated type() accessor returns Type<Payload<T>>, which satisfies
 		// CustomPacketPayload#type() (Type<? extends CustomPacketPayload>); do not override it.
 	}

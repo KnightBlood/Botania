@@ -21,7 +21,7 @@ import vazkii.botania.api.BotaniaAPI;
 public interface PetalApothecaryRecipe extends RecipeWithReagent {
 	Identifier TYPE_ID = Identifier.fromNamespaceAndPath(BotaniaAPI.MODID, "petal_apothecary");
 
-@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@NotNull
 	@Override
 	default RecipeType<? extends Recipe<RecipeInput>> getType() {

@@ -1,7 +1,5 @@
 package vazkii.botania.neoforge.internal_caps;
 
-import java.util.function.Supplier;
-
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -20,6 +18,8 @@ import vazkii.botania.common.internal_caps.NarslimmusComponent;
 import vazkii.botania.common.internal_caps.SpectralRailComponent;
 import vazkii.botania.common.internal_caps.TigerseyeComponent;
 import vazkii.botania.common.lib.LibMisc;
+
+import java.util.function.Supplier;
 
 public final class NeoForgeInternalEntityCapabilities {
 	private static final DeferredRegister<AttachmentType<?>> ATTACHMENTS = DeferredRegister

@@ -15,8 +15,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item.Properties;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 
 import org.jetbrains.annotations.NotNull;

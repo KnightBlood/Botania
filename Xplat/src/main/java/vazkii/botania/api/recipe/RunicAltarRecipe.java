@@ -31,7 +31,7 @@ public interface RunicAltarRecipe extends RecipeWithReagent {
 
 	int getManaUsage();
 
-@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@NotNull
 	@Override
 	default RecipeType<? extends Recipe<RecipeInput>> getType() {

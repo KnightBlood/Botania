@@ -11,4 +11,5 @@ package vazkii.botania.fabric.integration.rei;
 import vazkii.botania.common.integration.rei.BotaniaREICommonPlugin;
 
 /** Fabric {@code rei_common} entrypoint; all logic lives in Xplat. */
-public final class FabricREICommonPlugin extends BotaniaREICommonPlugin {}
+public final class FabricREICommonPlugin extends BotaniaREICommonPlugin {
+}

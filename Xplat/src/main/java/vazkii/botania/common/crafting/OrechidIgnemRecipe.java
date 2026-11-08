@@ -8,25 +8,20 @@
  */
 package vazkii.botania.common.crafting;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
 
-import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.CacheableFunction;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeInput;
-
-import vazkii.botania.api.recipe.BotaniaRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.api.recipe.BotaniaRecipe;
 import vazkii.botania.api.recipe.StateIngredient;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import vazkii.botania.common.crafting.recipe.RecipeSerializers;
 
 public class OrechidIgnemRecipe extends OrechidRecipe {

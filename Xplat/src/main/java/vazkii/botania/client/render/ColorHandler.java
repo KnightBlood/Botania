@@ -8,14 +8,13 @@
  */
 package vazkii.botania.client.render;
 
-import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.block.BlockTintSource;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
@@ -25,6 +24,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.brew.Brew;
@@ -73,8 +73,10 @@ public final class ColorHandler {
 		void register(ItemColorHandler handler, ItemLike... items);
 	}
 
-	/** Defensive equivalent of the removed {@code BlockColors.getColor}: looks up the
-	 * tint source for the given tint index and evaluates it. */
+	/**
+	 * Defensive equivalent of the removed {@code BlockColors.getColor}: looks up the
+	 * tint source for the given tint index and evaluates it.
+	 */
 	public static int getBlockColor(BlockState state, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos, int tintIndex) {
 		List<BlockTintSource> sources = Minecraft.getInstance().getBlockColors().getTintSources(state);
 		if (tintIndex < 0 || tintIndex >= sources.size()) {

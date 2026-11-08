@@ -17,7 +17,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeBookCategories;
 import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.item.crafting.RecipeInput;
-import org.jetbrains.annotations.NotNull;
+
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -73,6 +73,5 @@ public interface BotaniaRecipe<T extends RecipeInput> extends Recipe<T> {
 	 * a recipe that was created by a codec cannot know its own id until the recipe manager has
 	 * loaded it.
 	 */
-	default void setId(Identifier id) {
-	}
+	default void setId(Identifier id) {}
 }

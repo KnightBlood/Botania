@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
  * This object describes the Radius of a BlockEntity. It can either be
  * a circle or rectangle.
  */
-public sealed interface RadiusDescriptor permits RadiusDescriptor.Circle,RadiusDescriptor.Rectangle {
+public sealed interface RadiusDescriptor permits RadiusDescriptor.Circle, RadiusDescriptor.Rectangle {
 	record Circle(BlockPos subtileCoords, double radius) implements RadiusDescriptor {
 	}
 

@@ -10,11 +10,10 @@ package vazkii.botania.common.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.LevelReader;
 
 import org.jetbrains.annotations.NotNull;
 

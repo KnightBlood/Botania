@@ -5,13 +5,17 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Needed by the Upload Releases step (GITHUB_TOKEN creating a release + assets)
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v6
     - name: Set up JDK
       uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
-        java-version: '17'
+        # MC 26.1 port: the toolchain is Java 25 (was 17 on the 1.20.1 branch)
+        java-version: '25'
     - name: Validate gradlew integrity
       uses: gradle/actions/wrapper-validation@v5
     - name: Cache
@@ -103,7 +107,13 @@ jobs:
         FABRIC_JAR: ${{ steps.calculate_artifact_names.outputs.fabric }}
         NEOFORGE_JAR: ${{ steps.calculate_artifact_names.outputs.neoforge }}
         GOG_JAR: ${{ steps.calculate_artifact_names.outputs.gog }}
-        CURSEFORGE_TOKEN: ${{ secrets.VAZKII_CURSEFORGE_TOKEN }}
-        MODRINTH_TOKEN: ${{ secrets.VAZKII_MODRINTH_TOKEN }}
+      # Fork version of scripts/upload_releases.sh: only publishes to GitHub Releases.
+      # The upstream script also pushes to Vazkii's CurseForge/Modrinth projects with his
+      # tokens and uploads gpg .asc signatures -- none of that exists on this fork.
       run: |
-        scripts/upload_releases.sh
+        set -euo pipefail
+        TAGNAME="${GIT_REF#refs/tags/}"
+        VERSION="${TAGNAME#release-}"
+        NOTES="Botania ${VERSION} for Minecraft 26.1.2 (NeoForge + Fabric port)."
+        gh release create "${TAGNAME}" --verify-tag -t "Botania ${VERSION}" -n "${NOTES}" --latest
+        gh release upload "${TAGNAME}" "${NEOFORGE_JAR}#NeoForge Jar" "${FABRIC_JAR}#Fabric Jar" "${GOG_JAR}#GoG Datapack" --clobber

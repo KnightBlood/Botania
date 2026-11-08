@@ -26,8 +26,7 @@ public class RealPlayerCondition implements LootItemCondition {
 	public static final RealPlayerCondition INSTANCE = new RealPlayerCondition();
 	public static final MapCodec<RealPlayerCondition> CODEC = MapCodec.unit(() -> INSTANCE);
 
-	private RealPlayerCondition() {
-	}
+	private RealPlayerCondition() {}
 
 	@Override
 	public boolean test(LootContext lootContext) {

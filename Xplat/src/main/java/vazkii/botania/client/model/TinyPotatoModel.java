@@ -46,8 +46,7 @@ public class TinyPotatoModel implements ItemModel {
 		}
 
 		@Override
-		public void resolveDependencies(ResolvableModel.Resolver resolver) {
-		}
+		public void resolveDependencies(ResolvableModel.Resolver resolver) {}
 
 		@Override
 		public com.mojang.serialization.MapCodec<? extends ItemModel.Unbaked> type() {

@@ -8,16 +8,10 @@
  */
 package vazkii.botania.client.render.entity;
 
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.Minecraft;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.world.inventory.InventoryMenu;
 
 import vazkii.botania.common.entity.ManaSparkEntity;
 

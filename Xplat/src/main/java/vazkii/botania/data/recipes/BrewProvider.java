@@ -26,9 +26,8 @@ import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.brew.Brew;
 import vazkii.botania.common.brew.BotaniaBrews;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
-import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.helper.IngredientHelper;
-
+import vazkii.botania.common.item.BotaniaItems;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
@@ -92,7 +91,7 @@ public class BrewProvider extends BotaniaRecipeProvider {
 			json.add("ingredients", ingredients);
 		}
 
-				public Identifier getId() {
+		public Identifier getId() {
 			return id;
 		}
 

@@ -22,7 +22,6 @@ import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.api.block_entity.FunctionalFlowerBlockEntity;
 import vazkii.botania.api.block_entity.RadiusDescriptor;
 import vazkii.botania.api.recipe.OrechidRecipe;
@@ -30,6 +29,7 @@ import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.handler.OrechidManager;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.xplat.BotaniaConfig;
 import vazkii.botania.xplat.XplatAbstractions;
 

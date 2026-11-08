@@ -14,30 +14,30 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.server.level.ServerLevel;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.item.SequentialBreaker;
@@ -55,10 +55,9 @@ import vazkii.botania.common.item.relic.RingOfThorItem;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.xplat.XplatAbstractions;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
@@ -360,4 +359,3 @@ public class TerraShattererItem extends ManasteelPickaxeItem implements Sequenti
 		return Rarity.UNCOMMON;
 	}
 }
-

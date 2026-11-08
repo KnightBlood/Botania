@@ -14,13 +14,13 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.Containers;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-import vazkii.botania.common.item.CacophoniumItem;
 import vazkii.botania.common.helper.ItemNBTHelper;
+import vazkii.botania.common.item.CacophoniumItem;
 
 public class CacophoniumBlockEntity extends BotaniaBlockEntity {
 	private static final String TAG_STACK = "stack";

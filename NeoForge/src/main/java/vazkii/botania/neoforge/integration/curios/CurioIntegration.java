@@ -8,7 +8,6 @@
  */
 package vazkii.botania.neoforge.integration.curios;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -19,7 +18,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -28,9 +26,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
+import net.neoforged.neoforge.common.NeoForge;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -40,13 +37,10 @@ import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.SlotResult;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
-import top.theillusivec4.curios.api.event.DropRulesEvent;
 import top.theillusivec4.curios.api.common.DropRule;
+import top.theillusivec4.curios.api.event.DropRulesEvent;
 import top.theillusivec4.curios.api.type.capability.ICurio;
-import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 
-import vazkii.botania.neoforge.integration.trinkets.NeoTrinketsIntegration;
-import vazkii.botania.neoforge.integration.trinkets.TrinketsPresence;
 import vazkii.botania.client.render.AccessoryRenderBridge;
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.handler.EquipmentHandler;
@@ -54,6 +48,8 @@ import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.ResoluteIvyItem;
 import vazkii.botania.common.item.equipment.bauble.BaubleItem;
 import vazkii.botania.common.proxy.Proxy;
+import vazkii.botania.neoforge.integration.trinkets.NeoTrinketsIntegration;
+import vazkii.botania.neoforge.integration.trinkets.TrinketsPresence;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -8,8 +8,8 @@
  */
 package vazkii.botania.common.item.equipment.armor.elementium;
 
-import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.Item.Properties;
+import net.minecraft.world.item.equipment.ArmorType;
 
 public class ElementiumChestItem extends ElementiumArmorItem {
 

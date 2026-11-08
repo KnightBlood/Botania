@@ -7,24 +7,22 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -76,8 +74,7 @@ public class NeoForgeClientXplatImpl implements ClientXplatAbstractions {
 	}
 
 	@Override
-	public void restoreLastFilter(AbstractTexture texture) {
-	}
+	public void restoreLastFilter(AbstractTexture texture) {}
 
 	@Override
 	public void tessellateBlock(Level level, BlockState state, BlockPos pos, PoseStack ps, MultiBufferSource buffers, int overlay) {
@@ -151,7 +148,7 @@ public class NeoForgeClientXplatImpl implements ClientXplatAbstractions {
 		// NeoForge extension method; it also applies the extractor's current scissor stack.
 		gui.submitGuiElementRenderState(state);
 	}
-	
+
 	@Override
 	public net.minecraft.client.gui.navigation.ScreenRectangle peekGuiScissor(net.minecraft.client.gui.GuiGraphicsExtractor gui) {
 		// NeoForge extension method

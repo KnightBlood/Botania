@@ -8,9 +8,6 @@
  */
 package vazkii.botania.common.block.block_entity;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
@@ -18,8 +15,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -48,10 +45,10 @@ import vazkii.botania.common.block.PetalApothecaryBlock;
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.handler.BotaniaSounds;
 import vazkii.botania.common.helper.EntityHelper;
-import vazkii.botania.common.helper.InventoryHelper;
-import vazkii.botania.xplat.XplatAbstractions;
 import vazkii.botania.common.helper.IngredientHelper;
+import vazkii.botania.common.helper.InventoryHelper;
 import vazkii.botania.common.helper.RecipeHelper;
+import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,8 +104,8 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 		}
 
 		Optional<PetalApothecaryRecipe> maybeRecipe = RecipeHelper.getRecipeManager(level)
-			.getRecipeFor(BotaniaRecipeTypes.PETAL_TYPE, RecipeHelper.adapt(getItemHandler()), level)
-			.map(RecipeHolder::value);
+				.getRecipeFor(BotaniaRecipeTypes.PETAL_TYPE, RecipeHelper.adapt(getItemHandler()), level)
+				.map(RecipeHolder::value);
 		if (maybeRecipe.isPresent()) {
 			var recipe = maybeRecipe.get();
 			if (recipe.getReagent().test(item.getItem())) {
@@ -360,7 +357,7 @@ public class PetalApothecaryBlockEntity extends SimpleInventoryBlockEntity imple
 
 				Optional<PetalApothecaryRecipe> maybeRecipe = RecipeHelper.getRecipeManager(altar.level)
 						.getRecipeFor(BotaniaRecipeTypes.PETAL_TYPE, RecipeHelper.adapt(altar.getItemHandler()), altar.level)
-				.map(RecipeHolder::value);
+						.map(RecipeHolder::value);
 				maybeRecipe.ifPresent(recipe -> {
 					RenderHelper.drawTexturedModalRect(gui, HUDHandler.manaBar, xc + radius + 9, yc - 8, 0, 8, 22, 15);
 

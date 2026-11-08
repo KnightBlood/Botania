@@ -24,11 +24,10 @@ import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.crafting.BotaniaRecipeTypes;
+import vazkii.botania.common.helper.IngredientHelper;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.lib.BotaniaTags;
-import vazkii.botania.common.helper.IngredientHelper;
-
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
@@ -120,7 +119,7 @@ public class RunicAltarProvider extends BotaniaRecipeProvider {
 			json.add("ingredients", ingredients);
 		}
 
-				public Identifier getId() {
+		public Identifier getId() {
 			return id;
 		}
 

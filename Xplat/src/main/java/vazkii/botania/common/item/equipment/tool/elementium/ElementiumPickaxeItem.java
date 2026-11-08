@@ -9,8 +9,8 @@
 package vazkii.botania.common.item.equipment.tool.elementium;
 
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item.Properties;
+import net.minecraft.world.item.ItemStack;
 
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.common.item.BotaniaItems;

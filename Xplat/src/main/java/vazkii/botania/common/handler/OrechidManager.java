@@ -24,8 +24,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.api.recipe.OrechidRecipe;
+import vazkii.botania.common.helper.RecipeHelper;
 import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.*;

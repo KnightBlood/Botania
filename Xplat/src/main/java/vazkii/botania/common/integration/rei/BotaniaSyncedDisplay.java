@@ -31,21 +31,24 @@ import java.util.Optional;
 /**
  * A single serialisable display covering all ten Botania REI categories.
  *
- * <p>REI 26.1's {@code ServerDisplayRegistryImpl.add()} rejects any display whose
+ * <p>
+ * REI 26.1's {@code ServerDisplayRegistryImpl.add()} rejects any display whose
  * {@code getSerializer()} is not registered with {@code DisplaySerializerRegistry}, and the
  * {@code DisplaySyncPacket} uses the generic {@code Display.streamCodec()} to send displays to
  * clients. One shared data class with one {@code MapCodec} + {@code StreamCodec} pair is enough
  * because every category reads only through {@link BotaniaREIView}; the category id selects the
  * layout on the client.
  *
- * <p><b>Explicit limitation (not a silent downgrade):</b> a synced display cannot carry an
+ * <p>
+ * <b>Explicit limitation (not a silent downgrade):</b> a synced display cannot carry an
  * {@code OrechidRecipe} object. Orechid/Marimorphosis therefore show the generic chance computed
  * on the server with the overworld and no player position, and Marimorphosis' biome-bonus tooltip
  * (which needs the player's coordinates and the full recipe list) is omitted for synced displays.
  * In singleplayer the client-built displays are still registered and take precedence, so that
  * tooltip is unchanged there.
  *
- * <p>This class lives in the common package and must never reference a
+ * <p>
+ * This class lives in the common package and must never reference a
  * {@code net.minecraft.client} type: dedicated servers load it to encode displays.
  */
 public final class BotaniaSyncedDisplay implements Display, BotaniaREIView {

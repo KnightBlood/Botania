@@ -12,14 +12,6 @@ import com.google.common.collect.Multimap;
 
 import dev.yumi.commons.TriState;
 
-import eu.pb4.trinkets.api.TrinketAttachment;
-import eu.pb4.trinkets.api.TrinketDropRule;
-import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.api.TrinketsApi;
-import eu.pb4.trinkets.api.callback.TrinketCallback;
-import eu.pb4.trinkets.api.event.TrinketDropCallback;
-import eu.pb4.trinkets.api.event.TrinketSlotCompatibilityCallback;
-
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
@@ -39,6 +31,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+import eu.pb4.trinkets.api.TrinketAttachment;
+import eu.pb4.trinkets.api.TrinketDropRule;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketsApi;
+import eu.pb4.trinkets.api.callback.TrinketCallback;
+import eu.pb4.trinkets.api.event.TrinketDropCallback;
+import eu.pb4.trinkets.api.event.TrinketSlotCompatibilityCallback;
+
 /**
  * Integration with trinkets 4.x (eu.pb4). The old dev.emi 3.x Trinket interface is gone; the
  * per-item hooks now live in {@link TrinketCallback} and slot compatibility is provided through
@@ -46,7 +46,8 @@ import java.util.function.BiConsumer;
  * (its Item mixin consults {@link TrinketCallback#canEquipFromUse}), so no UseItemCallback is
  * registered anymore.
  *
- * <p>This class is loaded on dedicated servers, so it must not reference any client-only type.
+ * <p>
+ * This class is loaded on dedicated servers, so it must not reference any client-only type.
  * The empty {@code TrinketRenderer} registration lives in {@link TrinketsClientIntegration},
  * which is only reached from the Fabric client entrypoint.
  */

@@ -19,11 +19,11 @@ import vazkii.botania.common.block.block_entity.GaiaHeadBlockEntity;
 
 public class GaiaHeadBlock extends SkullBlock {
 	public static final SkullBlock.Type GAIA_TYPE = new SkullBlock.Type() {
-			@Override
-			public String getSerializedName() {
-				return "gaia";
-			}
-		};
+		@Override
+		public String getSerializedName() {
+			return "gaia";
+		}
+	};
 
 	static {
 		// 26.1 resolves skull types by serialized name through this map (SkullBlock.Type.CODEC,

@@ -11,7 +11,6 @@ package vazkii.botania.api.mana.spark;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;

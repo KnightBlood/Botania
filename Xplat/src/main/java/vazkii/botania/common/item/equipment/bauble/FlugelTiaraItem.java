@@ -15,8 +15,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -27,14 +27,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
 
 import vazkii.botania.api.mana.ManaItemHandler;
 import vazkii.botania.client.core.handler.ClientTickHandler;
@@ -548,4 +546,3 @@ public class FlugelTiaraItem extends BaubleItem implements CustomCreativeTabCont
 		return ItemNBTHelper.getInt(stack, TAG_VARIANT, 0);
 	}
 }
-

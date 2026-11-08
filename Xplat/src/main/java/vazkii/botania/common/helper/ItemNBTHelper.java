@@ -12,11 +12,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 
-import net.minecraft.core.Registry;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -206,11 +206,11 @@ public final class ItemNBTHelper {
 	}
 
 	public static byte getByte(ItemStack stack, String tag, byte defaultExpected) {
-		return verifyExistance(stack, tag) ? getCustomTag(stack).getByteOr(tag, (byte)0) : defaultExpected;
+		return verifyExistance(stack, tag) ? getCustomTag(stack).getByteOr(tag, (byte) 0) : defaultExpected;
 	}
 
 	public static short getShort(ItemStack stack, String tag, short defaultExpected) {
-		return verifyExistance(stack, tag) ? getCustomTag(stack).getShortOr(tag, (short)0) : defaultExpected;
+		return verifyExistance(stack, tag) ? getCustomTag(stack).getShortOr(tag, (short) 0) : defaultExpected;
 	}
 
 	public static int getInt(ItemStack stack, String tag, int defaultExpected) {
@@ -292,7 +292,8 @@ public final class ItemNBTHelper {
 	}
 
 	/**
-	 * Checks if two items are the same and have the same components. If they are `IManaItems`, their mana property is matched
+	 * Checks if two items are the same and have the same components. If they are `IManaItems`, their mana property is
+	 * matched
 	 * on whether they are empty, partially full, or full.
 	 */
 	public static boolean matchTagAndManaFullness(ItemStack stack1, ItemStack stack2) {
@@ -320,12 +321,14 @@ public final class ItemNBTHelper {
 	}
 
 	/**
-	 * Registry ops for (de)serializing item stacks to/from NBT without a full {@link net.minecraft.core.RegistryAccess}.
+	 * Registry ops for (de)serializing item stacks to/from NBT without a full
+	 * {@link net.minecraft.core.RegistryAccess}.
 	 */
 	public static final RegistryOps<Tag> NBT_REGISTRY_OPS = RegistryOps.create(NbtOps.INSTANCE, REGISTRY_INFO_LOOKUP);
 
 	/**
-	 * Serializes the given stack into a {@link CompoundTag} that {@link #deserializeStackNbt(CompoundTag)} can read back.
+	 * Serializes the given stack into a {@link CompoundTag} that {@link #deserializeStackNbt(CompoundTag)} can read
+	 * back.
 	 */
 	public static CompoundTag serializeStackNbt(ItemStack stack) {
 		if (stack.isEmpty()) {

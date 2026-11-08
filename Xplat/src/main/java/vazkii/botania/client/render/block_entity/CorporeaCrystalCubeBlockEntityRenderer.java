@@ -32,8 +32,7 @@ public class CorporeaCrystalCubeBlockEntityRenderer extends BotaniaBlockEntityRe
 	public static BlockStateModel cubeModel = null;
 	private ItemEntity entity = null;
 
-	public CorporeaCrystalCubeBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-	}
+	public CorporeaCrystalCubeBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {}
 
 	@Override
 	public void render(@Nullable CorporeaCrystalCubeBlockEntity cube, float f, PoseStack ms, BotaniaRenderContext buffers, int light, int overlay) {

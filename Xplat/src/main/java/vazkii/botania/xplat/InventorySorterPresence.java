@@ -14,20 +14,22 @@ import vazkii.botania.common.integration.inventorysorter.InventorySorterCompat;
 /**
  * Optional-dependency probe for Inventory Sorting, shared by both loaders.
  *
- * <p>On MC 26.1 two unrelated mods ship under the SAME mod id {@code inventorysorter}:
+ * <p>
+ * On MC 26.1 two unrelated mods ship under the SAME mod id {@code inventorysorter}:
  * <ul>
- *     <li>{@code cpw/inventorysorter} (NeoForge only) still consumes the legacy
- *     {@code containerblacklist} InterModComms message; that path is handled by the
- *     NeoForge-side {@code InventorySorterIntegration} and must stay in place.</li>
- *     <li>{@code KyrptonaughtMC/Inventory-Sorter} 3.x ("Inventory Sorting", Meza) ships
- *     for BOTH Fabric and NeoForge, dropped IMC entirely, and instead builds a set of
- *     do-not-sort menu ids from {@code CompatibilityLoader}s.</li>
+ * <li>{@code cpw/inventorysorter} (NeoForge only) still consumes the legacy
+ * {@code containerblacklist} InterModComms message; that path is handled by the
+ * NeoForge-side {@code InventorySorterIntegration} and must stay in place.</li>
+ * <li>{@code KyrptonaughtMC/Inventory-Sorter} 3.x ("Inventory Sorting", Meza) ships
+ * for BOTH Fabric and NeoForge, dropped IMC entirely, and instead builds a set of
+ * do-not-sort menu ids from {@code CompatibilityLoader}s.</li>
  * </ul>
  * Only the second one has anything for Botania to register with, and only it exposes
  * the {@code net.kyrptonaught.inventorysorter} package. Probing the classes (not just the
  * mod id) tells the two apart without ever loading a class that may be absent.
  *
- * <p>This class deliberately contains no hard reference to any Inventory Sorter type:
+ * <p>
+ * This class deliberately contains no hard reference to any Inventory Sorter type:
  * {@link InventorySorterCompat} is resolved only after the probe succeeds, mirroring the
  * isolation used for Trinkets / Sodium. Otherwise a cpw-only install could throw
  * {@link NoClassDefFoundError} while Botania is being verified.

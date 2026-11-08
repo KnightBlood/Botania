@@ -10,17 +10,14 @@ package vazkii.botania.common.crafting.recipe;
 
 import com.google.common.base.Suppliers;
 
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -109,7 +106,6 @@ public class LensDyeingRecipe extends CustomRecipe {
 
 		return ItemStack.EMPTY;
 	}
-
 
 	private int getStackColor(ItemStack stack) {
 		List<Ingredient> dyes = this.dyes.get();

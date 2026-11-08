@@ -10,23 +10,22 @@ package vazkii.botania.fabric.client;
 
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.client.renderer.v1.model.FabricBlockStateModel;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
+
+import org.jetbrains.annotations.Nullable;
 
 import vazkii.botania.common.block.PlatformBlock;
 import vazkii.botania.common.block.block_entity.PlatformBlockEntity;
 import vazkii.botania.common.lib.BotaniaTags;
-
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;

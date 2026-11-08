@@ -18,11 +18,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.Containers;
@@ -57,6 +56,7 @@ import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.fx.SparkleParticleData;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.handler.BotaniaSounds;
+import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.lib.BotaniaTags;
 import vazkii.botania.network.EffectType;
 import vazkii.botania.network.clientbound.BotaniaEffectPacket;
@@ -71,7 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import vazkii.botania.common.helper.ItemNBTHelper;
 
 public class ManaEnchanterBlockEntity extends BotaniaBlockEntity implements ManaReceiver, SparkAttachable, Wandable, Clearable {
 	private static final String TAG_STAGE = "stage";
@@ -318,7 +317,8 @@ public class ManaEnchanterBlockEntity extends BotaniaBlockEntity implements Mana
 				}
 
 			}
-			default -> {}
+			default -> {
+			}
 		}
 	}
 

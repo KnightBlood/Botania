@@ -8,8 +8,6 @@
  */
 package vazkii.botania.common.item.equipment.bauble;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.Direction;
@@ -131,4 +129,3 @@ public class RingOfDexterousMotionItem extends BaubleItem {
 		ClientXplatAbstractions.INSTANCE.sendToServer(DodgePacket.INSTANCE);
 	}
 }
-

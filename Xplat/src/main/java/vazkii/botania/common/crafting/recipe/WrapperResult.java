@@ -8,17 +8,9 @@
  */
 package vazkii.botania.common.crafting.recipe;
 
-import com.google.gson.JsonObject;
-
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-
-import org.jetbrains.annotations.Nullable;
-
-import vazkii.botania.common.crafting.recipe.NbtOutputRecipe;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -27,8 +19,7 @@ import java.util.function.Function;
  * Helpers to register Botania's variants of the vanilla crafting recipes.
  */
 public class WrapperResult {
-	private WrapperResult() {
-	}
+	private WrapperResult() {}
 
 	/**
 	 * Wraps recipe consumers with one that swaps the recipe type to a different one.

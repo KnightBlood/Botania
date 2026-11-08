@@ -15,25 +15,18 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.equipment.ArmorMaterial;
-import net.minecraft.world.item.equipment.ArmorMaterials;
-import net.minecraft.world.item.equipment.ArmorType;
-import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +36,6 @@ import vazkii.botania.api.configdata.ConfigDataManager;
 import vazkii.botania.api.corporea.CorporeaNodeDetector;
 import vazkii.botania.api.internal.DummyManaNetwork;
 import vazkii.botania.api.internal.ManaNetwork;
-import vazkii.botania.common.helper.IngredientHelper;
 
 import java.util.Collections;
 import java.util.Map;
@@ -107,14 +99,14 @@ public interface BotaniaAPI {
 	// It deliberately keeps the vanilla leather equipment asset so this stub can never
 	// resolve to a missing Botania asset; the real materials use armorAsset(...) instead.
 	ArmorMaterial DUMMY_ARMOR_MATERIAL = new ArmorMaterial(
-		0,
-		Map.of(),
-		0,
-		SoundEvents.ARMOR_EQUIP_LEATHER,
-		0.0F,
-		0.0F,
-		DUMMY_REPAIR_ITEMS,
-		ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
+			0,
+			Map.of(),
+			0,
+			SoundEvents.ARMOR_EQUIP_LEATHER,
+			0.0F,
+			0.0F,
+			DUMMY_REPAIR_ITEMS,
+			ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.withDefaultNamespace("leather"))
 	);
 
 	ToolMaterial DUMMY_ITEM_TIER = new ToolMaterial(DUMMY_INCORRECT_BLOCKS, 0, 0.0F, 0.0F, 0, DUMMY_REPAIR_ITEMS);

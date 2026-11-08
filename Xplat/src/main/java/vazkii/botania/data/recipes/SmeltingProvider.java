@@ -9,17 +9,15 @@
 package vazkii.botania.data.recipes;
 
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 
 import vazkii.botania.common.block.BotaniaBlocks;
-
 
 public class SmeltingProvider extends BotaniaRecipeProvider {
 	public SmeltingProvider(PackOutput packOutput) {

@@ -11,9 +11,8 @@ package vazkii.botania.client.render.block_entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -23,9 +22,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import org.jetbrains.annotations.Nullable;
 
-import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.api.item.AvatarWieldable;
 import vazkii.botania.client.core.handler.ClientTickHandler;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.client.lib.ResourcesLib;
 import vazkii.botania.client.model.AvatarModel;
 import vazkii.botania.client.model.BotaniaModelLayers;

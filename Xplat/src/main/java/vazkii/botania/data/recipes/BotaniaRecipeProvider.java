@@ -14,19 +14,18 @@ import com.mojang.serialization.JsonOps;
 
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.data.CachedOutput;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.Recipe;
 
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -91,7 +90,7 @@ public abstract class BotaniaRecipeProvider implements DataProvider {
 	 */
 	@SuppressWarnings("unchecked") // Proxy.invocation handler args are typed Object
 	protected static RecipeOutput capturing(Consumer<BotaniaFinishedRecipe> sink) {
-		return (RecipeOutput) Proxy.newProxyInstance(RecipeOutput.class.getClassLoader(), new Class<?>[] {RecipeOutput.class},
+		return (RecipeOutput) Proxy.newProxyInstance(RecipeOutput.class.getClassLoader(), new Class<?>[] { RecipeOutput.class },
 				(proxy, method, args) -> switch (method.getName()) {
 					case "accept" -> {
 						sink.accept(new VanillaRecipeWrapper(((ResourceKey<Recipe<?>>) args[0]).identifier(), (Recipe<?>) args[1]));
@@ -151,7 +150,7 @@ public abstract class BotaniaRecipeProvider implements DataProvider {
 
 		@SuppressWarnings("unchecked") // Proxy.invocation handler args are typed Object
 		RecipeOutput asOutput() {
-			return (RecipeOutput) Proxy.newProxyInstance(RecipeOutput.class.getClassLoader(), new Class<?>[] {RecipeOutput.class},
+			return (RecipeOutput) Proxy.newProxyInstance(RecipeOutput.class.getClassLoader(), new Class<?>[] { RecipeOutput.class },
 					(proxy, method, args) -> switch (method.getName()) {
 						case "accept" -> {
 							accept((ResourceKey<Recipe<?>>) args[0], (Recipe<?>) args[1], (AdvancementHolder) args[2]);

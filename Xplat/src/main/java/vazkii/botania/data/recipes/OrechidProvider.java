@@ -29,7 +29,6 @@ import vazkii.botania.common.crafting.BotaniaRecipeTypes;
 import vazkii.botania.common.crafting.StateIngredientHelper;
 import vazkii.botania.common.lib.BotaniaTags;
 
-
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
 public class OrechidProvider extends BotaniaRecipeProvider {
@@ -142,7 +141,7 @@ public class OrechidProvider extends BotaniaRecipeProvider {
 			json.addProperty("weight", Weighted);
 		}
 
-				public Identifier getId() {
+		public Identifier getId() {
 			return id;
 		}
 

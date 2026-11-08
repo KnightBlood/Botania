@@ -136,4 +136,3 @@ public class RingOfMagnetizationItem extends BaubleItem {
 		ItemNBTHelper.setInt(stack, TAG_COOLDOWN, cooldown);
 	}
 }
-

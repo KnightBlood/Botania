@@ -9,8 +9,8 @@
 package vazkii.botania.common.item;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.resources.Identifier;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.food.FoodProperties;
@@ -18,8 +18,8 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
-import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.equipment.ArmorType;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -299,9 +299,9 @@ public final class BotaniaItems {
 
 	// Misc
 	public static final Item manaCookie = make(prefix(LibItemNames.MANA_COOKIE), new Item(defaultBuilder()
-				.food(new FoodProperties.Builder().nutrition(0).saturationModifier(0.1F).build())
-				.component(DataComponents.CONSUMABLE, Consumable.builder()
-						.onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.SATURATION, 20, 0), 1.0F)).build())));
+			.food(new FoodProperties.Builder().nutrition(0).saturationModifier(0.1F).build())
+			.component(DataComponents.CONSUMABLE, Consumable.builder()
+					.onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.SATURATION, 20, 0), 1.0F)).build())));
 	public static final Item manaBottle = make(prefix(LibItemNames.MANA_BOTTLE), new BottledManaItem(
 			// Mark as food just to fool foxes into using it
 			unstackable().food(new FoodProperties.Builder().alwaysEdible().build())));

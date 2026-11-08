@@ -9,24 +9,20 @@
 package vazkii.botania.common.crafting.recipe;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
+import vazkii.botania.common.helper.IngredientHelper;
 import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.item.LaputaShardItem;
-import vazkii.botania.common.helper.IngredientHelper;
 
 public class LaputaShardUpgradeRecipe extends CustomRecipe {
 	public static final RecipeSerializer<LaputaShardUpgradeRecipe> SERIALIZER = NoOpRecipeSerializer.create(LaputaShardUpgradeRecipe::new);
@@ -57,12 +53,12 @@ public class LaputaShardUpgradeRecipe extends CustomRecipe {
 	}
 
 	@NotNull
-		public ItemStack getResultItem() {
+	public ItemStack getResultItem() {
 		return new ItemStack(BotaniaItems.laputaShard);
 	}
 
 	@NotNull
-		public NonNullList<Ingredient> getIngredients() {
+	public NonNullList<Ingredient> getIngredients() {
 		return NonNullList.of(IngredientHelper.EMPTY,
 				Ingredient.of(BotaniaItems.laputaShard),
 				Ingredient.of(BotaniaItems.lifeEssence));
@@ -81,7 +77,6 @@ public class LaputaShardUpgradeRecipe extends CustomRecipe {
 		}
 		return ItemStack.EMPTY;
 	}
-
 
 	@NotNull
 	@Override

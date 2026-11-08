@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.util.Unit;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
@@ -14,6 +13,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Unit;
 
 // [VanillaCopy] BookModel, with z-fighting fixes
 public class BotaniaBookModel extends Model<Unit> {

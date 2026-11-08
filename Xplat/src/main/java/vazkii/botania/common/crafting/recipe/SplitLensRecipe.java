@@ -9,17 +9,13 @@
 package vazkii.botania.common.crafting.recipe;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.crafting.RecipeInput;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -78,7 +74,6 @@ public class SplitLensRecipe extends CustomRecipe {
 		}
 		return remaining;
 	}
-
 
 	@NotNull
 	@Override

@@ -8,8 +8,8 @@
  */
 package vazkii.botania.test.item;
 
-import net.minecraft.core.BlockPos;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;

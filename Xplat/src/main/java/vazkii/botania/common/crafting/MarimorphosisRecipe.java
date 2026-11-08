@@ -8,37 +8,32 @@
  */
 package vazkii.botania.common.crafting;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.CacheableFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeInput;
-
-import vazkii.botania.api.recipe.BotaniaRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.biome.Biome;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import vazkii.botania.api.recipe.BotaniaRecipe;
 import vazkii.botania.api.recipe.StateIngredient;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import com.mojang.serialization.Codec;
-import net.minecraft.network.codec.ByteBufCodecs;
-import java.util.Optional;
 import vazkii.botania.common.crafting.recipe.RecipeSerializers;
+
+import java.util.Optional;
 
 public class MarimorphosisRecipe extends OrechidRecipe {
 	private final int weightBonus;
@@ -97,7 +92,6 @@ public class MarimorphosisRecipe extends OrechidRecipe {
 	);
 
 	public static final RecipeSerializer<MarimorphosisRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
-
 
 	public int getWeightBonus() {
 		return weightBonus;

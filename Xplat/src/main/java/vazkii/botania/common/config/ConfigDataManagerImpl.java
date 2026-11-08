@@ -6,10 +6,10 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.server.packs.resources.PreparableReloadListener.PreparationBarrier;
 import net.minecraft.server.packs.resources.PreparableReloadListener.SharedState;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -107,7 +107,7 @@ public class ConfigDataManagerImpl implements ConfigDataManager {
 				.thenAcceptAsync(c -> type.applyFunction.accept(this, c), gameExecutor);
 	}
 
-	private record ConfigDataType<T> (Codec<T> codec, String directory,
+	private record ConfigDataType<T>(Codec<T> codec, String directory,
 			Consumer<Map<Identifier, T>> validateFunction,
 			BiConsumer<ConfigDataManagerImpl, Map<Identifier, T>> applyFunction) {
 		private static final ConfigDataType<LooniumStructureConfiguration> LOONUIM =

@@ -11,7 +11,6 @@ package vazkii.botania.common.block.block_entity.mana;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 
 import vazkii.botania.api.mana.ManaPool;

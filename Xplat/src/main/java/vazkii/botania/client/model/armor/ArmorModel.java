@@ -93,7 +93,8 @@ public class ArmorModel extends HumanoidModel<HumanoidRenderState> {
 				this.rightLeg.visible = true;
 				this.leftLeg.visible = true;
 			}
-			default -> {}
+			default -> {
+			}
 		}
 	}
 }

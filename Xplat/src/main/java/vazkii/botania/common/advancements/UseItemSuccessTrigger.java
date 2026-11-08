@@ -49,6 +49,7 @@ public class UseItemSuccessTrigger extends SimpleCriterionTrigger<UseItemSuccess
 
 	public record Instance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item,
 			Optional<LocationPredicate> location) implements SimpleCriterionTrigger.SimpleInstance {
+
 		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(
 				i -> i.group(
 						EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),

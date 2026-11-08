@@ -12,22 +12,18 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.core.Holder;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.function.Consumer;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import vazkii.botania.api.item.CosmeticAttachable;
 import vazkii.botania.api.item.PhantomInkable;
@@ -36,8 +32,7 @@ import vazkii.botania.common.helper.ItemNBTHelper;
 import vazkii.botania.common.helper.PlayerHelper;
 import vazkii.botania.xplat.BotaniaConfig;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.function.Consumer;
 
 import static vazkii.botania.common.lib.ResourceLocationHelper.prefix;
 
@@ -119,4 +114,3 @@ public abstract class BaubleItem extends Item implements CosmeticAttachable, Pha
 				&& !living.isInvisible();
 	}
 }
-

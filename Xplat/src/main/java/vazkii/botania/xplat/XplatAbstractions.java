@@ -3,7 +3,6 @@ package vazkii.botania.xplat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
@@ -215,10 +214,12 @@ public interface XplatAbstractions {
 	boolean preventsRemoteMovement(ItemEntity entity);
 	void addAxeStripping(Block input, Block output);
 	int transferEnergyToNeighbors(Level level, BlockPos pos, int energy);
+
 	@Nullable
 	default FoodProperties getFoodProperties(ItemStack stack) {
 		return stack.get(net.minecraft.core.component.DataComponents.FOOD);
 	}
+
 	boolean canToolLightFire(ItemStack stack);
 
 	// Red string container

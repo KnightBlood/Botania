@@ -10,12 +10,13 @@ package vazkii.botania.common.internal_caps;
 
 import com.mojang.serialization.MapCodec;
 
-import vazkii.botania.common.helper.ItemNBTHelper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
+
+import vazkii.botania.common.helper.ItemNBTHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
