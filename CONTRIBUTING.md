@@ -69,14 +69,27 @@ message.
 
 ## Working with GameTest
 
-> **26.1 status (explicit, do not hide):** all 23 test classes / 93 cases compile and are
-> discovered by `fabric-gametest-api-v1`. `./gradlew :Fabric:runGameTest` currently reports
-> **27 required tests failed** (down from 82 after the two convention fixes below). The
-> remaining failures are real 26.1 behaviour gaps, not harness breakage: mana bursts / lenses
-> do not fire from structure-placed spreaders, and a handful of item / entity assertions differ
-> (`Expected item of type ...`, `Expected 5 entity hits, but got 4`, flower pouch, candle
-> colouring). No test was disabled, weakened or relabelled to make the suite look green.
-> See `.workbuddy/memory/` for the full diagnosis log.
+> **26.1 status:** all 23 test classes / 95 cases compile and are discovered by
+> `fabric-gametest-api-v1`. `./gradlew :Fabric:runGameTest` reports
+> **all 95 required tests passed**. Getting there surfaced two real 26.1 product bugs,
+> both fixed in the port:
+> 1. **Mana burst movement truncation.** 26.1 `ThrowableProjectile.tick` truncates a
+>    projectile's movement at the first hit point and only dispatches the hit afterwards,
+>    so a burst spawned inside its source spreader never left the block. `ManaBurstEntity`
+>    reimplements the projectile tick movement (VanillaCopy) to restore the 1.20.1
+>    semantics: dispatch the hit, but always advance the full delta movement.
+> 2. **Container drops on break.** 1.20.1 `Block#onRemove` container drops were (wrongly)
+>    ported into `affectNeighborsAfterRemoval`, which runs *after* the block entity is
+>    already removed, so breaking any of ~13 container blocks silently deleted their
+>    contents. The drops live in `BlockEntity#preRemoveSideEffects` now (26.1's drop hook,
+>    called before removal); the apothecary's scoop-water drop is replicated in
+>    `setFluid`, because 26.1 fires no removal hook for same-block state changes.
+>
+> Also fixed along the way: `Entity#getLootTable()` returns a non-null `Optional` in 26.1
+> and shadowed the container-vehicle check (use `getContainerLootTable()`), and
+> `MobEffects.*` fields are `Holder<MobEffect>` (a `MobEffect == Holder` comparison
+> compiles but is always false). No test was disabled, weakened or relabelled to make the
+> suite look green. See `.workbuddy/memory/` for the full diagnosis log.
 >
 > Two 1.20.1 -> 26.1 convention changes are already handled:
 > 1. **Structure origin.** 1.20.1 placed the template at `structureBlockPos.above()`, so a
@@ -96,8 +109,9 @@ message.
 > things worse (32 failures) and produces `Block-attached entity at invalid position` errors.
 >
 > Also note: 26.1 removed the old `batch` grouping and `@BeforeBatch`/`@AfterBatch` hooks.
-> `BoreLensTest`'s per-batch config mocks were inlined with an explicit loss of coverage,
-> documented in that class.
+> `BoreLensTest`'s per-batch config mocks are installed/restored inside the test sequence;
+> the nine concurrently running cases serialize their config-mock windows through a static
+> flag (`anotherCaseActive`), so the too-low-harvest-level cases keep real coverage.
 
 1. Create a structure if wanted:
    1. Run `/test create <size>` to generate a test platform of the desired size. IMPORTANT:
